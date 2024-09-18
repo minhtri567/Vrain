@@ -1,0 +1,33 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.10.35013.160
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vrain.Server", "Vrain.Server\Vrain.Server.csproj", "{C5336A57-E69B-4DF0-92AD-54C890DBB4CB}"
+EndProject
+Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "vrain.client", "vrain.client\vrain.client.esproj", "{8179A5F5-0031-431F-9B43-DCF26B2BF816}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C5336A57-E69B-4DF0-92AD-54C890DBB4CB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C5336A57-E69B-4DF0-92AD-54C890DBB4CB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C5336A57-E69B-4DF0-92AD-54C890DBB4CB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C5336A57-E69B-4DF0-92AD-54C890DBB4CB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8179A5F5-0031-431F-9B43-DCF26B2BF816}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8179A5F5-0031-431F-9B43-DCF26B2BF816}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8179A5F5-0031-431F-9B43-DCF26B2BF816}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{8179A5F5-0031-431F-9B43-DCF26B2BF816}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8179A5F5-0031-431F-9B43-DCF26B2BF816}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8179A5F5-0031-431F-9B43-DCF26B2BF816}.Release|Any CPU.Deploy.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {6352FF13-A563-4730-8BD8-8C0ED29F265F}
+	EndGlobalSection
+EndGlobal

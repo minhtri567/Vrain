@@ -1,0 +1,535 @@
+﻿
+.admin-page .vnrain-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 13px 16px;
+    background-color: #1565c0;
+}
+.admin-page .header-title .name-view {
+    display: flex;
+    align-items: center;
+}
+.admin-page .header-title .name-view span {
+    font-size: 24px;
+    font-weight: 700;
+    color: white;
+    padding-left: 15px;
+    border-left: 1px solid #000;
+}
+.admin-page .header-title .name-view img {
+    margin-right : 10px;
+}
+.admin-page .vnrain-toolbar .user-native button {
+    color: black;
+    height: 40px;
+    font-weight: 550;
+    margin: 0px 5px;
+    border: none;
+    cursor: pointer;
+    border-radius: 6px;
+    background-color: white;
+}
+
+.admin-page .menu-hierarchy {
+    background-color: aliceblue;
+    position:relative;
+    z-index :999;
+    display: flex;
+    flex-wrap: wrap;
+    white-space: nowrap;
+}
+.admin-page .menu-hierarchy::-webkit-scrollbar {
+    display: none;
+}
+
+.admin-page .menu-hierarchy > ul {
+    display: flex;
+    margin : 0px;
+}
+.admin-page .menu-hierarchy * {
+    list-style-type: none;
+    padding : 0px;
+    text-decoration: none;
+}
+.admin-page .menu-hierarchy li {
+    position : relative;
+}
+ 
+.admin-page .menu-hierarchy li > ul {
+    position : absolute;
+    padding : 0;
+}
+.menu-item {
+    cursor: pointer;
+    padding : 6px 10px !important;
+}
+.expanded .menu-item a {
+    padding: 10px 15px !important;
+    text-wrap: nowrap;
+}
+
+.collapsed {
+    display: none;
+}
+
+.expanded {
+    display: block;
+    background-color: white;
+    margin-top: 7px;
+    border: 1px solid #0000000f;
+    border-radius: 4px;
+}
+.expanded li:hover {
+    background-color: #00000005;
+}
+.expanded .menu-item a:hover {
+    color : black ;
+}
+
+.form-menu > .sys_input {
+    width: 100%;
+    margin: 10px 0px;
+    display:grid;
+}
+.form-menu button {
+    padding: 12px;
+    background-color: #1565c0;
+    color: white;
+    outline: unset;
+    border-radius: 6px;
+    border: 1px solid #c2c2c2;
+    font-weight: bolder;
+    box-shadow: none;
+    cursor: pointer;
+    float:right;
+}
+.form-menu .add_new_menu {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.form-menu .add_new_menu button{
+    background: transparent;
+    color:black;
+}
+.container-menu-cha {
+    position: relative;
+}
+.container-menu-cha .prop-menu-cha{
+    position :absolute;
+    background-color: white;
+    z-index: 5;
+    width: 100%;
+    max-height: 500px;
+    overflow-y: scroll;
+}
+
+.hide {
+    display : none !important;
+}
+.show {
+    display: block !important;
+}
+
+.p-tree .p-tree-container .p-treenode .p-treenode-content.p-treenode-selectable:not(.p-highlight):hover {
+    background : none;
+}
+.p-tree .p-tree-container .p-treenode .p-treenode-content{
+    padding : 5px;
+}
+
+.datatable_admin {
+    padding : 10px 10px 0px 10px;
+}
+.view-container .p-datatable .p-datatable-header {
+    background-color: transparent;
+    border: unset;
+    min-height : 66px;
+}
+.view-container .filter-pdc > div{
+    margin-right : 10px;
+}
+.view-container .filter-pdc > i {
+    font-size: 18px;
+    margin-left: 10px;
+    padding: 7px;
+    border-radius: 50%;
+    background-color: transparent;
+    cursor : pointer;
+}
+.view-container .filter-pdc > label {
+    margin-right : 5px;
+}
+.view-container .filter-pdc {
+    display: flex;
+    align-items: center;
+}
+.view-container .filter-pdc> i:hover {
+    background-color : aliceblue;
+}
+.view-container .datatable_admin tr > td.column-fiter-pen::after {
+    box-shadow: inset -10px 0 8px -8px rgba(0, 0, 0, 0.2);
+    left: 0;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 10px;
+    transition: box-shadow 0.3s;
+    content: "";
+    pointer-events: none;
+    transform: translateX(-80%);
+}
+
+.view-container .datatable_admin thead tr > th:last-child::after {
+    box-shadow: inset -10px 0 8px -8px rgba(0, 0, 0, 0.2);
+    left: 0;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 10px;
+    transition: box-shadow 0.3s;
+    content: "";
+    pointer-events: none;
+    transform: translateX(-80%);
+}
+.view-container .datatable_admin .add-delete-btn button{
+    margin-left : 10px;
+    padding : 6px 12px;
+}
+.confirmation-content{
+    display:flex;
+    align-items : center;
+}
+
+/* css cho view report*/
+.admin-db-report {
+    padding : 10px 10px 0px 10px;
+}
+.admin-db-report .p-datatable-header .nagative-adreport {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.admin-db-report .p-datatable-header .nagative-adreport h4 {
+    margin : 0px;
+}
+
+/*
+
+.p-datatable-wrapper::-webkit-scrollbar {
+    width: 6px; 
+    height: 6px; 
+}
+.p-datatable-wrapper::-webkit-scrollbar-track {
+    background-color: #f1f1f1;
+    border-radius: 10px; 
+}
+.p-datatable-wrapper::-webkit-scrollbar-thumb {
+    background-color: #888;
+    border-radius: 10px;
+}
+
+*/
+
+.view-ad-danhmuc .p-datatable .p-datatable-thead > tr > th {
+    padding : 0.75rem 1rem;
+}
+.view-ad-danhmuc .p-datatable .p-datatable-tbody > tr > td {
+    padding: 0.75rem 1rem;
+}
+.view-ad-danhmuc .p-datatable .p-button.p-button-icon-only {
+    width: 25px;
+    height: 25px;
+    margin-right: 10px;
+}
+.view-ad-danhmuc .p-datatable .p-button.p-button-icon-only span {
+    font-size: 12px;
+}
+.dialog-ad-danhmuc .p-dialog-content input {
+    width: 100%;
+}
+
+.view-ad-danhmuc .container-table {
+    display: flex;
+    justify-content: space-between;
+}
+
+.view-ad-danhmuc .container-table .table-1 {
+    width : 100%;
+    padding : 0px 5px 0px 10px;
+    border-right : 1px solid #b3b3b3;
+}
+.view-ad-danhmuc .container-table .table-2 {
+    width : 100%;
+    padding : 0px 10px 0px 5px;
+    border-left : 1px solid #b3b3b3;
+}
+
+
+.view-ad-coquan .p-datatable .p-datatable-tbody > tr > td {
+    padding: 0.75rem 1rem;
+}
+.view-ad-coquan .p-datatable .p-datatable-thead > tr > th {
+    padding: 0.75rem 1rem;
+}
+.view-ad-coquan .p-datatable .p-button.p-button-icon-only {
+    width: 25px;
+    height: 25px;
+    margin-right: 10px;
+}
+.view-ad-coquan .content-view {
+    display: flex;
+    justify-content: space-between;
+}
+.view-ad-coquan .content-view .container-table {
+    width : 100%;
+    padding : 0px 5px 0px 10px;
+    border-right : 1px solid #b3b3b3;
+}
+
+.view-ad-coquan .content-view .content-phanquyen{
+    width : 100%;
+    padding : 0px 5px 0px 10px;
+    border-right : 1px solid #b3b3b3;
+}
+
+.view-ad-coquan .content-view .content-phanquyen .nagative-savequyen{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.p-toast .p-toast-message .p-toast-message-content .p-toast-message-icon.p-icon {
+    width: 28px;
+    height: 28px;
+}
+.p-toast .p-toast-message .p-toast-message-content .p-toast-message-text {
+    font-size : 14px;
+}
+.p-toast .p-toast-message {
+    border-radius : 6px;
+}
+
+.view-ad-nguoidung .nagative-nguoidung {
+    display :flex;
+    align-items : center;
+    justify-content:space-between;
+}
+.view-ad-nguoidung .container-table {
+    padding : 0px 10px 0px 10px;
+}
+
+.view-ad-nguoidung .p-datatable .p-button.p-button-icon-only {
+    width: 25px;
+    height: 25px;
+    margin-right: 10px;
+}
+.view-ad-nguoidung .p-datatable .p-datatable-tbody > tr > td {
+    padding: 0.75rem 1rem;
+}
+
+.view-ad-nguoidung .p-datatable .p-datatable-thead > tr > th {
+    padding: 0.75rem 1rem;
+}
+.p-icon-field.p-icon-field-right{
+    width:100%;
+}
+
+.view-ad-nguoidung .content-view {
+    display: flex;
+    justify-content: space-between;
+}
+
+.view-ad-nguoidung .content-view .container-table {
+    width: 100%;
+    padding: 0px 5px 0px 10px;
+    border-right: 1px solid #b3b3b3;
+}
+.view-ad-nguoidung .content-view .content-phanquyen{
+    width: 100%;
+    padding: 0px 5px 0px 10px;
+    border-right: 1px solid #b3b3b3;
+}
+.view-ad-nguoidung .nagative-savequyen {
+    display:flex;
+    justify-content : space-between;
+    align-items :center;
+}
+
+.disabled-checkbox .p-checkbox {
+    pointer-events: none;
+    opacity: 0.5;
+}
+
+.tree-view-ad .p-treenode[aria-expanded="true"] > .p-treenode-content {
+    font-weight: bold;
+}
+.tree-view-ad {
+    font-size : 14px;
+}
+.tree-view-ad button {
+    width : 21px;
+    height : 21px;
+}
+.datatable_admin .p-button.p-button-icon-only {
+    width: 25px;
+    height: 25px;
+    margin-right: 10px;
+}
+
+/* Style for active menu item */
+.menu-hierarchy li.active {
+    background-color: #007bff;
+}
+
+.menu-hierarchy li.active > .menu-item > a {
+    color: white;
+}
+
+/* Highlight parent menu item if it contains an active child */
+.menu-hierarchy li:has(ul li.active) {
+    background-color: #007bff;
+}
+
+.menu-hierarchy li:has(ul li.active) > .menu-item > a {
+    color: white;
+}
+.menu-hierarchy li:has(ul li.active) li.active {
+    background-color: #5caaff;
+}
+
+
+.adminoverview-container {
+    padding : 10px;
+}
+
+.adminoverview-container .av-container-1 {
+    display : flex;
+    gap : 10px;
+}
+.adminoverview-container .av-container-1 > div {
+    width : 25%;
+}
+.adminoverview-container .av-container-1 .p-card-subtitle{
+    font-size: .875rem
+}
+
+.adminoverview-container .av-container-1 .p-card-content p{
+    margin : 0px;
+    font-weight : 700;
+    font-size : 1rem;
+}
+.adminoverview-container .av-container-1 .p-card-footer{
+    text-align : end;
+}
+    .adminoverview-container .av-container-1 .p-card-footer button {
+        padding: 5px 6px;
+        font-size: 13px;
+    }
+.adminoverview-container .av-container-2{
+    margin-top : 15px;
+}
+.dialog-thongso .table-thongso {
+    white-space : nowrap;
+}
+
+.dialog-thongso .nagative-thongso {
+    display:flex;
+    justify-content :end;
+    align-items:center;
+    gap:10px;
+}
+.dialog-thongso .nagative-thongso button:first-child{
+    color: #ffffff;
+    background: #689f38;
+    border: 1px solid #689f38;
+    padding : 6px 12px;
+    border-radius : 6px;
+    cursor : pointer;
+}
+.dialog-thongso .nagative-thongso button:first-child:hover {
+    background-color: #809f64;
+    color: #fffffe;
+    border: 1px solid #809f64;
+}
+
+.dialog-thongso .nagative-thongso button:last-child {
+    color: #ffffff;
+    background: #ef4444;
+    border: 1px solid #ef4444;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+.dialog-thongso .nagative-thongso button:last-child:hover {
+    background-color: #dc2626;
+    color: #fffffe;
+    border: 1px solid #dc2626;
+}
+.ad-viewcontentmenu{
+    display: flex;
+    justify-content: space-between;
+}
+
+@media (max-width: 575.98px) {
+    .adminoverview-container .av-container-1 {
+        display: block;
+    }
+    .adminoverview-container .av-container-1 > div {
+        width: 100%;
+        margin: 10px 0px;
+    }
+    .p-dialog-content{
+        padding: 0;
+    }
+    .p-datatable-header > div {
+        display: block !important;
+    }
+    .p-datatable-header .filter-pdc {
+        flex-wrap: wrap;
+        margin-bottom: 10px;
+    }
+    .view-container .filter-pdc > label{
+        margin: 10px 0px;
+    }
+    .admin-page .view-login{
+        display: none;
+    }
+    .admin-page .side-bar-menu button {
+        background-color: #1565c0;
+        border: none;
+    }
+    .p-dialog {
+        max-height: none !important;
+        height: 100vh !important;
+        width: 100% !important;
+    }
+    .p-dialog-content {
+        padding: 0px 10px;
+    }
+    .admin-page .menu-hierarchy{
+        flex-direction: column;
+    }
+    .admin-page .menu-hierarchy > ul{
+        display: block;
+    }
+    .view-ad-coquan .content-view {
+        display: block;
+    }
+    .view-ad-nguoidung .content-view{
+        display: block;
+    }
+    .view-ad-danhmuc .container-table{
+        display: block;
+    }
+    .ad-viewcontentmenu {
+        display: block;
+    }
+    .ad-viewcontentmenu > div {
+        width: 100% !important;
+    }
+    .menu-hierarchy .menu-item a {
+        width: 100%;
+        display: block;
+    }
+}
