@@ -240,6 +240,21 @@ const MapComponent = () => {
                 center: [106.660172, 14.962622],
                 zoom: 4.5
             });
+
+            map.current.addControl(
+                new mapboxgl.GeolocateControl({
+                    positionOptions: {
+                        enableHighAccuracy: true
+                    },
+                    trackUserLocation: true,
+                    showUserHeading: true,
+                    fitBoundsOptions: {
+                        maxZoom: 10
+                    }
+                }),
+                'bottom-right' // Vị trí của GeolocateControl
+            );
+
             map.current.on('style.load', () => {
                 map.current.setLayoutProperty('country-label', 'visibility', 'none');
                 // Ẩn tên tỉnh/thành phố
@@ -644,7 +659,7 @@ const MapComponent = () => {
                     setSelectedStation(infor.sid);
                     viewllstation(e.lngLat.lat, e.lngLat.lng);
                     setShowChart(true);
-                    prepareChartData(infor.sid, infor.tinh ).then(response => {
+                    prepareChartData(infor.sid, infor.tinh,e.lngLat.lat, e.lngLat.lng ).then(response => {
                         setDataChart(response.dataChart);
                     });
                     settinhfdata(infor.tinh);
@@ -657,7 +672,7 @@ const MapComponent = () => {
 
                     viewllstation(e.lngLat.lat, e.lngLat.lng);
                     setShowChart(true);
-                    prepareChartData(infor.sid, infor.tinh).then(response => {
+                    prepareChartData(infor.sid, infor.tinh,e.lngLat.lat, e.lngLat.lng).then(response => {
                         setDataChart(response.dataChart);
                     });
                     settinhfdata(infor.tinh);
@@ -669,7 +684,7 @@ const MapComponent = () => {
                     setSelectedStation(infor.sid);
                     viewllstation(e.lngLat.lat, e.lngLat.lng);
                     setShowChart(true);
-                    prepareChartData(infor.sid, infor.tinh).then(response => {
+                    prepareChartData(infor.sid, infor.tinh,e.lngLat.lat, e.lngLat.lng).then(response => {
                         setDataChart(response.dataChart);
                     });
                     settinhfdata(infor.tinh);
@@ -680,7 +695,7 @@ const MapComponent = () => {
                     setSelectedStation(infor.sid);
                     viewllstation(e.lngLat.lat, e.lngLat.lng);
                     setShowChart(true);
-                    prepareChartData(infor.sid, infor.tinh).then(response => {
+                    prepareChartData(infor.sid, infor.tinh,e.lngLat.lat, e.lngLat.lng).then(response => {
                         setDataChart(response.dataChart);
                     });
                     settinhfdata(infor.tinh);
@@ -692,7 +707,7 @@ const MapComponent = () => {
                     setSelectedStation(infor.sid);
                     viewllstation(e.lngLat.lat, e.lngLat.lng);
                     setShowChart(true);
-                    prepareChartData(infor.sid, infor.tinh).then(response => {
+                    prepareChartData(infor.sid, infor.tinh,e.lngLat.lat, e.lngLat.lng).then(response => {
                         setDataChart(response.dataChart);
                     });
                     settinhfdata(infor.tinh);
