@@ -83,7 +83,6 @@ const MapComponent = () => {
     const dataserver = 'https://localhost:7299/api/WeatherStations';
     var allapistations = 'https://localhost:7299/api/WeatherStations/all';
     var apiraintime = "https://localhost:7299/api/WeatherStations/raintoday?provincename=";
-    var apibgmap = "https://localhost:7299/api/WeatherStations/getbgmap";
     var now = new Date();
     
     var currentDateTime = now.toLocaleString('vi-VN', {
@@ -252,7 +251,7 @@ const MapComponent = () => {
                         maxZoom: 10
                     }
                 }),
-                'bottom-right' // Vị trí của GeolocateControl
+                'bottom-right' 
             );
 
             map.current.on('style.load', () => {
@@ -306,6 +305,7 @@ const MapComponent = () => {
                     }
                 );
 
+                
                 map.current.addSource('stations', {
                     type: 'geojson',
                     data: {
@@ -322,6 +322,7 @@ const MapComponent = () => {
                                 ngaydo: station.daterain,
                                 tongluongmua: station.total,
                                 tinh: station.tinh,
+                                pid : station.pid
                             }
                         }))
                     }
@@ -426,7 +427,7 @@ const MapComponent = () => {
                     'type': 'symbol',
                     'source': 'commune',
                     'source-layer': 'bgmap_commune', 
-                    'minzoom': 10,
+                    'minzoom': 14,
                     'layout': {
                         'text-field': ['get', 'ten_xa'], 
                         'text-size': 12, 
@@ -671,6 +672,7 @@ const MapComponent = () => {
                     setSelectedStation(infor.sid);
 
                     viewllstation(e.lngLat.lat, e.lngLat.lng);
+                    console.log(infor.tinh)
                     setShowChart(true);
                     prepareChartData(infor.sid, infor.tinh,e.lngLat.lat, e.lngLat.lng).then(response => {
                         setDataChart(response.dataChart);

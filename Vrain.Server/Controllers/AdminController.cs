@@ -519,10 +519,16 @@ namespace Vrain.Server.Controllers
         [HttpGet("alldanhmuccon")]
         public async Task<ActionResult<IEnumerable<DanhMucCon>>> Getalldanhmuccon()
         {
-
-            var alldanhmuc = await _context.sys_danhmuc.OrderBy(s => s.dm_id).ToListAsync();
-
-            return Ok(alldanhmuc);
+            var ldm = await _context.sys_danhmuc_phanloai.Where(s => s.ldm_ma == "NHOMNGUOIDUNG").FirstOrDefaultAsync();
+            if (ldm == null)
+            {
+                return Ok();
+            }
+            else
+            {
+                var alldanhmuc = await _context.sys_danhmuc.Where(s => s.dm_ldm_id == ldm.ldm_id).OrderBy(s => s.dm_id).ToListAsync();
+                return Ok(alldanhmuc);
+            }
         }
 
         [Authorize(Policy = "ROLE_QLDULIEU")]
@@ -552,6 +558,8 @@ namespace Vrain.Server.Controllers
                         cq_tinhid = model.cq_tinhid,
                         cq_huyenid = model.cq_huyenid,
                         cq_xaid = model.cq_xaid,
+                        cq_role_tinhid = model.cq_role_tinhid
+
                     };
                     _context.sys_coquan.Add(newCoQuan);
                 }
@@ -576,6 +584,7 @@ namespace Vrain.Server.Controllers
                     existingCoQuan.cq_tinhid = model.cq_tinhid;
                     existingCoQuan.cq_huyenid = model.cq_huyenid;
                     existingCoQuan.cq_xaid = model.cq_xaid;
+                    existingCoQuan.cq_role_tinhid = model.cq_role_tinhid;
 
                     _context.sys_coquan.Update(existingCoQuan);
                 }

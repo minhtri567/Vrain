@@ -12,6 +12,7 @@ import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
 import jsonData from '../Data/select-vn.json';
 import axios from 'axios';
 import { InputTextarea } from "primereact/inputtextarea";
+import { MultiSelect } from 'primereact/multiselect';
 const AdminViewCoquan = () => {
 
     const apigetcoquan = 'https://localhost:7299/api/Admin/allcoquan';
@@ -33,6 +34,9 @@ const AdminViewCoquan = () => {
     const [filtersProvince, setProvinceFilterValue] = useState('');
     const [filtersDistrict, setDistrictFilterValue] = useState(null);
     const [filtersCommune, setCommuneFilterValue] = useState(null);
+    const [selectedCities, setSelectedCities] = useState(null);
+    const [selectAll, setSelectAll] = useState(false);
+    const [oppv, setoppv] = useState(null);
 
     const [provinces, setProvinces] = useState([]);
     const [districtOptions, setDistrictOptions] = useState([]);
@@ -46,7 +50,6 @@ const AdminViewCoquan = () => {
     const [cqId, setCqId] = useState(0);
     const [cqGhiChu, setCqGhiChu] = useState('');
 
-    const [error, setError] = useState('');
     const fetchdatacq = async () => {
         const response = await axios.get(apigetcoquan);
         setdatacoquan(response.data);
@@ -74,10 +77,16 @@ const AdminViewCoquan = () => {
         fetchdatarl();
         fetchdatacq();
     }, []);
-
     useEffect(() => {
         const provinceOptions = jsonData[0].result.map(tinh => tinh.ten_tinh);
         setProvinces(provinceOptions);
+    }, []);
+    useEffect(() => {
+        const provinceOp = jsonData[0].result.map(tinh => ({ 
+            pid: tinh.id_tinh, 
+            name: tinh.ten_tinh 
+        }));
+        setoppv(provinceOp)
     }, []);
     const [spcommuneOptions, setspCommuneOptions] = useState([]);
     useEffect(() => {
@@ -88,7 +97,6 @@ const AdminViewCoquan = () => {
             setspCommuneOptions(province.huyens);
             if (province) {
                 const districtOptions = province.huyens.map(huyen =>  huyen.ten_huyen);
-
                 setDistrictOptions(districtOptions);
                 setCommuneFilterValue(null);
                 setCommuneOptions([]); // Clear communes if province is changed
@@ -101,8 +109,10 @@ const AdminViewCoquan = () => {
         setCommuneFilterValue(undefined);
         if (filtersDistrict && spcommuneOptions) {
             const temp = spcommuneOptions.find(p => p.ten_huyen === filtersDistrict);
-            const communes = temp.xas.map(xa => xa.ten_xa );
-            setCommuneOptions(communes);
+            if(temp != null){
+                const communes = temp.xas.map(xa => xa.ten_xa );
+                setCommuneOptions(communes);
+            }
         } else {
             setCommuneOptions([]);
         }
@@ -192,7 +202,7 @@ const AdminViewCoquan = () => {
     }
 
     const reject = () => {
-        
+        setischangecoquan(false);
     }
 
     const dialogadddm = () => {
@@ -242,6 +252,7 @@ const AdminViewCoquan = () => {
         setCqDienThoai(rowData.cq_dienthoai);
         setCqEmail(rowData.cq_email);
         setCqGhiChu(rowData.cq_ghichu);
+        setSelectedCities(rowData.cq_role_tinhid);
         setischangecoquan(true);
     };
     const Xoadulieucq = (rowData) => {
@@ -290,6 +301,8 @@ const AdminViewCoquan = () => {
             "cq_tinhid": filtersProvince ? filtersProvince : "",
             "cq_huyenid": filtersDistrict ? filtersDistrict : "",
             "cq_xaid": filtersCommune ? filtersCommune : "",
+            "cq_role_tinhid" : selectedCities ? selectedCities : ""
+
         }
         axios.post(apisavecoquan, data, {
                 headers: {
@@ -497,6 +510,28 @@ const AdminViewCoquan = () => {
                 <div>
                     <label htmlFor="sdtcq">Số điện thoại</label>
                     <InputText id="sdtcq" value={cqDienThoai} onChange={(e) => setCqDienThoai(e.target.value)} />
+                </div>
+                <div>
+                    <label>Phân quyền theo tỉnh : </label>
+                    <br></br>
+                    <MultiSelect value={selectedCities} 
+                    onChange={(e) => {
+                        setSelectedCities(e.value);
+                        setSelectAll(e.value.length === oppv.length);
+                    }} 
+                    selectAll={selectAll}
+                    onSelectAll={(e) => {
+                        setSelectedCities(e.checked ? [] : oppv.map((item) => item.pid));
+                        setSelectAll(!e.checked);
+                    }}
+                    options={oppv} 
+                    optionLabel="name"
+                    optionValue="pid"
+                    filter 
+                    placeholder="Chọn tỉnh" 
+                    maxSelectedLabels={3}
+                    style={{width : '100%'}}
+                     />
                 </div>
                 <div>
                     <label htmlFor="emailcq">Thư điện tử</label>

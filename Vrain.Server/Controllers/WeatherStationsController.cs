@@ -157,6 +157,7 @@ public class WeatherStationsController : ControllerBase
                         station_name = station.station_name,
                         total = rainData.data_giatri_sothuc,
                         daterain = rainData.data_thoigian,
+                        pid = station.order_province,
                         tinh = station.tinh,
                         lat = station.lat,
                         lon = station.lon,

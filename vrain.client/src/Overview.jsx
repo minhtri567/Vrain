@@ -277,7 +277,6 @@ const Overview = () => {
                     this._map.fitBounds(bounds, { padding: 40 });
                 }
             }
-
             map.current.addControl(new mapboxgl.FullscreenControl(), 'top-right');
             map.current.addControl(new FitBoundsControl(), 'top-right');
             map.current.on('style.load', () => {
@@ -455,7 +454,7 @@ const Overview = () => {
                     'source': 'commune',
                     'source-layer': 'bgmap_commune', 
                     'filter': ['==', ['get', 'tinh_id'], tinhid],
-                    'minzoom': 10,
+                    'minzoom': 12,
                     'layout': {
                         'text-field': ['get', 'ten_xa'], 
                         'text-size': 12, 

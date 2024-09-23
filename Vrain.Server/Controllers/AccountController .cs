@@ -120,6 +120,10 @@ namespace Vrain.Server.Controllers
             }
 
             var memberRoleData = await _context.sys_role.Where(s => s.role_cq_id == account.mem_cq_id).ToListAsync();
+            var memberRoletinhid = await _context.sys_coquan
+                .Where(s => s.cq_id == account.mem_cq_id)
+                .Select(s => s.cq_role_tinhid)
+                .FirstOrDefaultAsync();
 
             // Tạo JWT token
             var tokenHandler = new JwtSecurityTokenHandler();
@@ -145,8 +149,8 @@ namespace Vrain.Server.Controllers
             // Trả về token hoặc thông tin người dùng (ở đây tôi chỉ trả về thông tin người dùng)
             return Ok(new { 
                 Token = account,
-                Role = tokenString
-
+                Role = tokenString,
+                Lidtinh = memberRoletinhid
             });
         }
         [HttpPost("changepassword")]
