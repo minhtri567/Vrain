@@ -11,7 +11,7 @@ const SwaggerUIComponent = () => {
     useEffect(() => {
         const fetchSwaggerSpec = async () => {
             try {
-                const response = await axios.get('https://localhost:7299/swagger/v1/swagger.json');
+                const response = await axios.get('/swagger/v1/swagger.json');
                 const data = response.data;
                 // Lọc Swagger JSON để chỉ giữ API cần thiết
                 const filteredSpec = {

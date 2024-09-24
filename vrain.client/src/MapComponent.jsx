@@ -80,9 +80,9 @@ const MapComponent = () => {
     const [selectedStationId, setSelectedStationId] = useState(null);
     const [uniqueStationIds, setUniqueStationIds] = useState(new Set());
     var hoverTimeout;
-    const dataserver = 'https://localhost:7299/api/WeatherStations';
-    var allapistations = 'https://localhost:7299/api/WeatherStations/all';
-    var apiraintime = "https://localhost:7299/api/WeatherStations/raintoday?provincename=";
+    const dataserver = '/api/WeatherStations';
+    var allapistations = '/api/WeatherStations/all';
+    var apiraintime = "/api/WeatherStations/raintoday?provincename=";
     var now = new Date();
     
     var currentDateTime = now.toLocaleString('vi-VN', {

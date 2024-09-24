@@ -20,13 +20,13 @@ import { InputTextarea } from 'primereact/inputtextarea';
 import axios from 'axios';
 
 const AdminViewStations = () => {
-    const getallstations = 'https://localhost:7299/api/Admin/infostations';
-    const savestations = 'https://localhost:7299/api/Admin/savestations';
-    const deletestations = 'https://localhost:7299/api/Admin/deletestations';
-    const apithongso ='https://localhost:7299/api/Admin/thongsoquantrac?key_station='
-    const apidanhmucqt ='https://localhost:7299/api/Admin/danhmucqt'
-    const apisavetsdlqt ='https://localhost:7299/api/Admin/savetsdlqt'
-    const apideletetsdlqt ='https://localhost:7299/api/Admin/deletetsdlqt'
+    const getallstations = '/api/Admin/infostations';
+    const savestations = '/api/Admin/savestations';
+    const deletestations = '/api/Admin/deletestations';
+    const apithongso ='/api/Admin/thongsoquantrac?key_station='
+    const apidanhmucqt ='/api/Admin/danhmucqt'
+    const apisavetsdlqt ='/api/Admin/savetsdlqt'
+    const apideletetsdlqt ='/api/Admin/deletetsdlqt'
     const [stations, setStations] = useState([]);
     const [thongsoqt, setthongsoqt] = useState([]);
     const [vwstations, setvwStations] = useState([]);

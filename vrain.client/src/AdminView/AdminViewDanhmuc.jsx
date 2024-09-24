@@ -15,11 +15,11 @@ import { Dropdown } from 'primereact/dropdown';
 import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
 
 const AdminViewDanhmuc = () => {
-    const apigetdanhmuc = 'https://localhost:7299/api/Admin/alldanhmuc';
-    const apisavedanhmuc = 'https://localhost:7299/api/Admin/savedanhmuc';
-    const apixoadanhmuc = 'https://localhost:7299/api/Admin/deletedanhmuc?ids=';
-    const apisualoaidanhmuc = 'https://localhost:7299/api/Admin/saveloaidanhmuc';
-    const apixoaloaidanhmuc = 'https://localhost:7299/api/Admin/deleteloaidanhmuc?ids=';
+    const apigetdanhmuc = '/api/Admin/alldanhmuc';
+    const apisavedanhmuc = '/api/Admin/savedanhmuc';
+    const apixoadanhmuc = '/api/Admin/deletedanhmuc?ids=';
+    const apisualoaidanhmuc = '/api/Admin/saveloaidanhmuc';
+    const apixoaloaidanhmuc = '/api/Admin/deleteloaidanhmuc?ids=';
 
     const [datadanhmuc, setdatadanhmuc] = useState(null);
     const fetchdata = async () => {

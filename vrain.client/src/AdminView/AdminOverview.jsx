@@ -7,9 +7,9 @@ import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { Dialog } from 'primereact/dialog';
 const AdminOverview = () => {
-    const apistation = 'https://localhost:7299/api/Admin/infostationstoday';
-    const apistationrp = 'https://localhost:7299/api/Admin/reportstationstoday';
-    const apiallstation = 'https://localhost:7299/api/Admin/infostations';
+    const apistation = '/api/Admin/infostationstoday';
+    const apistationrp = '/api/Admin/reportstationstoday';
+    const apiallstation = '/api/Admin/infostations';
     const [datastations, setdatastations] = useState([]);
     const [datastationsrp, setdatastationsrp] = useState([]);
     const [dataallstations, setdataallstations] = useState([]);

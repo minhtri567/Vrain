@@ -33,8 +33,8 @@ import { jwtDecode } from 'jwt-decode';
 import $ from 'jquery';
 
 const Login = (ishome) => {
-    var apilogin = "https://localhost:7299/api/Account/login";
-    var apichangepw = "https://localhost:7299/api/Account/changepassword";
+    var apilogin = "/api/Account/login";
+    var apichangepw = "/api/Account/changepassword";
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const navigate = useNavigate();

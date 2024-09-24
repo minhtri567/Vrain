@@ -81,8 +81,8 @@ const Overview = () => {
     const [selectedStation, setSelectedStation] = useState('');
     const [selectmodeview, setselectmodeview] = useState(2);
     const sevenDaysAgo = today.subtract(7, 'day');
-    var curentapitinh = "https://localhost:7299/api/WeatherStations?provincename=" + encodeURIComponent(name_province) + "";
-    var apiraintime = "https://localhost:7299/api/WeatherStations/raintoday?provincename=" + encodeURIComponent(name_province) + "";
+    var curentapitinh = "/api/WeatherStations?provincename=" + encodeURIComponent(name_province) + "";
+    var apiraintime = "/api/WeatherStations/raintoday?provincename=" + encodeURIComponent(name_province) + "";
     var hoverTimeout;
 
     const [selectedStationId, setSelectedStationId] = useState(null);

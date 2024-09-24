@@ -39,8 +39,8 @@ const Detailview = () => {
     const [selectmodeview, setselectmodeview] = useState(2);
     const [visibleRight, setVisibleRight] = useState(false);
     const tableRef = useRef(null);
-    var curentapitinh = "https://localhost:7299/api/WeatherStations/raintoday?provincename=" + encodeURIComponent(name_province) + "";
-    var getapistations = "https://localhost:7299/api/WeatherStations/station_provine?provincename=" + encodeURIComponent(name_province) + "";
+    var curentapitinh = "/api/WeatherStations/raintoday?provincename=" + encodeURIComponent(name_province) + "";
+    var getapistations = "/api/WeatherStations/station_provine?provincename=" + encodeURIComponent(name_province) + "";
     const stationsRef = useRef([]);
     var now = new Date();
     var currentDateTime = now.toLocaleString('vi-VN', {
