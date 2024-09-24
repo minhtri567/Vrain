@@ -97,7 +97,6 @@ const Detailview = () => {
     useEffect(() => {
         const fetchDataProvine = async () => {
             try {
-                console.log(selectedOption)
                 if (selectedOption == 0) {
                     const today = new Date();
                     const response = await fetch(curentapitinh + "&startDate=" + today.toLocaleDateString('en-US') + "&endDate=" + today.toLocaleDateString('en-US') + "&modeview=" + $(".my-mode-view input").val());
@@ -160,7 +159,7 @@ const Detailview = () => {
                         'Dự báo mưa': mm[index]
                     };
                 });
-                return result.slice(1);
+                return result.slice(2);
             } else {
                 console.error('Dữ liệu không đồng nhất về độ dài các mảng.');
             }
@@ -182,7 +181,7 @@ const Detailview = () => {
                 'Dự báo mưa': rainByDay[date].toFixed(2) 
             }));
     
-            return result.slice(1);
+            return result.slice(2);
         }else{
             return [];
         }
@@ -209,7 +208,6 @@ const Detailview = () => {
                     });
                 }
             });
-            console.log(dataChartthis)
 
             const id_station_sl = stationsRef.current.find(s => s.station_id === selectedStation);
             if (id_station_sl) {
@@ -226,8 +224,6 @@ const Detailview = () => {
                     console.error('Error fetching data:', error);
                 }
             }
-
-            console.log(dataChartthis)
 
             setDataChart(dataChartthis);
         };

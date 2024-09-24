@@ -148,7 +148,7 @@ const Overview = () => {
                         'Dự báo mưa': mm[index]
                     };
                 });
-                return result.slice(1);
+                return result.slice(2);
             } else {
                 console.error('Dữ liệu không đồng nhất về độ dài các mảng.');
             }
@@ -170,7 +170,7 @@ const Overview = () => {
                 'Dự báo mưa': rainByDay[date].toFixed(2) 
             }));
     
-            return result.slice(1);
+            return result.slice(2);
         }
         else{
             return [];

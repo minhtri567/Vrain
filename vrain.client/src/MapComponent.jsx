@@ -118,7 +118,7 @@ const MapComponent = () => {
         return null; // Trả về null nếu không phù hợp định dạng
     }
     const handlerefecthdata = () => {
-        prepareChartData(fdata, tinhdata).then(response => {
+        prepareChartData(fdata.sid , tinhdata , fdata.lat , fdata.lon).then(response => {
             setDataChart(response.dataChart);
         });
     };
@@ -137,12 +137,16 @@ const MapComponent = () => {
     }, [tinhdata]);
 
     const [datafecthchart, setdatafecthchart] = useState([]);
-    const prepareChartData = async (stationid, tinhtation) => {
+    const prepareChartData = async (stationid, tinhtation , lat , lon) => {
 
         setLoading(true);
         const response = await fetch(apiraintime + encodeURIComponent(tinhtation) + "&startDate=" + convertDateFormat($(".my-datepicker-3-st input").val()) + "&endDate=" + convertDateFormat($(".my-datepicker-3-ed input").val()) + "&modeview=" + $(".my-mode-view input").val());
         const data24h = await response.json();
-        setdatafecthchart(data24h)
+        setdatafecthchart(data24h);
+
+        const responsefc = await fetch('https://node.windy.com/forecast/v2.7/ecmwf/'+lat+'/'+lon);
+        const datafc = await responsefc.json();
+
         let result;
 
         const dataChart = [];
@@ -164,10 +168,8 @@ const MapComponent = () => {
                 });
             }
         });
-
+        dataChart.push(...extractData(datafc.data))
         result = { dataChart };
-
-
 
         setLoading(false);
         return result;
@@ -678,7 +680,11 @@ const MapComponent = () => {
                         setDataChart(response.dataChart);
                     });
                     settinhfdata(infor.tinh);
-                    setfdata(infor.sid);
+                    setfdata({
+                        sid : infor.sid ,
+                        lat : e.lngLat.lat, 
+                        lon : e.lngLat.lng 
+                    });
 
                 });
                 map.current.on('click', 'smallrain-layer', (e) => {
@@ -692,7 +698,11 @@ const MapComponent = () => {
                         setDataChart(response.dataChart);
                     });
                     settinhfdata(infor.tinh);
-                    setfdata(infor.sid);
+                    setfdata({
+                        sid : infor.sid ,
+                        lat : e.lngLat.lat, 
+                        lon : e.lngLat.lng 
+                    });
 
                 });
                 map.current.on('click', 'mediumrain-layer', (e) => {
@@ -704,7 +714,11 @@ const MapComponent = () => {
                         setDataChart(response.dataChart);
                     });
                     settinhfdata(infor.tinh);
-                    setfdata(infor.sid);
+                    setfdata({
+                        sid : infor.sid ,
+                        lat : e.lngLat.lat, 
+                        lon : e.lngLat.lng 
+                    });
                 });
                 map.current.on('click', 'heavyrain-layer', (e) => {
                     var infor = e.features[0].properties;
@@ -715,7 +729,11 @@ const MapComponent = () => {
                         setDataChart(response.dataChart);
                     });
                     settinhfdata(infor.tinh);
-                    setfdata(infor.sid);
+                    setfdata({
+                        sid : infor.sid ,
+                        lat : e.lngLat.lat, 
+                        lon : e.lngLat.lng 
+                    });
 
                 });
                 map.current.on('click', 'heavierrain-layer', (e) => {
@@ -727,7 +745,11 @@ const MapComponent = () => {
                         setDataChart(response.dataChart);
                     });
                     settinhfdata(infor.tinh);
-                    setfdata(infor.sid);
+                    setfdata({
+                        sid : infor.sid ,
+                        lat : e.lngLat.lat, 
+                        lon : e.lngLat.lng 
+                    });
 
                 });   
             });
@@ -791,6 +813,49 @@ const MapComponent = () => {
         setselectmodeview(event.target.value);
     };
 
+    const extractData = (data) => {
+        
+        if(selectmodeview == 1){
+            const { day, hour, mm } = data;
+            if (day.length === hour.length && hour.length === mm.length) {
+                const result = day.map((date, index) => {
+                    const formattedDate = new Date(date).toLocaleDateString('en-GB').slice(0, 5);
+                    const formattedTime = `${hour[index].toString().padStart(2, '0')}:00`; 
+        
+                    return {
+                        timepoint: `${formattedDate} ${formattedTime}`,
+                        'Dự báo mưa': mm[index]
+                    };
+                });
+                return result.slice(2);
+            } else {
+                console.error('Dữ liệu không đồng nhất về độ dài các mảng.');
+            }
+        }
+        else if(selectmodeview == 2){
+            const { day, mm } = data;
+            const rainByDay = {};
+    
+            day.forEach((date, index) => {
+                const formattedDate = new Date(date).toLocaleDateString('en-GB').slice(0, 5);
+                if (!rainByDay[formattedDate]) {
+                    rainByDay[formattedDate] = 0;
+                }
+                rainByDay[formattedDate] += mm[index]; 
+            });
+    
+            const result = Object.keys(rainByDay).map(date => ({
+                timepoint: date,
+                'Dự báo mưa': rainByDay[date].toFixed(2) 
+            }));
+    
+            return result.slice(2);
+        }
+        else{
+            return [];
+        }
+        
+    };
 
     return (
         <div>
