@@ -203,9 +203,15 @@ const MapComponent = () => {
             try {
                 const response = await fetch(dataserver);
                 const data = await response.json();
-                setStations(data);
-                setFilteredStations(data);
-                setProvinceName(data[0].tinh);
+                const storedPids = JSON.parse(localStorage.getItem('lpid')) || [];
+                if (storedPids.length > 0) {
+                    const filteredData = data.filter(station => storedPids.includes(station.pid));
+                    setStations(filteredData); 
+                    setFilteredStations(filteredData); 
+                } else {
+                    setStations(data);
+                    setFilteredStations(data);
+                }
             } catch (error) {
                 console.error('Error fetching data:', error);
             }
@@ -305,12 +311,20 @@ const MapComponent = () => {
                     }
                 );
 
+                const storedPids = JSON.parse(localStorage.getItem('lpid')) || [];
+
+                // Lọc các trạm để chỉ lấy những trạm có pid trong mảng storedPids
+                let filteredStations = stationsRef.current.filter(station => 
+                    storedPids.includes(station.pid)
+                );
+
+                filteredStations = filteredStations.length > 0 ? filteredStations : stationsRef.current;
                 
                 map.current.addSource('stations', {
                     type: 'geojson',
                     data: {
                         type: 'FeatureCollection',
-                        features: stationsRef.current.map(station => ({
+                        features: filteredStations.map(station => ({
                             type: 'Feature',
                             geometry: {
                                 type: 'Point',

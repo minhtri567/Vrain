@@ -100,7 +100,7 @@ const Login = (ishome) => {
             localStorage.setItem('permission_stations', response.data.token.mem_cq_id);
             localStorage.setItem('role', response.data.token.mem_role);
             localStorage.setItem('jwtToken', response.data.role);
-            localStorage.setItem('lpid', response.data.lidtinh);
+            localStorage.setItem('lpid', JSON.stringify(response.data.lidtinh));
             isAuthenticated();
             setAnchorEl(null);
             setSnackbarMessage('Đăng nhập thành công');

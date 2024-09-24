@@ -102,6 +102,7 @@ public class WeatherStationsController : ControllerBase
                             lon = station.lon,
                             quanhuyen = station.quanhuyen,
                             phuongxa = station.phuongxa,
+                            pid = station.order_province
                         };
 
             var weatherData = await query.ToListAsync();
@@ -124,7 +125,8 @@ public class WeatherStationsController : ControllerBase
                 g.First().lat,
                 g.First().lon,
                 g.First().quanhuyen,
-                g.First().phuongxa
+                g.First().phuongxa,
+                g.First().pid,
             })
             .Where(x => x.Total != null) // Ensure that there is at least one station per province
             .Select(t => new
@@ -136,6 +138,7 @@ public class WeatherStationsController : ControllerBase
                 quanhuyen = t.quanhuyen,
                 phuongxa = t.phuongxa,
                 station_name = t.Total.Data.station_name,
+                pid = t.pid
             })
             .OrderByDescending(g => g.Total)
             .ToList();
@@ -176,6 +179,7 @@ public class WeatherStationsController : ControllerBase
                 tinh = g.First().tinh,
                 station_name = g.First().station_name,
                 station_id = g.First().station_id,
+                pid = g.First().pid,
             })
             .OrderByDescending(g => g.Total)
             .ToList();
