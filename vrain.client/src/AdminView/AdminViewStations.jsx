@@ -59,11 +59,11 @@ const AdminViewStations = () => {
                     const filteredData =  data.filter( station => storedPids.includes(station.order_province) )
                     setvwStations(filteredData);
                     setStations(filteredData);
-
                 }else{
                     setvwStations(data);
                     setStations(data);
                 }
+                
             } catch (error) {
                 console.error('Error fetching data stations', error);
             }

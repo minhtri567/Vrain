@@ -43,19 +43,13 @@ export default defineConfig({
     },
     server: {
         proxy: {
-            '^/api/WeatherStations': {
+            '^/api/': {
                 target,
                 secure: false,
-                changeOrigin: true // Add this to change the origin of the host header to the target URL
+                changeOrigin: true
             }
         },
         port: 5173,
-        /*
-        https: {
-            key: fs.readFileSync(keyFilePath),
-            cert: fs.readFileSync(certFilePath),
-        },
-        */
         https: false,
         host: true,
     },

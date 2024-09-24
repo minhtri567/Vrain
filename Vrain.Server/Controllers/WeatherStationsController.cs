@@ -28,7 +28,6 @@ public class WeatherStationsController : ControllerBase
     private readonly IBackgroundJobClient _backgroundJobClient;
     private readonly WeatherDbContext _context;
     private readonly IWebHostEnvironment _hostingEnvironment;
-    private string connectionString = "Host=localhost;Database=weather_data;Username=postgres;Password=12345678";
     public WeatherStationsController(WeatherDbContext context , IWebHostEnvironment hostingEnvironment , IBackgroundJobClient backgroundJobClient )
     {
         _context = context;
