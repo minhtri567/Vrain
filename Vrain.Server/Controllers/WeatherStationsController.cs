@@ -193,7 +193,9 @@ public class WeatherStationsController : ControllerBase
     {
         string Nameprovince = NameProvinceHelper.GetNameProvince(provincename);
 
-        string sql = @$"SELECT station_name, station_id , tinh , lat , lon , order_province FROM monitoring_stations WHERE tinh = " + Nameprovince;
+        string sql = @$"SELECT *
+                FROM monitoring_stations 
+                WHERE tinh = '{Nameprovince}'";
 
         var station_provine = await _context.monitoring_stations.FromSqlRaw(sql)
             .ToListAsync();
