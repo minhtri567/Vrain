@@ -53,8 +53,17 @@ const AdminViewStations = () => {
             try {
                 const response = await fetch(getallstations);
                 const data = await response.json()
-                setvwStations(data);
-                setStations(data);
+                const storedPids = JSON.parse(localStorage.getItem('lpid')) || [];
+
+                if (storedPids.length > 0) {
+                    const filteredData =  data.filter( station => storedPids.includes(station.order_province) )
+                    setvwStations(filteredData);
+                    setStations(filteredData);
+
+                }else{
+                    setvwStations(data);
+                    setStations(data);
+                }
             } catch (error) {
                 console.error('Error fetching data stations', error);
             }
