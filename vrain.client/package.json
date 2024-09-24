@@ -12,8 +12,10 @@
   },
   "dependencies": {
     "@mui/x-date-pickers": "^7.8.0",
+    "dayjs": "^1.11.13",
     "echarts": "^5.5.1",
     "file-saver": "^2.0.5",
+    "jquery": "^3.7.1",
     "jwt-decode": "^4.0.0",
     "mapbox-gl": "^3.6.0",
     "primeicons": "^7.0.0",
@@ -21,7 +23,9 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.26.2",
-    "swagger-ui-react": "^5.17.14"
+    "slug": "^9.1.0",
+    "swagger-ui-react": "^5.17.14",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@types/react": "^18.2.66",
