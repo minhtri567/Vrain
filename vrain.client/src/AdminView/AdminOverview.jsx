@@ -18,7 +18,13 @@ const AdminOverview = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const response = await fetch(apistation);
+                const storedPids = JSON.parse(localStorage.getItem('lpid')) || [];
+                let queryString = "";
+
+                if (storedPids.length > 0) {
+                    queryString = `?lpid=${storedPids.join('&lpid=')}`; 
+                }
+                const response = await fetch(apistation + queryString);
                 const data = await response.json();
                 setdatastations(data);
             } catch (error) {
@@ -31,7 +37,14 @@ const AdminOverview = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const response = await fetch(apiallstation);
+                const storedPids = JSON.parse(localStorage.getItem('lpid')) || [];
+                let queryString = "";
+
+                if (storedPids.length > 0) {
+                    queryString = `?pid=${storedPids.join('&pid=')}`; // Tạo query string cho từng pid
+                }
+
+                const response = await fetch(apiallstation + queryString);
                 const data = await response.json();
                 setdataallstations(data);
             } catch (error) {

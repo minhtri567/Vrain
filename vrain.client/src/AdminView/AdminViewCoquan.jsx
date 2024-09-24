@@ -441,6 +441,28 @@ const AdminViewCoquan = () => {
                     <InputText id="sdtcq" value={cqDienThoai} onChange={(e) => setCqDienThoai(e.target.value)} />
                 </div>
                 <div>
+                    <label>Phân quyền theo tỉnh : </label>
+                    <br></br>
+                    <MultiSelect value={selectedCities} 
+                    onChange={(e) => {
+                        setSelectedCities(e.value);
+                        setSelectAll(e.value.length === oppv.length);
+                    }} 
+                    selectAll={selectAll}
+                    onSelectAll={(e) => {
+                        setSelectedCities(e.checked ? [] : oppv.map((item) => item.pid));
+                        setSelectAll(!e.checked);
+                    }}
+                    options={oppv} 
+                    optionLabel="name"
+                    optionValue="pid"
+                    filter 
+                    placeholder="Chọn tỉnh" 
+                    maxSelectedLabels={3}
+                    style={{width : '100%'}}
+                     />
+                </div>
+                <div>
                     <label htmlFor="emailcq">Thư điện tử</label>
                     <InputText id="emailcq" value={cqEmail} onChange={(e) => setCqEmail(e.target.value)} />
                 </div>

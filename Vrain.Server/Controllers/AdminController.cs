@@ -174,11 +174,20 @@ namespace Vrain.Server.Controllers
         }
 
         [HttpGet("infostations")]
-        public async Task<ActionResult<IEnumerable<monitoring_stations>>> GetallStations()
+        public async Task<ActionResult<IEnumerable<monitoring_stations>>> GetallStations([FromQuery] List<int> pid)
         {
-            var stations = await _context.monitoring_stations.ToListAsync();
+            if(pid != null && pid.Any())
+            {
+                var stations = await _context.monitoring_stations.Where(s => pid.Contains(s.order_province)).ToListAsync();
 
-            return Ok(stations);
+                return Ok(stations);
+            }
+            else
+            {
+                var stations = await _context.monitoring_stations.ToListAsync();
+
+                return Ok(stations);
+            }
         }
 
         [Authorize(Policy = "ROLE_QLDULIEU")]
@@ -654,7 +663,7 @@ namespace Vrain.Server.Controllers
         }
 
         [HttpGet("infostationstoday")]
-        public async Task<ActionResult<IEnumerable<monitoring_stations>>> GetallStationstoday()
+        public async Task<ActionResult<IEnumerable<monitoring_stations>>> GetallStationstoday([FromQuery] List<int> lpid)
         {
             var query = from rainData in _context.monitoring_data_today
                         join station in _context.monitoring_stations
@@ -672,10 +681,12 @@ namespace Vrain.Server.Controllers
                             lon = station.lon,
                             quanhuyen = station.quanhuyen,
                             phuongxa = station.phuongxa,
+                            pid = station.order_province
                         };
-
-            var weatherData = await query
-                .GroupBy(a => new { a.station_id, a.station_name, a.tinh, a.lat, a.lon, a.quanhuyen, a.phuongxa })
+            if(lpid != null && lpid.Any())
+            {
+                var weatherData = await query
+                .GroupBy(a => new { a.station_id, a.station_name, a.tinh, a.lat, a.lon, a.quanhuyen, a.phuongxa, a.pid })
                 .Select(g => new
                 {
                     station_id = g.Key.station_id,
@@ -686,11 +697,35 @@ namespace Vrain.Server.Controllers
                     lon = g.Key.lon,
                     quanhuyen = g.Key.quanhuyen,
                     phuongxa = g.Key.phuongxa,
+                    pid = g.Key.pid
                 })
+                .Where(s => lpid.Contains(s.pid))
                 .ToListAsync();
 
 
-            return Ok(weatherData);
+                return Ok(weatherData);
+            }
+            else
+            {
+                var weatherData = await query
+                .GroupBy(a => new { a.station_id, a.station_name, a.tinh, a.lat, a.lon, a.quanhuyen, a.phuongxa, a.pid })
+                .Select(g => new
+                {
+                    station_id = g.Key.station_id,
+                    station_name = g.Key.station_name,
+                    total_rain = g.Sum(x => x.total), // Tính tổng lượng mưa
+                    tinh = g.Key.tinh,
+                    lat = g.Key.lat,
+                    lon = g.Key.lon,
+                    quanhuyen = g.Key.quanhuyen,
+                    phuongxa = g.Key.phuongxa,
+                    pid = g.Key.pid
+                })
+                .ToListAsync();
+
+                return Ok(weatherData);
+            }
+            
         }
         [HttpGet("reportstationstoday")]
         public async Task<ActionResult<IEnumerable<weather_stations_report>>> Getreportstationstoday()

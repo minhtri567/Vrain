@@ -108,6 +108,7 @@ const Login = (ishome) => {
             setSnackbarOpen(true);
             setOpen(false);
             setIsuser(true);
+            window.location.reload();
             })
             .catch(error => {
             setSnackbarMessage('Tài khoản không chính xác');
@@ -194,6 +195,7 @@ const Login = (ishome) => {
         setUserif(null);
         setViewlogin(0);
         navigate(`/`);
+        window.location.reload();
     };
     useEffect(() => {
         if (ishome.ishome == true) {
