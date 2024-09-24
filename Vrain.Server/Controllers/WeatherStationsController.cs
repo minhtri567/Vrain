@@ -19,6 +19,7 @@ using static Dapper.SqlMapper;
 using DocumentFormat.OpenXml.Bibliography;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Newtonsoft.Json;
+using Microsoft.EntityFrameworkCore.Metadata;
 
 [Route("api/[controller]")]
 [ApiController]
@@ -192,16 +193,13 @@ public class WeatherStationsController : ControllerBase
     {
         string Nameprovince = NameProvinceHelper.GetNameProvince(provincename);
 
-        string sql = @$"SELECT station_name, station_id , tinh , lat , lon , order_province FROM monitoring_stations WHERE tinh = @Nameprovince";
+        string sql = @$"SELECT station_name, station_id , tinh , lat , lon , order_province FROM monitoring_stations WHERE tinh = " + Nameprovince;
 
+        var station_provine = await _context.monitoring_stations.FromSqlRaw(sql)
+            .ToListAsync();
 
-        using (var connection = new NpgsqlConnection(connectionString))
-        {
-            var station_provine = await connection.QueryAsync(sql , new { Nameprovince });
-            
-            return Ok(station_provine);
+        return Ok(station_provine);
 
-        }
     }
 
     [HttpGet("raintoday")]
