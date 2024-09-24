@@ -30,7 +30,11 @@
     border-radius: 6px;
     background-color: white;
 }
-
+.admin-page .nagative-addcoquan{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
 .admin-page .menu-hierarchy {
     background-color: aliceblue;
     position:relative;
@@ -346,6 +350,11 @@
     border-right: 1px solid #b3b3b3;
 }
 .view-ad-nguoidung .content-view .content-phanquyen{
+    width: 100%;
+    padding: 0px 5px 0px 10px;
+    border-right: 1px solid #b3b3b3;
+}
+.view-ad-nguoidung .content-view .container-coquan{
     width: 100%;
     padding: 0px 5px 0px 10px;
     border-right: 1px solid #b3b3b3;

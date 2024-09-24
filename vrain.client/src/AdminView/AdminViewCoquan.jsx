@@ -219,11 +219,11 @@ const AdminViewCoquan = () => {
     const renderHeadercq = () => {
         return (
             <div className="nagative-addcoquan">
+                <span>Danh sách cơ quan</span>
                 <div className="add-new-cq" style={{ textAlign: 'end' }}>
                     <Button label="Thêm mới" icon="pi pi-plus" size="small" onClick={dialogaddcq} />
                 </div>
             </div>
-
         );
     };
     const renderHeaderdm = () => {

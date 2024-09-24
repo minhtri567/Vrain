@@ -24,10 +24,12 @@ const AdminViewNguoidung = () => {
     const apisavenguoidung = 'https://localhost:7299/api/Account/register';
 
     const [datanguoidung, setdatanguoidung] = useState();
+    const [datanguoidungsp, setdatanguoidungsp] = useState();
     const [datacoquan, setdatacoquan] = useState();
     const [datadanhmuc, setdatadanhmuc] = useState(null);
     const [datarole, setdatarole] = useState(null);
     const [selectedProduct, setSelectedProduct] = useState(null);
+    const [selectedcq, setSelectedcq] = useState(null);
     const [selecteddanhmuc, setselecteddanhmuc] = useState(null);
     const [globalFilterValue, setGlobalFilterValue] = useState('');
     const [ischangend, setischangend] = useState(false);
@@ -46,7 +48,6 @@ const AdminViewNguoidung = () => {
     const [memEmail, setMemEmail] = useState('');
     const [memMobile, setMemMobile] = useState('');
     const [memActive, setMemActive] = useState(true);
-    const [memRole, setMemRole] = useState('');
     const [textdialognd, settextdialognd] = useState('');
     const [isdialogadd, setisdialogadd] = useState(false);
 
@@ -69,6 +70,7 @@ const AdminViewNguoidung = () => {
         try {
             const response = await axios.get(apigetnguoidung);
             setdatanguoidung(response.data);
+            setdatanguoidungsp(response.data);
         } catch (error) {
             console.error('Error fetching data nguoidung', error);
         }
@@ -211,9 +213,7 @@ const AdminViewNguoidung = () => {
             reject
         });
     };
-    useEffect(() => {
-
-    }, []);
+    
     useEffect(() => {
         if (selectedProduct != null && datadanhmuc != null) {
             const cqvalue = datacoquan.find(s => s.cq_id === selectedProduct.mem_cq_id);
@@ -283,21 +283,40 @@ const AdminViewNguoidung = () => {
             <Button label="Lưu" icon="pi pi-check" onClick={Savedulieund} autoFocus />
         </div>
     );
+    const renderHeadercq = () => {
+        return (
+            <div className="nagative-addcoquan">
+                <span>Danh sách cơ quan</span>
+                <Button icon="pi pi-filter-slash" rounded text onClick={() => setSelectedcq(null)}></Button>
+            </div>
+        );
+    };
+    const headerlcq = renderHeadercq();
 
+    useEffect(() => {
+        if (selectedcq && selectedcq.cq_id != null) {
+            setdatanguoidung(datanguoidungsp.filter(s => s.mem_cq_id === selectedcq.cq_id));
+        } else {
+            setdatanguoidung(datanguoidungsp);
+        }
+    }, [selectedcq, datanguoidungsp]);
     return (
         <div className="view-ad-nguoidung">
             <h4 style={{ textAlign: 'center' }}> Thông tin người dùng </h4>
             <Toast ref={toast} />
             <ConfirmDialog />
             <div className="content-view">
+                <div className='container-coquan'>
+                    <DataTable value={datacoquan} stripedRows selectionMode="single" selection={selectedcq} onSelectionChange={(e) => setSelectedcq(e.value)} header={headerlcq} emptyMessage="Không có dữ liệu" >
+                        <Column field="cq_ten" header="Tên cơ quan"></Column>
+                    </DataTable>
+                </div>
                 <div className="container-table">
                     <div className="table-1">
                         <DataTable value={datanguoidung} stripedRows selectionMode="single" selection={selectedProduct} onSelectionChange={(e) => setSelectedProduct(e.value)} header={headernd} filters={filters} globalFilterFields={['mem_username', 'mem_hoten']} emptyMessage="Không có dữ liệu" >
                             <Column field="mem_hoten" header="Họ và tên"></Column>
                             <Column field="mem_username" header="Tên đăng nhập"></Column>
                             <Column body={ChangedataBodycq} header="Đơn vị"></Column>
-                            <Column field="mem_mobile" header="Số điện thoại"></Column>
-                            <Column field="mem_email" header="Email"></Column>
                             <Column header="Thao tác" body={ChangedataBodynd}></Column>
                         </DataTable>
                     </div>
