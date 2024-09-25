@@ -38,16 +38,6 @@ builder.Services.AddSwaggerGen(c =>
 
 
 
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowSpecificOrigin",
-        policy =>
-        {
-            policy.WithOrigins("http://localhost:5173")
-                  .AllowAnyHeader()
-                  .AllowAnyMethod();
-        });
-});
 
 builder.Services.AddQuartz(q =>
 {
@@ -131,42 +121,6 @@ if (app.Environment.IsDevelopment())
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1"); 
     });
 }
-
-app.UseCors("AllowSpecificOrigin");
-
-app.MapGet("/swagger/insertdata", async (HttpContext context, ISwaggerProvider swaggerProvider) =>
-{
-    // Lấy tài liệu Swagger gốc
-    var swaggerDoc = swaggerProvider.GetSwagger("v1");
-
-    // Tạo một đối tượng OpenApiPaths để chỉ chứa các path cụ thể
-    var filteredPaths = new OpenApiPaths();
-    foreach (var path in swaggerDoc.Paths)
-    {
-        if (path.Key.Contains("InsertDataMonitoring"))
-        {
-            filteredPaths.Add(path.Key, path.Value);
-        }
-    }
-
-    // Tạo tài liệu Swagger mới
-    var customSwaggerDoc = new OpenApiDocument
-    {
-        Info = swaggerDoc.Info,
-        Paths = filteredPaths,
-        Components = new OpenApiComponents
-        {
-            Schemas = new Dictionary<string, OpenApiSchema>
-            {
-                { "dataweathersinsert", swaggerDoc.Components.Schemas["dataweathersinsert"] }
-            }
-        }
-    };
-
-    // Trả về tài liệu Swagger tùy chỉnh dưới dạng JSON
-    context.Response.ContentType = "application/json";
-    await context.Response.WriteAsJsonAsync(customSwaggerDoc);
-});
 
 app.UseHttpsRedirection();
 app.UseRouting();

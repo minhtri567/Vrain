@@ -30,12 +30,11 @@ if (!fs.existsSync(certFilePath) || !fs.existsSync(keyFilePath)) {
     }
 }
 
-const target = env.ASPNETCORE_HTTPS_PORT ? `http://localhost:${env.ASPNETCORE_HTTPS_PORT}` :
-    env.ASPNETCORE_URLS ? env.ASPNETCORE_URLS.split(';')[0] : 'https://localhost:7299';
+const target = 'https://localhost:7299';
 
 // https://vitejs.dev/config/
 export default defineConfig({
-    plugins: [plugin()],
+    plugins: [plugin],
     resolve: {
         alias: {
             '@': fileURLToPath(new URL('./src', import.meta.url))
@@ -43,15 +42,20 @@ export default defineConfig({
     },
     server: {
         proxy: {
-            '^/api/': {
-                target,
-                secure: false,
-                changeOrigin: true
+            '/api': {
+                target : target,  
+                changeOrigin: true ,
+                secure : false,
             }
         },
         port: 5173,
         https: false,
         host: true,
+    },
+    build:{
+        rollupOptions: {
+            external : ["core-js-pure"]
+        }
     },
     optimizeDeps: {
         exclude: ['@mui_x-date-pickers_internals_demo.js']
