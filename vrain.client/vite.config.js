@@ -47,10 +47,7 @@ export default defineConfig({
                 changeOrigin: true ,
                 secure : false,
             }
-        },
-        port: 5173,
-        https: false,
-        host: true,
+        }
     },
     optimizeDeps: {
         exclude: ['@mui_x-date-pickers_internals_demo.js']

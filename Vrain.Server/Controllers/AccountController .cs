@@ -29,7 +29,24 @@ namespace Vrain.Server.Controllers
         public async Task<ActionResult<IEnumerable<sys_coquan>>> Getallaccount()
         {
 
-            var allaccount = await _context.sys_member.OrderBy(s => s.mem_id).ToListAsync();
+            var allaccount = await _context.sys_member
+            .Select(s => new {
+                s.mem_id,
+                s.mem_username, 
+                s.mem_hoten,
+                s.mem_cq_id,
+                s.mem_mobile,
+                s.mem_active,
+                s.mem_stt,
+                s.mem_role,
+                s.mem_numofdaydisplay,
+                s.mem_hourdisplay,
+                s.scada_role,
+                s.mem_minutedisplay,
+                s.mem_email 
+            })
+            .OrderBy(s => s.mem_id)
+            .ToListAsync();
 
             return Ok(allaccount);
         }
