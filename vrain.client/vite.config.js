@@ -52,11 +52,6 @@ export default defineConfig({
         https: false,
         host: true,
     },
-    build:{
-        rollupOptions: {
-            external : ["core-js-pure"]
-        }
-    },
     optimizeDeps: {
         exclude: ['@mui_x-date-pickers_internals_demo.js']
     }
