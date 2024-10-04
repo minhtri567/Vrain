@@ -126,14 +126,14 @@ namespace Vrain.Server.Controllers
 
             if (account == null)
             {
-                return Unauthorized();
+                return Unauthorized("Không tìm thấy tài khoản");
             }
 
             // Kiểm tra mật khẩu
             var result = _passwordHasher.VerifyHashedPassword(account, account.mem_password, model.mem_password);
             if (result == PasswordVerificationResult.Failed)
             {
-                return Unauthorized();
+                return Unauthorized("Mật khẩu không đúng");
             }
 
             var memberRoleData = await _context.sys_role.Where(s => s.role_cq_id == account.mem_cq_id).ToListAsync();
