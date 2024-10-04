@@ -212,10 +212,10 @@ public class WeatherStationsController : ControllerBase
             // SQL query to fetch data from both monitoring_data and monitoring_data_today tables
             string sqlQuery = @"
                 SELECT * FROM monitoring_data
-                WHERE data_thoigian <= '" + endDate.Value.ToString("dd/MM/yyyy 23:59:59") + @"' AND data_thoigian >= '" + startDate.Value.ToString("dd/MM/yyyy 00:00:00") + @"'
+                WHERE data_thoigian <= '" + endDate.Value.ToString("yyyy-MM-dd 23:59:59") + @"' AND data_thoigian >= '" + startDate.Value.ToString("yyyy-MM-dd 00:00:00") + @"'
                 UNION
                 SELECT * FROM monitoring_data_today
-                WHERE data_thoigian <= '" + endDate.Value.ToString("dd/MM/yyyy 23:59:59") + @"' AND data_thoigian >= '" + startDate.Value.ToString("dd/MM/yyyy 00:00:00") + @"'";
+                WHERE data_thoigian <= '" + endDate.Value.ToString("yyyy-MM-dd 23:59:59") + @"' AND data_thoigian >= '" + startDate.Value.ToString("yyyy-MM-dd 00:00:00") + @"'";
 
             // Fetch monitoring data
             var datamonitoring = await _context.monitoring_data
@@ -269,10 +269,10 @@ public class WeatherStationsController : ControllerBase
         {
             string sqlQuery = @"
             SELECT * FROM monitoring_data
-            WHERE data_thoigian <= '" + endDate.Value.ToString("dd/MM/yyyy 23:59:59") + @"' AND data_thoigian >= '" + startDate.Value.ToString("dd/MM/yyyy 00:00:00") + @"'
+            WHERE data_thoigian <= '" + endDate.Value.ToString("yyyy-MM-dd 23:59:59") + @"' AND data_thoigian >= '" + startDate.Value.ToString("yyyy-MM-dd 00:00:00") + @"'
             UNION
             SELECT * FROM monitoring_data_today
-            WHERE data_thoigian <= '" + endDate.Value.ToString("dd/MM/yyyy 23:59:59") + @"' AND data_thoigian >= '" + startDate.Value.ToString("dd/MM/yyyy 00:00:00") + @"'";
+            WHERE data_thoigian <= '" + endDate.Value.ToString("yyyy-MM-dd 23:59:59") + @"' AND data_thoigian >= '" + startDate.Value.ToString("yyyy-MM-dd 00:00:00") + @"'";
 
 
             var datamonitoring = await _context.monitoring_data
@@ -324,10 +324,10 @@ public class WeatherStationsController : ControllerBase
             // SQL query to fetch data from both monitoring_data and monitoring_data_today tables
             string sqlQuery = @"
                 SELECT * FROM monitoring_data
-                WHERE data_thoigian <= '" + endDate.Value.ToString("dd/MM/yyyy 23:59:59") + @"' AND data_thoigian >= '" + startDate.Value.ToString("dd/MM/yyyy 00:00:00") + @"'
+                WHERE data_thoigian <= '" + endDate.Value.ToString("yyyy-MM-dd 23:59:59") + @"' AND data_thoigian >= '" + startDate.Value.ToString("yyyy-MM-dd 00:00:00") + @"'
                 UNION
                 SELECT * FROM monitoring_data_today
-                WHERE data_thoigian <= '" + endDate.Value.ToString("dd/MM/yyyy 23:59:59") + @"' AND data_thoigian >= '" + startDate.Value.ToString("dd/MM/yyyy 00:00:00") + @"'";
+                WHERE data_thoigian <= '" + endDate.Value.ToString("yyyy-MM-dd 23:59:59") + @"' AND data_thoigian >= '" + startDate.Value.ToString("yyyy-MM-dd 00:00:00") + @"'";
 
             // Fetch monitoring data
             var datamonitoring = await _context.monitoring_data
