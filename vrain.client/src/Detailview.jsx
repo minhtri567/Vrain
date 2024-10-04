@@ -27,12 +27,13 @@ import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 
 const Detailview = () => {
+    const pathname = window.location.pathname;
+    const name_province = pathname.substring(pathname.lastIndexOf('/') + 1);
     dayjs.locale('vi');
     const today = dayjs();
     const sevenDaysAgo = today.subtract(7, 'day');
     const yesterday = dayjs().subtract(1, 'day');
     const navigate = useNavigate();
-    const { name_province } = useParams();
     const [showChart, setShowChart] = useState(true);
     const [fdata, setfdata] = useState(false);
     const [selectedOption, setSelectedOption] = useState("3");

@@ -34,7 +34,8 @@ import { Sidebar } from 'primereact/sidebar';
 import $ from 'jquery';
 import { Button } from 'primereact/button';
 const ReportComponent = () => {
-    const { name_province } = useParams();
+    const pathname = window.location.pathname;
+    const name_province = pathname.substring(pathname.lastIndexOf('/') + 1);
     dayjs.locale('vi');
     const today = dayjs();
     const yesterday = dayjs().subtract(1, 'day');

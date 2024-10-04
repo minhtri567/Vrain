@@ -64,7 +64,8 @@ function Gettextrain(raintotal) {
 }
 
 const Overview = () => {
-    const { name_province } = useParams();
+    const pathname = window.location.pathname;
+    const name_province = pathname.substring(pathname.lastIndexOf('/') + 1);
     const mapContainer = useRef(null);
     const map = useRef(null);
     const navigate = useNavigate();
@@ -181,6 +182,7 @@ const Overview = () => {
         setLoading(true);
         const response = await fetch(apiraintime + "&startDate=" + convertDateFormat($(".my-datepicker-3-st input").val()) + "&endDate=" + convertDateFormat($(".my-datepicker-3-ed input").val()) + "&modeview=" + $(".my-mode-view input").val());
         const data24h = await response.json();
+        console.log(response)
         setdatafecthchart(data24h)
 
         const responsefc = await fetch('https://node.windy.com/forecast/v2.7/ecmwf/'+lat+'/'+lon);
@@ -191,11 +193,10 @@ const Overview = () => {
         const dataChart = [];
             
         let cumulativeTotal = 0;
-            
+
         data24h.forEach(dayData => {
             const timepoint = dayData.timePoint;
             const stationData = dayData.stations.find(station => station.station_id === stationid); // Assuming only one station per timepoint
-
             if (stationData) {
                 const dailyTotal = parseFloat(stationData.total).toFixed(2); // Format to two decimal places
                 cumulativeTotal += parseFloat(dailyTotal);
@@ -207,7 +208,6 @@ const Overview = () => {
                 });
             }
         });
-
         dataChart.push(...extractData(datafc.data))
         result = { dataChart };
 
