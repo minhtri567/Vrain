@@ -182,7 +182,6 @@ const Overview = () => {
         setLoading(true);
         const response = await fetch(apiraintime + "&startDate=" + convertDateFormat($(".my-datepicker-3-st input").val()) + "&endDate=" + convertDateFormat($(".my-datepicker-3-ed input").val()) + "&modeview=" + $(".my-mode-view input").val());
         const data24h = await response.json();
-        console.log(response)
         setdatafecthchart(data24h)
 
         const responsefc = await fetch('https://node.windy.com/forecast/v2.7/ecmwf/'+lat+'/'+lon);
