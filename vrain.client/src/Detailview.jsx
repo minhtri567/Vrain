@@ -89,6 +89,7 @@ const Detailview = () => {
                 const response = await fetch(getapistations)
                 const data = await response.json();
                 stationsRef.current = data;
+                setSelectedStation(stationsRef.current[0].station_id);
             } catch (error) {
                 console.error('Error fetching data:', error);
             }
@@ -103,14 +104,11 @@ const Detailview = () => {
                     const response = await fetch(curentapitinh + "&startDate=" + today.toLocaleDateString('en-US') + "&endDate=" + today.toLocaleDateString('en-US') + "&modeview=" + $(".my-mode-view input").val());
                     const data = await response.json();
                     setdatafecthchart(data);
-                    setSelectedStation("" + data[0].stations[0].station_id + "")
-                    
                 }
                 if (selectedOption == 1) {
                     const response = await fetch(curentapitinh + "&startDate=" + convertDateFormat($("#my-datepicker-1 input").val()) + "&endDate=" + convertDateFormat($("#my-datepicker-1 input").val()) + "&modeview=" + $(".my-mode-view input").val() );
                     const data = await response.json();
                     setdatafecthchart(data);
-                    setSelectedStation("" + data[0].stations[0].station_id + "")
 
                 }
                 if (selectedOption == 2) {
@@ -124,14 +122,12 @@ const Detailview = () => {
                     const response = await fetch(curentapitinh + "&startDate=" + formattedStartDate + "&endDate=" + formattedEndDate + "&modeview=" + $(".my-mode-view input").val());
                     const data = await response.json();
                     setdatafecthchart(data);
-                    setSelectedStation("" + data[0].stations[0].station_id + "")
 
                 }
                 if (selectedOption == 3) {
                     const response = await fetch(curentapitinh + "&startDate=" + convertDateFormat($(".my-datepicker-3-st input").val()) + "&endDate=" + convertDateFormat($(".my-datepicker-3-ed input").val()) + "&modeview=" + $(".my-mode-view input").val());
                     const data = await response.json();
                     setdatafecthchart(data);
-                    setSelectedStation("" + data[0].stations[0].station_id + "")
                 }
             } catch (error) {
                 console.error('Error fetching data:', error);
@@ -273,19 +269,25 @@ const Detailview = () => {
                             province: station.tinh,
                             quanhuyen: station.quanhuyen,
                             xaphuong: station.phuongxa,
+                            totalRainfall: 0,
                             ...datafecthchart.reduce((acc, d) => {
-                                acc[d.timePoint] = '0.00'; // Khởi tạo tất cả timePoints với '0.00'
+                                acc[d.timePoint] = '0.00 mm'; // Khởi tạo tất cả timePoints với '0.00'
                                 return acc;
                             }, {})
                         };
                     }
-                    stationMap[station.station_id][timePoint] = station.total.toFixed(2);
+                    const rainfall = parseFloat(station.total.toFixed(2));
+                    stationMap[station.station_id][timePoint] = `${rainfall.toFixed(2)} mm`; 
+                    stationMap[station.station_id].totalRainfall += rainfall;
                 }
             });
         });
 
 
-        const formattedData = Object.values(stationMap);
+        const formattedData = Object.values(stationMap).map(station => ({
+            ...station,
+            totalRainfall: `${station.totalRainfall.toFixed(2)} mm` // Đảm bảo tổng lượng mưa có 2 chữ số sau dấu thập phân
+        }));
 
         // Define columns
         const columnDefs = [
@@ -293,6 +295,7 @@ const Detailview = () => {
             { field: 'province', header: 'Tỉnh' },
             { field: 'quanhuyen', header: 'Quận/Huyện' },
             { field: 'xaphuong', header: 'Xã/Phường' },
+            { field: 'totalRainfall', header: 'Tổng mưa' },
             ...datafecthchart.map(dayData => ({
                 field: dayData.timePoint,
                 header: dayData.timePoint
@@ -398,7 +401,7 @@ const Detailview = () => {
                             label="Trạm hiển thị"
                             onChange={handleChangeStation}
                             >
-                            {stationsRef.current && stationsRef.current.length > 0 ? (
+                            {stationsRef.current.length > 0 ? (
                                 stationsRef.current.map((station) => (
                                     <MenuItem
                                         value={station.station_id}

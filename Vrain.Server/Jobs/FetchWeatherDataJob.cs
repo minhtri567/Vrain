@@ -76,9 +76,9 @@ public class FetchWeatherDataJob : IJob
                     .Where(data => data.daterain.Date == DateTime.Now.Date && data.lat != 0 && data.lon != 0)
                     .ToList();
 
-                    var firstRecord = _context.monitoring_data_today.FirstOrDefault();
+                    var firstRecord = _context.monitoring_data_today.OrderBy( s=> s.data_thoigian).FirstOrDefault();
 
-                    if (firstRecord != null && firstRecord.data_thoigian.Date == DateTime.Now.Date)
+                    if (firstRecord != null && firstRecord.data_thoigian.Date == DateTime.Now.Date.AddDays(-1))
                     {
                         await _context.Database.ExecuteSqlRawAsync("DELETE FROM monitoring_data_today;");
                         await _context.Database.ExecuteSqlRawAsync("ALTER SEQUENCE monitoring_data_today_data_id_seq RESTART WITH 1;");
