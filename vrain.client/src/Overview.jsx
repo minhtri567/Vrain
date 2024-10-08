@@ -561,12 +561,10 @@ const Overview = () => {
                     source: 'stations',
                     filter: ['>', ['get', 'tongluongmua'], 99],
                     layout: {
-                        'icon-image': 'heavier-marker',
-                        'icon-allow-overlap': true
-
+                        'icon-image':'heavier-marker', 
+                        'icon-allow-overlap': true,
                     }
                 });
-
                 const popup = new mapboxgl.Popup({
                     closeButton: true,
                     closeOnClick: true
@@ -760,7 +758,11 @@ const Overview = () => {
                 });
             });
         }
+        
     }, [stationsRef.current]);
+
+    
+
     const [searchVisible, setSearchVisible] = useState(false);
     const searchInputRef = useRef(null);
 
@@ -865,8 +867,35 @@ const Overview = () => {
         };
     }, []);
 
-    // Hàm xử lý khi click vào station
-    const handleStationClick = (lat, lon) => {
+    const highlightBlinking = (map, lng, lat) => {
+        let isHighlighted = true;
+        const createCustomMarker = () => {
+            const markerElement = document.createElement('div');
+            markerElement.style.backgroundSize = 'cover'; 
+            markerElement.style.width = '30px'; 
+            markerElement.style.height = '30px';
+            markerElement.style.borderRadius = '50%';
+            markerElement.style.opacity = '10%';
+            return markerElement;
+        };
+        const markerElement = createCustomMarker();
+
+        const marker = new mapboxgl.Marker(markerElement)
+            .setLngLat([lng, lat])
+            .addTo(map);
+
+        const interval = setInterval(() => {
+            marker.getElement().style.backgroundColor = isHighlighted ? '#FF0000' : '#FFFF00';
+            isHighlighted = !isHighlighted;
+        }, 200);
+
+        setTimeout(() => {
+            clearInterval(interval);
+            marker.remove();
+        }, 2000);
+    };
+
+    const handleStationClick = (lat, lon, stationId) => {
         if (isMobile) {
             $('.containt-view-mapbox').css('display', 'block');
             $('.liststation').css('display', 'none');
@@ -875,6 +904,7 @@ const Overview = () => {
         } else {
             // Xử lý cho desktop
             viewllstation(lat, lon);
+            highlightBlinking(map.current, lon , lat);
         }
     };
     const exitviewmap= () => {
@@ -1015,7 +1045,7 @@ const Overview = () => {
                     <div className="listraininfo">
                         <ul>
                             {filteredStations.map((station, index) => (
-                                <li key={index} onClick={() => handleStationClick(station.lat, station.lon)} >
+                                <li key={index} onClick={() => handleStationClick(station.lat, station.lon, station.station_id)} >
                                     <div className="list-line-1"><p className="station-tinh">{station.station_name}</p><div className="station-rain" dangerouslySetInnerHTML={{ __html: Gettextrain(station.total) }}></div></div>
                                     <div className="list-line-2"><p className="station-name">Tại : {station.phuongxa} - {station.quanhuyen}</p><div className="type-rain" dangerouslySetInnerHTML={{ __html: Typerain(station.total) }}></div></div>
                                  </li>
