@@ -868,16 +868,17 @@ const Overview = () => {
     }, []);
 
     const highlightBlinking = (map, lng, lat) => {
-        let isHighlighted = true;
         const createCustomMarker = () => {
             const markerElement = document.createElement('div');
-            markerElement.style.backgroundSize = 'cover'; 
-            markerElement.style.width = '30px'; 
+            markerElement.style.backgroundSize = 'cover';
+            markerElement.style.width = '30px';
             markerElement.style.height = '30px';
             markerElement.style.borderRadius = '50%';
-            markerElement.style.opacity = '10%';
+            markerElement.style.opacity = '0.2'; // Độ mờ khởi tạo là 20%
+            markerElement.style.transition = 'opacity 1s ease'; // Thêm transition cho hiệu ứng mờ
             return markerElement;
         };
+
         const markerElement = createCustomMarker();
 
         const marker = new mapboxgl.Marker(markerElement)
@@ -885,13 +886,15 @@ const Overview = () => {
             .addTo(map);
 
         const interval = setInterval(() => {
-            marker.getElement().style.backgroundColor = isHighlighted ? '#FF0000' : '#FFFF00';
-            isHighlighted = !isHighlighted;
+            markerElement.style.backgroundColor = '#FF0000'; // Đặt màu đỏ
         }, 200);
 
         setTimeout(() => {
-            clearInterval(interval);
-            marker.remove();
+            clearInterval(interval); 
+            markerElement.style.opacity = '0'; 
+            setTimeout(() => {
+                marker.remove(); 
+            }, 1000);
         }, 2000);
     };
 
