@@ -26,7 +26,7 @@ namespace Vrain.Server.Data
             _hostingEnvironment = hostingEnvironment;
             _configuration = configuration;
         }
-        public DataTable ConvertToDataTable(IEnumerable<dynamic> weatherData , DateTime startDate, DateTime endDate)
+        public DataTable ConvertToDataTable(IEnumerable<dynamic> weatherData )
         {
 
             var dataTable = new DataTable();
@@ -164,7 +164,7 @@ namespace Vrain.Server.Data
 
                         var weatherData = connection.Query(sql, new { startDate , endDate , ts });
 
-                        var dataTable = ConvertToDataTable(weatherData , startDate, endDate );
+                        var dataTable = ConvertToDataTable(weatherData);
 
                         const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
                         var random = new Random();
