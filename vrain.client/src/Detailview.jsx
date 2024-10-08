@@ -22,7 +22,7 @@ import $ from 'jquery';
 import { getNameProvince } from './NameProvine';
 import { Sidebar } from 'primereact/sidebar';
 import { Button } from 'primereact/button';
-
+import { Autocomplete, TextField } from '@mui/material';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 
@@ -193,7 +193,7 @@ const Detailview = () => {
             // Process datafecthchart
             datafecthchart.forEach(dayData => {
                 const timepoint = dayData.timePoint;
-                const stationData = dayData.stations.find(station => station.station_id === selectedStation);
+                const stationData = dayData.stations.find(station => station.station_id === selectedStation);selectedStation
                 if (stationData) {
                     const dailyTotal = parseFloat(stationData.total).toFixed(2);
                     cumulativeTotal += parseFloat(dailyTotal);
@@ -224,9 +224,11 @@ const Detailview = () => {
 
             setDataChart(dataChartthis);
         };
-    
-        processData();
-    }, [datafecthchart]);
+        if (datafecthchart.length > 0) {
+            processData();
+        }
+        
+    }, [datafecthchart, selectedStation]);
 
     const handleItemClick = () => {
         navigate(`/`);
@@ -236,6 +238,7 @@ const Detailview = () => {
     };
 
     const handleChangeStation = (event) => {
+        console.log(event.target.value)
         setSelectedStation(event.target.value)
     };
     const handleDetailviewClick = () => {
@@ -392,29 +395,28 @@ const Detailview = () => {
             </div>
              <div className="nagative-viewdetail" >
                 <div className="container-select">
-                    <FormControl sx={{ m: 1, minWidth: 120 }} size="small"  >
-                        <InputLabel id="sl_stations">Trạm hiển thị</InputLabel>
-                        <Select
-                            labelId="sl_stations"
-                            id="sl_stations-select"
-                            value={selectedStation}
-                            label="Trạm hiển thị"
-                            onChange={handleChangeStation}
-                            >
-                            {stationsRef.current.length > 0 ? (
-                                stationsRef.current.map((station) => (
-                                    <MenuItem
-                                        value={station.station_id}
-                                        key={station.station_id}
-                                        name={station.station_id}
-                                    >
-                                        {station.station_name}
-                                    </MenuItem>
-                                ))
-                            ) : (
-                                <MenuItem disabled>No stations available</MenuItem>
+                    <FormControl sx={{ m: 1, minWidth: 200 }} size="small"  >
+                        <Autocomplete
+                            id="autocomplete-stations"
+                            size="small"
+                            options={stationsRef.current}
+                            getOptionLabel={(station) => station.station_name}
+                            value={selectedStation ? stationsRef.current.find(s => s.station_id === selectedStation) : null}
+                            onChange={(event, newValue) => {
+                                if (newValue) {
+                                    handleChangeStation({ target: { value: newValue.station_id } });
+                                }
+                            }}
+                            renderInput={(params) => (
+                                <TextField
+                                    {...params}
+                                    label="Trạm hiển thị"
+                                    variant="outlined"
+                                    fullWidth
+                                />
                             )}
-                        </Select>
+                            isOptionEqualToValue={(option, value) => option.station_id === value.station_id}
+                        />
                     </FormControl>
                 </div>
                 <div className="container-select">
