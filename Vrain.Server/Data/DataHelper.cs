@@ -9,19 +9,26 @@ using Dapper;
 using System.Web;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.EntityFrameworkCore;
+using System.Configuration;
+using Microsoft.Extensions.Configuration;
+using System.Globalization;
 namespace Vrain.Server.Data
 {
+    
     public class DataHelper
     {
         private readonly WeatherDbContext _context;
         private readonly IWebHostEnvironment _hostingEnvironment;
-        public DataHelper(WeatherDbContext context, IWebHostEnvironment hostingEnvironment)
+        private readonly IConfiguration _configuration;
+        public DataHelper(WeatherDbContext context, IWebHostEnvironment hostingEnvironment , IConfiguration configuration)
         {
             _context = context;
             _hostingEnvironment = hostingEnvironment;
+            _configuration = configuration;
         }
         public DataTable ConvertToDataTable(IEnumerable<dynamic> weatherData)
         {
+
             var dataTable = new DataTable();
             dataTable.Columns.Add("Mã trạm");
             dataTable.Columns.Add("Tên trạm");
@@ -68,7 +75,7 @@ namespace Vrain.Server.Data
             var provincename = data.tinh;
             var lstations = string.Join(",", data.id_station_list.Select(id => $"'{id}'"));
             int ts = int.Parse(data.tansuat);
-            var connectionString = "Host=localhost;Database=weather_data;Username=postgres;Password=12345678";
+            var connectionString = _configuration.GetConnectionString("DefaultConnection");
             string sql;
             sql = @"
                 SELECT 

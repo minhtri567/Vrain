@@ -20,6 +20,8 @@ using DocumentFormat.OpenXml.Bibliography;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Newtonsoft.Json;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.Extensions.Configuration;
+using System.Configuration;
 
 [Route("api/[controller]")]
 [ApiController]
@@ -28,11 +30,13 @@ public class WeatherStationsController : ControllerBase
     private readonly IBackgroundJobClient _backgroundJobClient;
     private readonly WeatherDbContext _context;
     private readonly IWebHostEnvironment _hostingEnvironment;
-    public WeatherStationsController(WeatherDbContext context , IWebHostEnvironment hostingEnvironment , IBackgroundJobClient backgroundJobClient )
+    private readonly IConfiguration _configuration;
+    public WeatherStationsController(WeatherDbContext context , IWebHostEnvironment hostingEnvironment , IBackgroundJobClient backgroundJobClient , IConfiguration configuration)
     {
         _context = context;
         _hostingEnvironment = hostingEnvironment;
         _backgroundJobClient = backgroundJobClient;
+        _configuration = configuration;
     }
 
     [HttpGet]
@@ -389,7 +393,7 @@ public class WeatherStationsController : ControllerBase
         _context.weather_stations_report.Add(data);
         _context.SaveChanges();
 
-        var dataHelper = new DataHelper( _context , _hostingEnvironment);
+        var dataHelper = new DataHelper( _context , _hostingEnvironment , _configuration);
         if (data != null)
         {
             _backgroundJobClient.Enqueue(() => dataHelper.ProcessWeatherDataReport(data));
