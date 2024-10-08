@@ -226,7 +226,7 @@ const Detailview = () => {
         };
     
         processData();
-    }, [selectedStation, datafecthchart]);
+    }, [datafecthchart]);
 
     const handleItemClick = () => {
         navigate(`/`);
