@@ -186,45 +186,46 @@ const Detailview = () => {
     };
 
     useEffect(() => {
-        const processData = async () => {
-            const dataChartthis = [];
-            let cumulativeTotal = 0;
-
-            // Process datafecthchart
-            datafecthchart.forEach(dayData => {
-                const timepoint = dayData.timePoint;
-                const stationData = dayData.stations.find(station => station.station_id === selectedStation);selectedStation
-                if (stationData) {
-                    const dailyTotal = parseFloat(stationData.total).toFixed(2);
-                    cumulativeTotal += parseFloat(dailyTotal);
-    
-                    dataChartthis.push({
-                        timepoint,
-                        [`${stationData.station_name}`]: dailyTotal,
-                        [`Mưa tích lũy ${stationData.station_name}`]: cumulativeTotal.toFixed(2)
-                    });
-                }
-            });
-
-            const id_station_sl = stationsRef.current.find(s => s.station_id === selectedStation);
-            if (id_station_sl) {
-                try {
-                    const response = await fetch(`https://node.windy.com/forecast/v2.7/ecmwf/${id_station_sl.lat}/${id_station_sl.lon}`);
-                    
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok');
-                    }
-                    
-                    const data = await response.json();
-                    dataChartthis.push(...extractData(data.data));
-                } catch (error) {
-                    console.error('Error fetching data:', error);
-                }
-            }
-
-            setDataChart(dataChartthis);
-        };
         if (datafecthchart.length > 0) {
+            const processData = async () => {
+                const dataChartthis = [];
+                let cumulativeTotal = 0;
+
+                // Process datafecthchart
+                datafecthchart.forEach(dayData => {
+                    const timepoint = dayData.timePoint;
+                    const stationData = dayData.stations.find(station => station.station_id === selectedStation);selectedStation
+                    if (stationData) {
+                        const dailyTotal = parseFloat(stationData.total).toFixed(2);
+                        cumulativeTotal += parseFloat(dailyTotal);
+    
+                        dataChartthis.push({
+                            timepoint,
+                            [`${stationData.station_name}`]: dailyTotal,
+                            [`Mưa tích lũy ${stationData.station_name}`]: cumulativeTotal.toFixed(2)
+                        });
+                    }
+                });
+
+                const id_station_sl = stationsRef.current.find(s => s.station_id === selectedStation);
+                if (id_station_sl) {
+                    try {
+                        const response = await fetch(`https://node.windy.com/forecast/v2.7/ecmwf/${id_station_sl.lat}/${id_station_sl.lon}`);
+                    
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                    
+                        const data = await response.json();
+                        dataChartthis.push(...extractData(data.data));
+                    } catch (error) {
+                        console.error('Error fetching data:', error);
+                    }
+                }
+
+                setDataChart(dataChartthis);
+            };
+        
             processData();
         }
         
