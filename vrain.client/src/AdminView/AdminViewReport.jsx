@@ -11,10 +11,10 @@ import { Dialog } from 'primereact/dialog';
 import { Toast } from 'primereact/toast';
 import { Navigate } from 'react-router-dom';
 const AdminViewReport = () => {
-    const allreport = '/api/Admin/reportstations';
-    const getallstations = '/api/Admin/infostations';
-    const apideleterp = '/api/Admin/deletelistrp';
-    var apidownloadfile = "/api/WeatherStations/download/";
+    const allreport = '/vnrain/Admin/reportstations';
+    const getallstations = '/vnrain/Admin/infostations';
+    const apideleterp = '/vnrain/Admin/deletelistrp';
+    var apidownloadfile = "/vnrain/WeatherStations/download/";
     const [datareport, setDataReport] = useState([]);
     const [stations, setStations] = useState([]);
     useEffect(() => {

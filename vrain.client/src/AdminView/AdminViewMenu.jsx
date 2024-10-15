@@ -20,9 +20,9 @@ const AdminViewMenu = () => {
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState('');
     const [snackbarVariant, setSnackbarVariant] = useState('success');
-    const apimenu = '/api/Admin/menu';
-    const addmenu = '/api/Admin/savemenu?';
-    const deletemenu = '/api/Admin/deletemenu/';
+    const apimenu = '/vnrain/Admin/menu';
+    const addmenu = '/vnrain/Admin/savemenu?';
+    const deletemenu = '/vnrain/Admin/deletemenu/';
     useEffect(() => {
         const fetchMenu = async () => {
             try {

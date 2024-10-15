@@ -24,7 +24,7 @@ const Admin = () => {
     const [expandedItems, setExpandedItems] = useState({});
     const [currentView, setCurrentView] = useState('AdminOverview');
     const menuRef = useRef(null); // Ref for the menu container
-    const apimenu = '/api/Admin/menu';
+    const apimenu = '/vnrain/Admin/menu';
     
     const [isMobile, setIsMobile] = useState(window.innerWidth <= 575.98); // Giả sử màn hình mobile là <= 575.98px
 

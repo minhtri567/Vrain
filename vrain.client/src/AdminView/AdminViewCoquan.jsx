@@ -15,12 +15,12 @@ import { InputTextarea } from "primereact/inputtextarea";
 import { MultiSelect } from 'primereact/multiselect';
 const AdminViewCoquan = () => {
 
-    const apigetcoquan = '/api/Admin/allcoquan';
-    const apisavecoquan = '/api/Admin/savecoquan';
-    const apisaverole = '/api/Admin/saverole';
-    const apigetdanhmuc = '/api/Admin/alldanhmuccon';
-    const apigetrole = '/api/Admin/allrole';
-    const apixoacoquan = '/api/Admin/deletecoquan?id=';
+    const apigetcoquan = '/vnrain/Admin/allcoquan';
+    const apisavecoquan = '/vnrain/Admin/savecoquan';
+    const apisaverole = '/vnrain/Admin/saverole';
+    const apigetdanhmuc = '/vnrain/Admin/alldanhmuccon';
+    const apigetrole = '/vnrain/Admin/allrole';
+    const apixoacoquan = '/vnrain/Admin/deletecoquan?id=';
     const toast = useRef(null);
     const [datacoquan, setdatacoquan] = useState();
     const [datadanhmuc, setdatadanhmuc] = useState(null);

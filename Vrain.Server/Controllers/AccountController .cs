@@ -12,7 +12,7 @@ using Vrain.Server.Models;
 
 namespace Vrain.Server.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("vnrain/[controller]")]
     [ApiController]
     public class AccountController : ControllerBase
     {

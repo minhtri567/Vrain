@@ -40,8 +40,8 @@ const Detailview = () => {
     const [selectmodeview, setselectmodeview] = useState(2);
     const [visibleRight, setVisibleRight] = useState(false);
     const tableRef = useRef(null);
-    var curentapitinh = "/api/WeatherStations/raintoday?provincename=" + encodeURIComponent(name_province) + "";
-    var getapistations = "/api/WeatherStations/station_provine?provincename=" + encodeURIComponent(name_province) + "";
+    var curentapitinh = "/vnrain/WeatherStations/raintoday?provincename=" + encodeURIComponent(name_province) + "";
+    var getapistations = "/vnrain/WeatherStations/station_provine?provincename=" + encodeURIComponent(name_province) + "";
     const stationsRef = useRef([]);
     var now = new Date();
     var currentDateTime = now.toLocaleString('vi-VN', {
@@ -142,21 +142,36 @@ const Detailview = () => {
         setselectedtime(selectedOption);
     }, [fdata]);
 
-    const extractData = (data) => {
+    const extractData = (data, cumulativeTotal) => {
         
         if(selectmodeview == 1){
             const { day, hour, mm } = data;
             if (day.length === hour.length && hour.length === mm.length) {
+                const currentDateTime = new Date(); // Lấy thời gian hiện tại
+
                 const result = day.map((date, index) => {
-                    const formattedDate = new Date(date).toLocaleDateString('en-GB').slice(0, 5);
-                    const formattedTime = `${hour[index].toString().padStart(2, '0')}:00`; 
-        
+                    const dateObj = new Date(date);
+                    const formattedDate = dateObj.toLocaleDateString('en-GB').slice(0, 5);
+                    const formattedTime = `${hour[index].toString().padStart(2, '0')}:00`;
+
+                    // Tạo đối tượng thời gian của phần tử hiện tại
+                    const elementDateTime = new Date(dateObj.setHours(hour[index], 0, 0, 0));
+
+                    // Bỏ qua phần tử nếu giờ nhỏ hơn hiện tại
+                    if (elementDateTime < currentDateTime) {
+                        return null; // Bỏ qua
+                    }
+
+                    // Cộng tích lũy mưa và tạo đối tượng trả về
+                    cumulativeTotal += parseFloat(mm[index]);
                     return {
                         timepoint: `${formattedDate} ${formattedTime}`,
-                        'Dự báo mưa': mm[index]
+                        'Dự báo mưa': mm[index],
+                        'Mưa tích lũy dự báo': cumulativeTotal
                     };
-                });
-                return result.slice(2);
+                }).filter(item => item !== null); // Lọc bỏ các phần tử null
+
+                return result;
             } else {
                 console.error('Dữ liệu không đồng nhất về độ dài các mảng.');
             }
@@ -164,21 +179,27 @@ const Detailview = () => {
         else if(selectmodeview == 2){
             const { day, mm } = data;
             const rainByDay = {};
-    
+
             day.forEach((date, index) => {
                 const formattedDate = new Date(date).toLocaleDateString('en-GB').slice(0, 5);
                 if (!rainByDay[formattedDate]) {
                     rainByDay[formattedDate] = 0;
                 }
-                rainByDay[formattedDate] += mm[index]; 
+                rainByDay[formattedDate] += mm[index];
             });
-    
-            const result = Object.keys(rainByDay).map(date => ({
-                timepoint: date,
-                'Dự báo mưa': rainByDay[date].toFixed(2) 
-            }));
-    
-            return result.slice(2);
+            const filteredRainByDay = Object.keys(rainByDay).slice(2);
+
+            const result = filteredRainByDay.map(date => {
+                cumulativeTotal += rainByDay[date];
+
+                return {
+                    timepoint: date,
+                    'Dự báo mưa': rainByDay[date].toFixed(2),
+                    'Mưa tích lũy dự báo': cumulativeTotal.toFixed(2)
+                };
+            });
+
+            return result;
         }else{
             return [];
         }
@@ -217,7 +238,7 @@ const Detailview = () => {
                         }
                     
                         const data = await response.json();
-                        dataChartthis.push(...extractData(data.data));
+                        dataChartthis.push(...extractData(data.data, cumulativeTotal));
                     } catch (error) {
                         console.error('Error fetching data:', error);
                     }
@@ -239,7 +260,6 @@ const Detailview = () => {
     };
 
     const handleChangeStation = (event) => {
-        console.log(event.target.value)
         setSelectedStation(event.target.value)
     };
     const handleDetailviewClick = () => {

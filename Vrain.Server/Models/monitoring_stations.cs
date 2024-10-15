@@ -20,5 +20,12 @@ namespace Vrain.Server.Models
 
         [Column(TypeName = "jsonb")]
         public string? infor_data { get; set; }
+
+        public double? baodong1 { get; set; }
+        public double? baodong2 { get; set; }
+        public double? baodong3 { get; set; }
+        public double? lulichsu { get; set; }
+        public int? namluls { get; set; }
+        public DateTime? time_insert { get; set; }
     }
 }

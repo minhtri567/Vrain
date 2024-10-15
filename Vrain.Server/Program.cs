@@ -61,8 +61,8 @@ builder.Services.AddScoped<FetchWeatherDataJob>();
 builder.Services.AddTransient<DataHelper>();
 builder.Services.AddDbContext<WeatherDbContext>(options => {
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
-    options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking) ;
-    });
+    options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
+});
 builder.Services.AddHttpClient();
 
 builder.Services.AddHangfire(configuration => configuration
@@ -118,7 +118,7 @@ if (app.Environment.IsDevelopment())
     app.UseDeveloperExceptionPage();
     app.UseSwaggerUI(c =>
     {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1"); 
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
     });
 }
 
@@ -132,6 +132,6 @@ app.MapControllers();
 
 app.MapFallbackToFile("/index.html");
 
-//app.UseHangfireServer();
+app.UseHangfireServer();
 
 app.Run();

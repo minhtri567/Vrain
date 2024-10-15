@@ -23,7 +23,7 @@ const SwaggerUIComponent = () => {
                         }
                     },
                     paths: {
-                        '/api/Admin/insertdatamonitoring': data.paths['/api/Admin/insertdatamonitoring']
+                        '/vnrain/Admin/insertdatamonitoring': data.paths['/vnrain/Admin/insertdatamonitoring']
                     },
                 };
                 setSwaggerSpec(filteredSpec);

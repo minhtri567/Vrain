@@ -1,8 +1,6 @@
 ﻿/* eslint-disable react-hooks/exhaustive-deps */
-/* eslint-disable no-unused-vars */
 import React from 'react';
-import { useParams, Link, useLocation } from 'react-router-dom';
-import { useRef, useEffect, useMemo , useState } from 'react';
+import { useRef, useEffect , useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -15,7 +13,7 @@ import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-
+import { Autocomplete, TextField } from '@mui/material';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
@@ -82,11 +80,9 @@ const Overview = () => {
     const [selectedStation, setSelectedStation] = useState('');
     const [selectmodeview, setselectmodeview] = useState(2);
     const sevenDaysAgo = today.subtract(7, 'day');
-    var curentapitinh = "/api/WeatherStations?provincename=" + encodeURIComponent(name_province) + "";
-    var apiraintime = "/api/WeatherStations/raintoday?provincename=" + encodeURIComponent(name_province) + "";
+    var curentapitinh = "/vnrain/WeatherStations?provincename=" + encodeURIComponent(name_province) + "";
+    var apiraintime = "/vnrain/WeatherStations/raintoday?provincename=" + encodeURIComponent(name_province) + "";
     var hoverTimeout;
-
-    const [selectedStationId, setSelectedStationId] = useState(null);
     var now = new Date();
     var currentDateTime = now.toLocaleString('vi-VN', {
         hour: 'numeric',
@@ -135,21 +131,36 @@ const Overview = () => {
         return null; // Trả về null nếu không phù hợp định dạng
     }
     const [datafecthchart, setdatafecthchart] = useState([]);
-    const extractData = (data) => {
+    const extractData = (data, cumulativeTotal) => {
         
         if(selectmodeview == 1){
             const { day, hour, mm } = data;
             if (day.length === hour.length && hour.length === mm.length) {
+                const currentDateTime = new Date(); // Lấy thời gian hiện tại
+
                 const result = day.map((date, index) => {
-                    const formattedDate = new Date(date).toLocaleDateString('en-GB').slice(0, 5);
-                    const formattedTime = `${hour[index].toString().padStart(2, '0')}:00`; 
-        
+                    const dateObj = new Date(date);
+                    const formattedDate = dateObj.toLocaleDateString('en-GB').slice(0, 5);
+                    const formattedTime = `${hour[index].toString().padStart(2, '0')}:00`;
+
+                    // Tạo đối tượng thời gian của phần tử hiện tại
+                    const elementDateTime = new Date(dateObj.setHours(hour[index], 0, 0, 0));
+
+                    // Bỏ qua phần tử nếu giờ nhỏ hơn hiện tại
+                    if (elementDateTime < currentDateTime) {
+                        return null; // Bỏ qua
+                    }
+
+                    // Cộng tích lũy mưa và tạo đối tượng trả về
+                    cumulativeTotal += parseFloat(mm[index]);
                     return {
                         timepoint: `${formattedDate} ${formattedTime}`,
-                        'Dự báo mưa': mm[index]
+                        'Dự báo mưa': mm[index],
+                        'Mưa tích lũy dự báo': cumulativeTotal
                     };
-                });
-                return result.slice(2);
+                }).filter(item => item !== null); // Lọc bỏ các phần tử null
+
+                return result;
             } else {
                 console.error('Dữ liệu không đồng nhất về độ dài các mảng.');
             }
@@ -165,13 +176,19 @@ const Overview = () => {
                 }
                 rainByDay[formattedDate] += mm[index]; 
             });
+            const filteredRainByDay = Object.keys(rainByDay).slice(2);
+
+            const result = filteredRainByDay.map(date => {
+                cumulativeTotal += rainByDay[date];
+
+                return {
+                    timepoint: date,
+                    'Dự báo mưa': rainByDay[date].toFixed(2),
+                    'Mưa tích lũy dự báo': cumulativeTotal.toFixed(2)
+                };
+            });
     
-            const result = Object.keys(rainByDay).map(date => ({
-                timepoint: date,
-                'Dự báo mưa': rainByDay[date].toFixed(2) 
-            }));
-    
-            return result.slice(2);
+            return result;
         }
         else{
             return [];
@@ -207,7 +224,7 @@ const Overview = () => {
                 });
             }
         });
-        dataChart.push(...extractData(datafc.data))
+        dataChart.push(...extractData(datafc.data, cumulativeTotal))
         result = { dataChart };
 
         setLoading(false);
@@ -221,7 +238,7 @@ const Overview = () => {
 
             datafecthchart.forEach(dayData => {
                 const timepoint = dayData.timePoint;
-                const stationData = dayData.stations.find(station => station.station_id === selectedStationId);
+                const stationData = dayData.stations.find(station => station.station_id === selectedStation);
                 
                 if (stationData) {
 
@@ -237,7 +254,7 @@ const Overview = () => {
             });
 
             setDataChart(dataChart);
-    }, [selectedStationId]);
+    }, [selectedStation]);
 
     useEffect(() => {
         if (stationsRef.current.length > 0) {
@@ -775,21 +792,8 @@ const Overview = () => {
             setSearchVisible(false);
         }
     };
-    const [uniqueStationIds, setUniqueStationIds] = useState(new Set());
 
-    useEffect(() => {
-        // Lọc danh sách các station_id duy nhất từ stationsRef.current
-        const uniqueIds = new Set();
-        stationsRef.current.filter(station => {
-            if (!uniqueIds.has(station.station_id)) {
-                uniqueIds.add(station.station_id);
-                return true;
-            }
-            return false;
-        });
-
-        setUniqueStationIds(uniqueIds);
-    }, [stationsRef.current]);
+    
     React.useEffect(() => {
         document.addEventListener('mousedown', handleOutsideClick);
         return () => {
@@ -826,16 +830,17 @@ const Overview = () => {
         });
     };
     const handleChangeStation = (event) => {
-        setSelectedStationId(event.target.value === 'all' ? null : event.target.value);
         setSelectedStation(event.target.value)
     };
     useEffect(() => {
-        if (stationsRef.current.find(station => station.station_id === selectedStationId) != undefined) {
-            const temp = stationsRef.current.find(station => station.station_id === selectedStationId)
-            prepareChartData(temp.station_id)
+        if (stationsRef.current.find(station => station.station_id === selectedStation) != undefined) {
+            const temp = stationsRef.current.find(station => station.station_id === selectedStation)
+            prepareChartData(temp.station_id, temp.lat, temp.lon).then(response => {
+                setDataChart(response.dataChart);
+            });
             viewllstation(temp.lat, temp.lon);
         }
-    }, [selectedStationId]);
+    }, [selectedStation]);
 
     const customHeader = (
         <div>
@@ -897,7 +902,7 @@ const Overview = () => {
         }, 2000);
     };
 
-    const handleStationClick = (lat, lon, stationId) => {
+    const handleStationClick = (lat, lon) => {
         if (isMobile) {
             $('.containt-view-mapbox').css('display', 'block');
             $('.liststation').css('display', 'none');
@@ -922,24 +927,28 @@ const Overview = () => {
                 <div className="popup-chart-content">
                     <div className="popup-container-native" >
                         <div className="container-select">
-                            <FormControl sx={{ m: 1, minWidth: 120 }} size="small"  >
-                                <InputLabel id="sl_stations">Trạm hiển thị</InputLabel>
-                                <Select
-                                    labelId="sl_stations"
-                                    id="sl_stations-select"
-                                    value={selectedStation}
-                                    label="Trạm hiển thị"
-                                    onChange={handleChangeStation}
-                                >
-                                    {uniqueStationIds.size > 0 && (
-                                        Array.from(uniqueStationIds).map(stationId => (
-                                            <MenuItem value={stationId} key={stationId} name={stationId}>
-                                                {/* Tìm tên của station dựa vào station_id */}
-                                                {stationsRef.current.find(station => station.station_id === stationId)?.station_name}
-                                            </MenuItem>
-                                        ))
+                            <FormControl sx={{ m: 1, minWidth: 200 }} size="small"  >
+                                <Autocomplete
+                                    id="autocomplete-stations"
+                                    size="small"
+                                    options={stationsRef.current}
+                                    getOptionLabel={(station) => station.station_name}
+                                    value={selectedStation ? stationsRef.current.find(s => s.station_id === selectedStation) : null}
+                                    onChange={(event, newValue) => {
+                                        if (newValue) {
+                                            handleChangeStation({ target: { value: newValue.station_id } });
+                                        }
+                                    }}
+                                    renderInput={(params) => (
+                                        <TextField
+                                            {...params}
+                                            label="Trạm hiển thị"
+                                            variant="outlined"
+                                            fullWidth
+                                        />
                                     )}
-                                </Select>
+                                    isOptionEqualToValue={(option, value) => option.station_id === value.station_id}
+                                />
                             </FormControl>
                         </div>
                         <div className="my-datepicker" id="my-datepicker-3" >
@@ -1047,7 +1056,7 @@ const Overview = () => {
                     <div className="listraininfo">
                         <ul>
                             {filteredStations.map((station, index) => (
-                                <li key={index} onClick={() => handleStationClick(station.lat, station.lon, station.station_id)} >
+                                <li key={index} onClick={() => handleStationClick(station.lat, station.lon)} >
                                     <div className="list-line-1"><p className="station-tinh">{station.station_name}</p><div className="station-rain" dangerouslySetInnerHTML={{ __html: Gettextrain(station.total) }}></div></div>
                                     <div className="list-line-2"><p className="station-name">Tại : {station.phuongxa} - {station.quanhuyen}</p><div className="type-rain" dangerouslySetInnerHTML={{ __html: Typerain(station.total) }}></div></div>
                                  </li>

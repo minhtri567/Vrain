@@ -23,7 +23,7 @@ using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.Extensions.Configuration;
 using System.Configuration;
 
-[Route("api/[controller]")]
+[Route("vnrain/[controller]")]
 [ApiController]
 public class WeatherStationsController : ControllerBase
 {
@@ -40,7 +40,7 @@ public class WeatherStationsController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<weather_stations_today>>> GetWeatherStations( String? provincename)
+    public async Task<ActionResult<IEnumerable<weather_stations_today>>> GetWeatherStations( String? provincename )
     {
         var curentdate = DateTime.UtcNow.Date;
         string Nameprovince =  NameProvinceHelper.GetNameProvince(provincename);

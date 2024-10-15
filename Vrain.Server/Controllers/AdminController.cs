@@ -1,20 +1,18 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Npgsql;
-using Dapper;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Vrain.Server.Data;
 using Vrain.Server.Models;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 using DocumentFormat.OpenXml.Spreadsheet;
 using Newtonsoft.Json;
 using Microsoft.AspNetCore.Authorization;
+using System.Xml.Linq;
+using DocumentFormat.OpenXml;
+using OfficeOpenXml;
+using DocumentFormat.OpenXml.Packaging;
+using DocumentFormat.OpenXml.Bibliography;
 
 namespace Vrain.Server.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("vnrain/[controller]")]
     [ApiController]
     public class AdminController : ControllerBase
     {
@@ -889,6 +887,39 @@ namespace Vrain.Server.Controllers
             {
                 // Log the exception here (optional)
                 return StatusCode(500, "Internal server error: " + ex.Message);
+            }
+        }
+        [HttpGet("get-xml-data")]
+        public async Task<IActionResult> GetXmlData()
+        {
+            string currentDate = DateTime.UtcNow.ToString("yyyyddMMTHH00Z");
+
+            // Tạo URL với ngày hiện tại
+            string url = $"http://apittdl.vndss.com//api/viewdata/1/wl/datetime/{currentDate}";
+
+            using (HttpClient client = new HttpClient())
+            {
+                try
+                {
+                    // Gọi API và lấy kết quả trả về
+                    HttpResponseMessage response = await client.GetAsync(url);
+                    response.EnsureSuccessStatusCode();
+
+                    // Đọc nội dung XML dưới dạng string
+                    string xmlContent = await response.Content.ReadAsStringAsync();
+
+                    XDocument doc = XDocument.Parse(xmlContent);
+
+                    // Chuyển XDocument sang JSON
+                    string jsonContent = JsonConvert.SerializeXNode(doc);
+
+                    // Trả về JSON
+                    return Ok(jsonContent);
+                }
+                catch (Exception ex)
+                {
+                    return StatusCode(500, "Có lỗi xảy ra khi xử lý yêu cầu " + ex.Message);
+                }
             }
         }
         public class MenuItem

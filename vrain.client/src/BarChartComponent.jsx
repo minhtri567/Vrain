@@ -3,7 +3,8 @@
 import React, { useEffect, useRef } from 'react';
 import * as echarts from 'echarts';
 import * as XLSX from 'xlsx';
-const BarChartComponent = ({ dataChart, chartHeight , opview}) => {
+const BarChartComponent = ({ dataChart, chartHeight, opview }) => {
+    console.log(dataChart)
     const chartRef = useRef(null);
     const chartInstanceRef = useRef(null);
     const exportChartToExcel = (dataChart, dimensions, stationNames) => {
@@ -22,7 +23,7 @@ const BarChartComponent = ({ dataChart, chartHeight , opview}) => {
         chartInstanceRef.current = chart;
         if (dataChart.length > 0) {
             const stationNames = dataChart.length > 0 ? Object.keys(dataChart[0]).filter(key => key !== 'timepoint') : [];
-            const dimensions = opview != 3 ? ['timepoint', ...stationNames,'Dự báo mưa'] : ['timepoint', ...stationNames];
+            const dimensions = opview != 3 ? ['timepoint', ...stationNames, 'Dự báo mưa', 'Mưa tích lũy dự báo'] : ['timepoint', ...stationNames];
             const option = {
                 legend: {},
                 tooltip: {
@@ -51,17 +52,28 @@ const BarChartComponent = ({ dataChart, chartHeight , opview}) => {
                     left: '13%', 
                 },
                 xAxis: { type: 'category' },
-                yAxis: {
-                    type: 'value',
-                    axisLabel: {
-                        formatter: '{value} ml'
+                yAxis: [
+                    {
+                        type: 'value',
+                        name: 'bar',
+                        axisLabel: {
+                            formatter: '{value} ml'
+                        },
                     },
-                },
+                    {
+                        type: 'value',
+                        name: 'line',
+                        axisLabel: {
+                            formatter: '{value} ml'
+                        },
+                    },
+                ],
                 series: [
                     {
                         type: 'bar',
                         large: true,
                         barMaxWidth: 40,
+                        yAxisIndex: 0,
                         tooltip: {
                             valueFormatter: function (value) {
                                 return value !== undefined ? value + ' ml' : '-';
@@ -71,6 +83,7 @@ const BarChartComponent = ({ dataChart, chartHeight , opview}) => {
                     {
                         type: 'line',
                         large: true,
+                        yAxisIndex: 1,
                         tooltip: {
                             valueFormatter: function (value) {
                                 return value !== undefined ? value + ' ml' : '-';
@@ -81,12 +94,24 @@ const BarChartComponent = ({ dataChart, chartHeight , opview}) => {
                         type: 'bar',
                         large: true,
                         barMaxWidth: 40,
+                        yAxisIndex: 0,
                         tooltip: {
                             valueFormatter: function (value) {
                                 return value !== undefined ? value + ' ml' : '-';
                             }
                         },
-                    }] : [])
+                        },
+                        {
+                            type: 'line',
+                            large: true,
+                            yAxisIndex: 1,
+                            tooltip: {
+                                valueFormatter: function (value) {
+                                    return value !== undefined ? value + ' ml' : '-';
+                                }
+                            },
+                        },
+                    ] : [])
                     
                 
                 ],

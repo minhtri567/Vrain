@@ -42,7 +42,7 @@ export default defineConfig({
     },
     server: {
         proxy: {
-            '/api': {
+            '/vnrain': {
                 target : target,  
                 changeOrigin: true ,
                 secure : false,

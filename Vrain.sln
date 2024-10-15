@@ -7,6 +7,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vrain.Server", "Vrain.Serve
 EndProject
 Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "vrain.client", "vrain.client\vrain.client.esproj", "{8179A5F5-0031-431F-9B43-DCF26B2BF816}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OcelotGateway", "OcelotGateway\OcelotGateway.csproj", "{A611E2F2-8C82-4C93-A5C7-24B13E3C1E2E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -23,6 +25,10 @@ Global
 		{8179A5F5-0031-431F-9B43-DCF26B2BF816}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8179A5F5-0031-431F-9B43-DCF26B2BF816}.Release|Any CPU.Build.0 = Release|Any CPU
 		{8179A5F5-0031-431F-9B43-DCF26B2BF816}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{A611E2F2-8C82-4C93-A5C7-24B13E3C1E2E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A611E2F2-8C82-4C93-A5C7-24B13E3C1E2E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A611E2F2-8C82-4C93-A5C7-24B13E3C1E2E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A611E2F2-8C82-4C93-A5C7-24B13E3C1E2E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

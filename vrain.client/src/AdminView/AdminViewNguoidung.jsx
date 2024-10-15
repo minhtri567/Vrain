@@ -16,12 +16,12 @@ import { ToggleButton } from 'primereact/togglebutton';
 import { Password } from 'primereact/password';
 import axios from 'axios';
 const AdminViewNguoidung = () => {
-    const apigetnguoidung = '/api/Account/allaccount';
-    const apigetcoquan = '/api/Admin/allcoquan';
-    const apigetdanhmuc = '/api/Admin/alldanhmuccon';
-    const apigetrole = '/api/Admin/allrole';
-    const apixoanguoidung = '/api/Account/deletenguoidung?ids=';
-    const apisavenguoidung = '/api/Account/register';
+    const apigetnguoidung = '/vnrain/Account/allaccount';
+    const apigetcoquan = '/vnrain/Admin/allcoquan';
+    const apigetdanhmuc = '/vnrain/Admin/alldanhmuccon';
+    const apigetrole = '/vnrain/Admin/allrole';
+    const apixoanguoidung = '/vnrain/Account/deletenguoidung?ids=';
+    const apisavenguoidung = '/vnrain/Account/register';
 
     const [datanguoidung, setdatanguoidung] = useState();
     const [datanguoidungsp, setdatanguoidungsp] = useState();

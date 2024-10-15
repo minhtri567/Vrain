@@ -40,10 +40,10 @@ const ReportComponent = () => {
     const today = dayjs();
     const yesterday = dayjs().subtract(1, 'day');
     const navigate = useNavigate();
-    var curentapitinh = "/api/WeatherStations/station_provine?provincename=" + encodeURIComponent(name_province) + "";
-    var apireport = "/api/WeatherStations/report";
-    var getapireport = "/api/WeatherStations/report_data?provincename=" + encodeURIComponent(name_province) + "";
-    var apidownloadfile = "/api/WeatherStations/download/";
+    var curentapitinh = "/vnrain/WeatherStations/station_provine?provincename=" + encodeURIComponent(name_province) + "";
+    var apireport = "/vnrain/WeatherStations/report";
+    var getapireport = "/vnrain/WeatherStations/report_data?provincename=" + encodeURIComponent(name_province) + "";
+    var apidownloadfile = "/vnrain/WeatherStations/download/";
     const stationsRef = useRef([]);
     const ListrpRef = useRef([]);
     const [stationName, setstationName] = useState([]);
