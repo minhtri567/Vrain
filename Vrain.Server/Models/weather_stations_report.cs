@@ -14,5 +14,7 @@
         public string? email { get; set; }
         public int trangthai { get; set; }
         public string[]? id_station_list { get; set; }
+        public string? loai_tram { get; set; }
+
     }
 }

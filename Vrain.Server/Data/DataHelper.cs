@@ -179,6 +179,7 @@ namespace Vrain.Server.Data
                         data.file_ref = "/File/"+ namefile;
                         data.name_file = namefile;
                         data.trangthai = 1;
+                        data.loai_tram = "RAIN";
                         _context.Update(data);
                         _context.SaveChanges();
 

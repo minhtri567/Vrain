@@ -2,6 +2,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import MapComponent from './MapComponent';
+import MapMucnuoc from './Mapmucnuoc';
 import Overview from './Overview';
 import Detailview from './Detailview';
 import Reportview from './Reportview';
@@ -17,6 +18,7 @@ const App = () => {
                 <Route path="/overview/:name_province" element={<Overview />} />
                 <Route path="/detail/:name_province" element={<Detailview />} />
                 <Route path="/report/:name_province" element={<Reportview />} />
+                <Route path="/mucnuoc" element={<MapMucnuoc />} />
                 <Route
                     path="/quantri/index"
                     element={

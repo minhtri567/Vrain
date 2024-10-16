@@ -47,6 +47,7 @@ public class WeatherStationsController : ControllerBase
         if (!String.IsNullOrEmpty(provincename))
         {
             var query = from rainData in _context.monitoring_data_today
+                        where rainData.data_maloaithongso == "RAIN"
                         join tskt in _context.iw_thongsoquantrac
                         on rainData.tskt_id equals tskt.tskt_id
                         join station in _context.monitoring_stations
@@ -91,6 +92,7 @@ public class WeatherStationsController : ControllerBase
         else
         {
             var query = from rainData in _context.monitoring_data_today
+                        where rainData.data_maloaithongso == "RAIN"
                         join tskt in _context.iw_thongsoquantrac
                         on rainData.tskt_id equals tskt.tskt_id
                         join station in _context.monitoring_stations
@@ -154,6 +156,7 @@ public class WeatherStationsController : ControllerBase
     public async Task<ActionResult<IEnumerable<weather_stations_today>>> GetfullStations()
     {
         var query = from rainData in _context.monitoring_data_today
+                    where rainData.data_maloaithongso == "RAIN"
                     join tskt in _context.iw_thongsoquantrac
                     on rainData.tskt_id equals tskt.tskt_id
                     join station in _context.monitoring_stations
@@ -192,13 +195,13 @@ public class WeatherStationsController : ControllerBase
     }
 
     [HttpGet("station_provine")]
-    public async Task<ActionResult<IEnumerable<weather_stations_today>>> GetfulltimeStations(String? provincename)
+    public async Task<ActionResult<IEnumerable<weather_stations_today>>> GetStations(String? provincename , string mathongso)
     {
         string Nameprovince = NameProvinceHelper.GetNameProvince(provincename);
 
-        string sql = @$"SELECT *
-                FROM monitoring_stations 
-                WHERE tinh = '{Nameprovince}'";
+        string sql = @$"SELECT a.* FROM monitoring_stations as a inner join iw_thongsoquantrac as b 
+                on a.key = b.works_id
+                WHERE tinh = '{Nameprovince}' AND b.tskt_maloaithongso = '{mathongso}'";
 
         var station_provine = await _context.monitoring_stations.FromSqlRaw(sql)
             .ToListAsync();
@@ -208,7 +211,7 @@ public class WeatherStationsController : ControllerBase
     }
 
     [HttpGet("raintoday")]
-    public async Task<ActionResult<IEnumerable<weather_stations_today>>> GetfullrainpvStations(String? provincename, DateTime? startDate, DateTime? endDate , int modeview )
+    public async Task<ActionResult<IEnumerable<weather_stations_today>>> GetfullrainpvStations(String? provincename, DateTime? startDate, DateTime? endDate , int modeview , string mathongso )
     {
         string Nameprovince = NameProvinceHelper.GetNameProvince(provincename);
         if (modeview == 1)
@@ -235,7 +238,7 @@ public class WeatherStationsController : ControllerBase
 
             // Lấy dữ liệu từ bảng iw_thongsoquantrac mà key có trong danh sách stationKeys
             var datathongso = await _context.iw_thongsoquantrac
-                .Where(ts => stationKeys.Contains(ts.works_id) && ts.tskt_maloaithongso == "RAIN")
+                .Where(ts => stationKeys.Contains(ts.works_id) && ts.tskt_maloaithongso == mathongso )
                 .ToListAsync();
 
 
@@ -258,6 +261,10 @@ public class WeatherStationsController : ControllerBase
                             quanhuyen = datastations.FirstOrDefault(s => s.station_id == stationGroup.Key)?.quanhuyen,
                             phuongxa = datastations.FirstOrDefault(s => s.station_id == stationGroup.Key)?.phuongxa,
                             tinh = datastations.FirstOrDefault(s => s.station_id == stationGroup.Key)?.tinh,
+                            baodong1 = datastations.FirstOrDefault(s => s.station_id == stationGroup.Key)?.baodong1,
+                            baodong2 = datastations.FirstOrDefault(s => s.station_id == stationGroup.Key)?.baodong2,
+                            baodong3 = datastations.FirstOrDefault(s => s.station_id == stationGroup.Key)?.baodong3,
+                            lulichsu = datastations.FirstOrDefault(s => s.station_id == stationGroup.Key)?.lulichsu,
                         })
                         .ToList()
                 })
@@ -292,7 +299,7 @@ public class WeatherStationsController : ControllerBase
 
             // Lấy dữ liệu từ bảng iw_thongsoquantrac mà key có trong danh sách stationKeys
             var datathongso = await _context.iw_thongsoquantrac
-                .Where(ts => stationKeys.Contains(ts.works_id) && ts.tskt_maloaithongso == "RAIN")
+                .Where(ts => stationKeys.Contains(ts.works_id) && ts.tskt_maloaithongso == mathongso )
                 .ToListAsync();
 
 
@@ -347,7 +354,7 @@ public class WeatherStationsController : ControllerBase
 
             // Lấy dữ liệu từ bảng iw_thongsoquantrac mà key có trong danh sách stationKeys
             var datathongso = await _context.iw_thongsoquantrac
-                .Where(ts => stationKeys.Contains(ts.works_id) && ts.tskt_maloaithongso == "RAIN")
+                .Where(ts => stationKeys.Contains(ts.works_id) && ts.tskt_maloaithongso == mathongso )
                 .ToListAsync();
 
 
@@ -403,11 +410,11 @@ public class WeatherStationsController : ControllerBase
     
 
     [HttpGet("report_data")]
-    public async Task<ActionResult<IEnumerable<weather_stations_report>>> Getreport(String? provincename)
+    public async Task<ActionResult<IEnumerable<weather_stations_report>>> Getreport(String? provincename , string mathongso)
     {
         string Nameprovince = NameProvinceHelper.GetNameProvince(provincename);
         var station_report = await _context.weather_stations_report
-        .Where(a => a.tinh == Nameprovince)
+        .Where(a => a.tinh == Nameprovince && a.loai_tram == mathongso )
         .Select(a => new
         {
             a.name_file,

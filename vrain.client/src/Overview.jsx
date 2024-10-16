@@ -197,7 +197,7 @@ const Overview = () => {
     };
     const prepareChartData = async (stationid , lat , lon) => {
         setLoading(true);
-        const response = await fetch(apiraintime + "&startDate=" + convertDateFormat($(".my-datepicker-3-st input").val()) + "&endDate=" + convertDateFormat($(".my-datepicker-3-ed input").val()) + "&modeview=" + $(".my-mode-view input").val());
+        const response = await fetch(apiraintime + "&startDate=" + convertDateFormat($(".my-datepicker-3-st input").val()) + "&endDate=" + convertDateFormat($(".my-datepicker-3-ed input").val() +"&mathongso=RAIN") + "&modeview=" + $(".my-mode-view input").val());
         const data24h = await response.json();
         setdatafecthchart(data24h)
 

@@ -12,13 +12,14 @@ using DocumentFormat.OpenXml.Bibliography;
 using DocumentFormat.OpenXml.Wordprocessing;
 using Microsoft.AspNetCore.Http.HttpResults;
 using System.Collections.Generic;
+using Newtonsoft.Json;
+using System.Xml.Linq;
 public class FetchWeatherDataJob : IJob
 {
     private readonly WeatherDbContext _context;
     private readonly HttpClient _httpClient;
     private readonly ILogger<FetchWeatherDataJob> _logger;
     DateTime currentTime = DateTime.Now;
-    private string connectionString = "Host=localhost;Database=weather_data;Username=postgres;Password=12345678";
     public FetchWeatherDataJob(WeatherDbContext context, HttpClient httpClient, ILogger<FetchWeatherDataJob> logger)
     {
         _context = context;
@@ -44,7 +45,6 @@ public class FetchWeatherDataJob : IJob
     {
         
         _logger.LogInformation("Executing FetchWeatherDataJob...");
-
         try
         {
             var response = await _httpClient.PostAsJsonAsync("http://vndms.dmc.gov.vn/DataQuanTracMua/DataMuaTheoGio", new
@@ -310,7 +310,78 @@ public class FetchWeatherDataJob : IJob
         {
 
         }
+        
+        try
+        {
+            DateTime currentDate = DateTime.Now;
+            List<MonitoringDataMC> monitoringDataList = new List<MonitoringDataMC>(); // Danh sách chứa toàn bộ dữ liệu
 
+            for (int hour = 0; hour <= currentDate.Hour; hour++)
+            {
+                string currentTime = new DateTime(currentDate.Year, currentDate.Month, currentDate.Day, hour, 0, 0).ToString("yyyyMMddTHH00Z");
+                string apiUrl = $"http://apittdl.vndss.com/api/viewdata/1/wl/datetime/{currentTime}";
+
+                using (HttpClient client = new HttpClient())
+                {
+                    var response = await client.GetStringAsync(apiUrl);
+                    var rawJsonString = response.Trim();
+
+                    string trimmedJsonString = rawJsonString.Substring(1, rawJsonString.Length - 2);
+                    string jsonString = trimmedJsonString.Replace("\\\"", "\"");
+
+                    List<MonitoringDataMC> hourlyData = JsonConvert.DeserializeObject<List<MonitoringDataMC>>(jsonString);
+
+                    monitoringDataList.AddRange(hourlyData);
+                }
+            }
+            var joinedData = (from jsonData in monitoringDataList
+                              where jsonData.Value > -9999
+                              join station in _context.monitoring_stations
+                              on jsonData.StationNo equals station.station_id
+                              join tskt in _context.iw_thongsoquantrac
+                              on station.key equals tskt.works_id
+                              select new
+                              {
+                                  tskt_id = tskt.tskt_id,
+                                  station_id = station.station_id,
+                                  data_thoigian = jsonData.DtDate,
+                                  data_giatri_sothuc = jsonData.Value
+                              }).ToList();
+
+            foreach (var data in joinedData)
+            {
+
+                var monitoringData = new monitoring_data_today
+                {
+                    tskt_id = data.tskt_id,
+                    data_thoigian = data.data_thoigian,
+                    data_giatri_sothuc = (float?)data.data_giatri_sothuc,
+                    createby = "apittdl.vndss.com",
+                    station_id = data.station_id,
+                    data_maloaithongso = "DOMUCNUOC",
+                };
+
+                _context.monitoring_data_today.Add(monitoringData);
+                
+            }
+
+            await _context.SaveChangesAsync();
+
+        }
+        catch (Exception)
+        {}
     }
-
+    public class MonitoringDataMC
+    {
+        public string? StationNo { get; set; }
+        public string? StationNameVn { get; set; }
+        public string? RegName { get; set; }
+        public string? ProjectName { get; set; }
+        public string? Address { get; set; }
+        public double Lat { get; set; }
+        public double Lon { get; set; }
+        public DateTime DtDate { get; set; }
+        public double? Value { get; set; }
+        public int? Flag { get; set; }
+    }
 }

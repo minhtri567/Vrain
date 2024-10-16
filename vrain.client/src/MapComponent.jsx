@@ -10,6 +10,7 @@ import slug from 'slug';
 import Login from './Login';
 import $ from 'jquery';
 import BarChartComponent from './BarChartComponent';
+import Panellayer from './Panellayer';
 import dayjs from 'dayjs';
 import 'dayjs/locale/vi';
 
@@ -121,7 +122,7 @@ const MapComponent = () => {
 
     const prepareChartData = async (stationid, tinhtation, lat, lon) => {
         setLoading(true);
-        const response = await fetch(apiraintime + encodeURIComponent(tinhtation) + "&startDate=" + convertDateFormat($(".my-datepicker-3-st input").val()) + "&endDate=" + convertDateFormat($(".my-datepicker-3-ed input").val()) + "&modeview=" + $(".my-mode-view input").val());
+        const response = await fetch(apiraintime + encodeURIComponent(tinhtation) + "&startDate=" + convertDateFormat($(".my-datepicker-3-st input").val()) + "&endDate=" + convertDateFormat($(".my-datepicker-3-ed input").val()) + "&modeview=" + $(".my-mode-view input").val() +"&mathongso=RAIN");
         const data24h = await response.json();
 
         const responsefc = await fetch('https://node.windy.com/forecast/v2.7/ecmwf/'+lat+'/'+lon);
@@ -835,6 +836,7 @@ const MapComponent = () => {
 
     return (
         <div>
+            <Panellayer />
             <div className="popup-chart-container" style={showChart ? { display: 'grid' } : { display: 'none' }}>
                 <div className="popup-chart-overlay" onClick={() => setShowChart(false)} ></div>
                 <div className="css-times" onClick={() => setShowChart(false)} > &times; </div>

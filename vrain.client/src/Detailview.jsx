@@ -101,12 +101,12 @@ const Detailview = () => {
             try {
                 if (selectedOption == 0) {
                     const today = new Date();
-                    const response = await fetch(curentapitinh + "&startDate=" + today.toLocaleDateString('en-US') + "&endDate=" + today.toLocaleDateString('en-US') + "&modeview=" + $(".my-mode-view input").val());
+                    const response = await fetch(curentapitinh + "&startDate=" + today.toLocaleDateString('en-US') + "&endDate=" + today.toLocaleDateString('en-US') + "&modeview=" + $(".my-mode-view input").val() + "&mathongso=RAIN");
                     const data = await response.json();
                     setdatafecthchart(data);
                 }
                 if (selectedOption == 1) {
-                    const response = await fetch(curentapitinh + "&startDate=" + convertDateFormat($("#my-datepicker-1 input").val()) + "&endDate=" + convertDateFormat($("#my-datepicker-1 input").val()) + "&modeview=" + $(".my-mode-view input").val() );
+                    const response = await fetch(curentapitinh + "&startDate=" + convertDateFormat($("#my-datepicker-1 input").val()) + "&endDate=" + convertDateFormat($("#my-datepicker-1 input").val()) + "&modeview=" + $(".my-mode-view input").val() + "&mathongso=RAIN");
                     const data = await response.json();
                     setdatafecthchart(data);
 
@@ -119,13 +119,13 @@ const Detailview = () => {
                     const endDate = new Date(year, month, 0); 
                     const formattedStartDate = startDate.toLocaleDateString('en-US');
                     const formattedEndDate = endDate.toLocaleDateString('en-US');
-                    const response = await fetch(curentapitinh + "&startDate=" + formattedStartDate + "&endDate=" + formattedEndDate + "&modeview=" + $(".my-mode-view input").val());
+                    const response = await fetch(curentapitinh + "&startDate=" + formattedStartDate + "&endDate=" + formattedEndDate + "&modeview=" + $(".my-mode-view input").val() + "&mathongso=RAIN");
                     const data = await response.json();
                     setdatafecthchart(data);
 
                 }
                 if (selectedOption == 3) {
-                    const response = await fetch(curentapitinh + "&startDate=" + convertDateFormat($(".my-datepicker-3-st input").val()) + "&endDate=" + convertDateFormat($(".my-datepicker-3-ed input").val()) + "&modeview=" + $(".my-mode-view input").val());
+                    const response = await fetch(curentapitinh + "&startDate=" + convertDateFormat($(".my-datepicker-3-st input").val()) + "&endDate=" + convertDateFormat($(".my-datepicker-3-ed input").val()) + "&modeview=" + $(".my-mode-view input").val() + "&mathongso=RAIN");
                     const data = await response.json();
                     setdatafecthchart(data);
                 }

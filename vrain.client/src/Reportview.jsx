@@ -140,7 +140,7 @@ const ReportComponent = () => {
         fetchDataProvine();
     }, [name_province]);
     const fetchDatareport = async () => {
-        const response = await fetch(getapireport);
+        const response = await fetch(getapireport + "&mathongso=RAIN");
         const data = await response.json();
         ListrpRef.current = data;
 
