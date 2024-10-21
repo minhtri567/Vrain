@@ -4,7 +4,6 @@ import React, { useEffect, useRef } from 'react';
 import * as echarts from 'echarts';
 import * as XLSX from 'xlsx';
 const BarChartComponent = ({ dataChart, chartHeight, opview }) => {
-    console.log(dataChart)
     const chartRef = useRef(null);
     const chartInstanceRef = useRef(null);
     const exportChartToExcel = (dataChart, dimensions, stationNames) => {

@@ -41,7 +41,7 @@ const Detailview = () => {
     const [visibleRight, setVisibleRight] = useState(false);
     const tableRef = useRef(null);
     var curentapitinh = "/vnrain/WeatherStations/raintoday?provincename=" + encodeURIComponent(name_province) + "";
-    var getapistations = "/vnrain/WeatherStations/station_provine?provincename=" + encodeURIComponent(name_province) + "";
+    var getapistations = "/vnrain/WeatherStations/station_provine?provincename=" + encodeURIComponent(name_province) + "&mathongso=RAIN";
     const stationsRef = useRef([]);
     var now = new Date();
     var currentDateTime = now.toLocaleString('vi-VN', {
@@ -207,7 +207,7 @@ const Detailview = () => {
     };
 
     useEffect(() => {
-        if (datafecthchart.length > 0) {
+        if (datafecthchart.length > 0 && selectedStation != 'all') {
             const processData = async () => {
                 const dataChartthis = [];
                 let cumulativeTotal = 0;
@@ -215,7 +215,7 @@ const Detailview = () => {
                 // Process datafecthchart
                 datafecthchart.forEach(dayData => {
                     const timepoint = dayData.timePoint;
-                    const stationData = dayData.stations.find(station => station.station_id === selectedStation);selectedStation
+                    const stationData = dayData.stations.find(station => station.station_id === selectedStation);
                     if (stationData) {
                         const dailyTotal = parseFloat(stationData.total).toFixed(2);
                         cumulativeTotal += parseFloat(dailyTotal);
@@ -281,52 +281,102 @@ const Detailview = () => {
     const [datatable, setdatatable] = useState([]);
     const [columns, setcolumns] = useState([]);
     useEffect(() => {
-        const stationMap = {};
+        if (selectedStation != 'all') {
+            const stationMap = {};
 
-        datafecthchart.forEach(dayData => {
-            const timePoint = dayData.timePoint;
-            dayData.stations.forEach(station => {
-                if (station.station_id === selectedStation) { // Lọc theo selectedStation
-                    if (!stationMap[station.station_id]) {
-                        stationMap[station.station_id] = {
-                            station_name: station.station_name,
-                            province: station.tinh,
-                            quanhuyen: station.quanhuyen,
-                            xaphuong: station.phuongxa,
-                            totalRainfall: 0,
-                            ...datafecthchart.reduce((acc, d) => {
-                                acc[d.timePoint] = '0.00 mm'; // Khởi tạo tất cả timePoints với '0.00'
-                                return acc;
-                            }, {})
-                        };
+            datafecthchart.forEach(dayData => {
+                const timePoint = dayData.timePoint;
+                dayData.stations.forEach(station => {
+                    if (station.station_id === selectedStation) {
+                        if (!stationMap[station.station_id]) {
+                            stationMap[station.station_id] = {
+                                station_name: station.station_name,
+                                province: station.tinh,
+                                quanhuyen: station.quanhuyen,
+                                xaphuong: station.phuongxa,
+                                totalRainfall: 0,
+                                ...datafecthchart.reduce((acc, d) => {
+                                    acc[d.timePoint] = '0.00 mm'; // Khởi tạo tất cả timePoints với '0.00'
+                                    return acc;
+                                }, {})
+                            };
+                        }
+                        const rainfall = parseFloat(station.total.toFixed(2));
+                        stationMap[station.station_id][timePoint] = `${rainfall.toFixed(2)} mm`;
+                        stationMap[station.station_id].totalRainfall += rainfall;
                     }
-                    const rainfall = parseFloat(station.total.toFixed(2));
-                    stationMap[station.station_id][timePoint] = `${rainfall.toFixed(2)} mm`; 
-                    stationMap[station.station_id].totalRainfall += rainfall;
-                }
+                });
             });
-        });
 
 
-        const formattedData = Object.values(stationMap).map(station => ({
-            ...station,
-            totalRainfall: `${station.totalRainfall.toFixed(2)} mm` // Đảm bảo tổng lượng mưa có 2 chữ số sau dấu thập phân
-        }));
+            const formattedData = Object.values(stationMap).map(station => ({
+                ...station,
+                totalRainfall: `${station.totalRainfall.toFixed(2)} mm` // Đảm bảo tổng lượng mưa có 2 chữ số sau dấu thập phân
+            }));
 
-        // Define columns
-        const columnDefs = [
-            { field: 'station_name', header: 'Tên Trạm', frozen: true },
-            { field: 'province', header: 'Tỉnh' },
-            { field: 'quanhuyen', header: 'Quận/Huyện' },
-            { field: 'xaphuong', header: 'Xã/Phường' },
-            { field: 'totalRainfall', header: 'Tổng mưa' },
-            ...datafecthchart.map(dayData => ({
-                field: dayData.timePoint,
-                header: dayData.timePoint
-            }))
-        ];
-        setdatatable(formattedData);
-        setcolumns(columnDefs);
+            // Define columns
+            const columnDefs = [
+                { field: 'station_name', header: 'Tên Trạm', frozen: true },
+                { field: 'province', header: 'Tỉnh' },
+                { field: 'quanhuyen', header: 'Quận/Huyện' },
+                { field: 'xaphuong', header: 'Xã/Phường' },
+                { field: 'totalRainfall', header: 'Tổng mưa' },
+                ...datafecthchart.map(dayData => ({
+                    field: dayData.timePoint,
+                    header: dayData.timePoint
+                }))
+            ];
+            setdatatable(formattedData);
+            setcolumns(columnDefs);
+        } else {
+            const stationMap = {};
+
+            datafecthchart.forEach(dayData => {
+                const timePoint = dayData.timePoint;
+                dayData.stations.forEach(station => {
+                        if (!stationMap[station.station_id]) {
+                            stationMap[station.station_id] = {
+                                station_name: station.station_name,
+                                province: station.tinh,
+                                quanhuyen: station.quanhuyen,
+                                xaphuong: station.phuongxa,
+                                totalRainfall: 0,
+                                ...datafecthchart.reduce((acc, d) => {
+                                    acc[d.timePoint] = '0.00 mm'; // Khởi tạo tất cả timePoints với '0.00'
+                                    return acc;
+                                }, {})
+                            };
+                        }
+                        const rainfall = parseFloat(station.total.toFixed(2));
+                        stationMap[station.station_id][timePoint] = `${rainfall.toFixed(2)} mm`;
+                        stationMap[station.station_id].totalRainfall += rainfall;
+                });
+            });
+
+
+            const formattedData = Object.values(stationMap).map(station => ({
+                ...station,
+                totalRainfall: `${station.totalRainfall.toFixed(2)} mm` // Đảm bảo tổng lượng mưa có 2 chữ số sau dấu thập phân
+            }));
+
+            // Define columns
+            const columnDefs = [
+                { field: 'station_name', header: 'Tên Trạm', frozen: true },
+                { field: 'province', header: 'Tỉnh' },
+                { field: 'quanhuyen', header: 'Quận/Huyện' },
+                { field: 'xaphuong', header: 'Xã/Phường' },
+                { field: 'totalRainfall', header: 'Tổng mưa' },
+                ...datafecthchart.map(dayData => ({
+                    field: dayData.timePoint,
+                    header: dayData.timePoint
+                }))
+            ];
+
+            setdatatable(formattedData);
+            setcolumns(columnDefs);
+            setShowChart(false);
+        }
+        
 
     }, [datafecthchart, selectedStation]); //
 
@@ -377,6 +427,10 @@ const Detailview = () => {
             <Login ishome={false} />
         </div>
     );
+
+    const allOption = { station_id: 'all', station_name: 'Xem tất cả' };
+    const optionsWithAll = [allOption, ...stationsRef.current];
+
     return (
         <div style={showChart ? { backgroundColor: '#fafafa' } : { backgroundColor: '#fafafa', height : '100vh' }}>
              <div className="r-overview">
@@ -420,11 +474,13 @@ const Detailview = () => {
                         <Autocomplete
                             id="autocomplete-stations"
                             size="small"
-                            options={stationsRef.current}
-                            getOptionLabel={(station) => station.station_name}
-                            value={selectedStation ? stationsRef.current.find(s => s.station_id === selectedStation) : null}
+                            options={optionsWithAll}
+                            getOptionLabel={(station) => station?.station_name || ''}
+                            value={selectedStation ? optionsWithAll.find(s => s.station_id === selectedStation) : null}
                             onChange={(event, newValue) => {
-                                if (newValue) {
+                                if (newValue.station_id === 'all') {
+                                    handleChangeStation({ target: { value: 'all' } });
+                                } else {
                                     handleChangeStation({ target: { value: newValue.station_id } });
                                 }
                             }}

@@ -263,6 +263,19 @@ const Mapmucnuoc = () => {
                     'maxzoom': 7,
                 });
 
+                map.current.addLayer({
+                    id: 'text-warning-layer',
+                    type: 'symbol',
+                    source: 'stations',
+                    layout: {
+                        'text-field': ['concat', ['get', 'mucnuoc'], ' cm'], 
+                        'text-size': 12, // Kích thước chữ
+                        'text-anchor': 'bottom', // Ghim chữ ở trên
+                        'icon-allow-overlap': true
+                    },
+                    minzoom: 10, 
+                    maxzoom: 15, 
+                });
 
                 map.current.addLayer({
                     id: 'non-warning-layer',

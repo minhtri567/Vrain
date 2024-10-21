@@ -914,6 +914,19 @@ const Overview = () => {
             highlightBlinking(map.current, lon , lat);
         }
     };
+    const handleDoubleClick = (lat, lon , station_id) => {
+        setSelectedStation(station_id);
+        viewllstation(lat, lon);
+        setShowChart(true);
+        prepareChartData(station_id, lat, lon).then(response => {
+            setDataChart(response.dataChart);
+        });
+        setfdata({
+            sid: station_id,
+            lat: lat,
+            lon: lon
+        });
+    };
     const exitviewmap= () => {
         $('.containt-view-mapbox').css('display', 'none');
         $('.liststation').css('display', 'block');
@@ -1056,7 +1069,7 @@ const Overview = () => {
                     <div className="listraininfo">
                         <ul>
                             {filteredStations.map((station, index) => (
-                                <li key={index} onClick={() => handleStationClick(station.lat, station.lon)} >
+                                <li key={index} onClick={() => handleStationClick(station.lat, station.lon)} onDoubleClick={() => handleDoubleClick(station.lat, station.lon, station.station_id)} >
                                     <div className="list-line-1"><p className="station-tinh">{station.station_name}</p><div className="station-rain" dangerouslySetInnerHTML={{ __html: Gettextrain(station.total) }}></div></div>
                                     <div className="list-line-2"><p className="station-name">Tại : {station.phuongxa} - {station.quanhuyen}</p><div className="type-rain" dangerouslySetInnerHTML={{ __html: Typerain(station.total) }}></div></div>
                                  </li>
