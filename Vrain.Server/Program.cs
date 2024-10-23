@@ -51,13 +51,24 @@ builder.Services.AddQuartz(q =>
         .ForJob(jobKey)
         .WithIdentity("FetchWeatherDataJob-trigger")
         //.WithCronSchedule("0 * * ? * *")); // Run every minute
-        //.WithCronSchedule("0 */2 * * * ?")); // Run every 2 minutes
         .WithCronSchedule("0 0 * * * ?")); // Run every hour
+
+    var waterLevelJobKey = new JobKey("AutoGetDataMucNuoc");
+    q.AddJob<AutoGetDataMucNuoc>(opts => opts.WithIdentity(waterLevelJobKey));
+    q.AddTrigger(opts => opts
+        .ForJob(waterLevelJobKey)
+        .WithIdentity("AutoGetDataMucNuoc-trigger")
+        //.WithCronSchedule("0 * * ? * *"));
+        .WithCronSchedule("0 */10 * * * ?"));
 });
 
 builder.Services.AddQuartzHostedService(q => q.WaitForJobsToComplete = true);
 builder.Services.AddHttpClient<FetchWeatherDataJob>();
 builder.Services.AddScoped<FetchWeatherDataJob>();
+
+builder.Services.AddHttpClient<AutoGetDataMucNuoc>();
+builder.Services.AddScoped<AutoGetDataMucNuoc>();
+
 builder.Services.AddTransient<DataHelper>();
 builder.Services.AddDbContext<WeatherDbContext>(options => {
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));

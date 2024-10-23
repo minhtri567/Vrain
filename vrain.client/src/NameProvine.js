@@ -1,214 +1,238 @@
 ﻿/* eslint-disable no-unused-vars */
 export function getNameProvince(text) {
-    let Name = "";
 
     switch (text) {
         case "an-giang":
-            Name = "An Giang";
-            break;
+            return "An Giang";
+            
         case "ba-ria-vung-tau":
-            Name = "Bà Rịa-Vũng Tàu";
-            break;
+            return "Bà Rịa-Vũng Tàu";
+            
         case "bac-giang":
-            Name = "Bắc Giang";
-            break;
+            return "Bắc Giang";
+            
         case "bac-kan":
-            Name = "Bắc Kạn";
-            break;
+            return "Bắc Kạn";
+            
         case "bac-can":
-            Name = "Bắc Cạn";
-            break;
+            return "Bắc Cạn";
+            
         case "bac-lieu":
-            Name = "Bạc Liêu";
-            break;
+            return "Bạc Liêu";
+            
         case "bac-ninh":
-            Name = "Bắc Ninh";
-            break;
+            return "Bắc Ninh";
+            
         case "ben-tre":
-            Name = "Bến Tre";
-            break;
+            return "Bến Tre";
+            
         case "binh-dinh":
-            Name = "Bình Định";
-            break;
+            return "Bình Định";
+            
         case "binh-duong":
-            Name = "Bình Dương";
-            break;
+            return "Bình Dương";
+            
         case "binh-phuoc":
-            Name = "Bình Phước";
-            break;
+            return "Bình Phước";
+            
         case "binh-thuan":
-            Name = "Bình Thuận";
-            break;
+            return "Bình Thuận";
+            
         case "ca-mau":
-            Name = "Cà Mau";
-            break;
+            return "Cà Mau";
+            
         case "tp-can-tho":
-            Name = "TP. Cần Thơ";
-            break;
+            return "TP. Cần Thơ";
+            
         case "cao-bang":
-            Name = "Cao Bằng";
-            break;
+            return "Cao Bằng";
+            
         case "dak-lak":
-            Name = "Đắk Lắk";
-            break;
+            return "Đắk Lắk";
+            
         case "tp-da-nang":
-            Name = "TP. Đà Nẵng";
-            break;
+            return "TP. Đà Nẵng";
+            
         case "dak-nong":
-            Name = "Đắk Nông";
-            break;
+            return "Đắk Nông";
+            
         case "dien-bien":
-            Name = "Điện Biên";
-            break;
+            return "Điện Biên";
+            
         case "dong-nai":
-            Name = "Đồng Nai";
-            break;
+            return "Đồng Nai";
+            
         case "dong-thap":
-            Name = "Đồng Tháp";
-            break;
+            return "Đồng Tháp";
+            
         case "gia-lai":
-            Name = "Gia Lai";
-            break;
+            return "Gia Lai";
+            
         case "ha-giang":
-            Name = "Hà Giang";
-            break;
+            return "Hà Giang";
+            
         case "ha-nam":
-            Name = "Hà Nam";
-            break;
+            return "Hà Nam";
+            
         case "tp-ha-noi":
-            Name = "TP. Hà Nội";
-            break;
+            return "TP. Hà Nội";
+            
         case "ha-tinh":
-            Name = "Hà Tĩnh";
-            break;
+            return "Hà Tĩnh";
+            
         case "hai-duong":
-            Name = "Hải Dương";
-            break;
+            return "Hải Dương";
+            
         case "hai-phong":
-            Name = "Hải Phòng";
-            break;
+            return "Hải Phòng";
+            
         case "tp-hai-phong":
-            Name = "TP. Hải Phòng";
-            break;
+            return "TP. Hải Phòng";
+            
         case "hau-giang":
-            Name = "Hậu Giang";
-            break;
+            return "Hậu Giang";
+            
         case "hoa-binh":
-            Name = "Hòa Bình";
-            break;
+            return "Hòa Bình";
+            
         case "tp-ho-chi-minh":
-            Name = "TP Hồ Chí Minh";
-            break;
+            return "TP Hồ Chí Minh";
+            
         case "ho-chi-minh":
-            Name = "Hồ Chí Minh";
-            break;
+            return "Hồ Chí Minh";
+            
         case "hung-yen":
-            Name = "Hưng Yên";
-            break;
+            return "Hưng Yên";
+            
         case "khanh-hoa":
-            Name = "Khánh Hòa";
-            break;
+            return "Khánh Hòa";
+            
         case "kien-giang":
-            Name = "Kiên Giang";
-            break;
+            return "Kiên Giang";
+            
         case "kon-tum":
-            Name = "Kon Tum";
-            break;
+            return "Kon Tum";
+            
         case "lai-chau":
-            Name = "Lai Châu";
-            break;
+            return "Lai Châu";
+            
         case "lam-dong":
-            Name = "Lâm Đồng";
-            break;
+            return "Lâm Đồng";
+            
         case "lang-son":
-            Name = "Lạng Sơn";
-            break;
+            return "Lạng Sơn";
+            
         case "lao-cai":
-            Name = "Lào Cai";
-            break;
+            return "Lào Cai";
+            
         case "long-an":
-            Name = "Long An";
-            break;
+            return "Long An";
+            
         case "nam-dinh":
-            Name = "Nam Định";
-            break;
+            return "Nam Định";
+            
         case "nghe-an":
-            Name = "Nghệ An";
-            break;
+            return "Nghệ An";
+            
         case "ninh-binh":
-            Name = "Ninh Bình";
-            break;
+            return "Ninh Bình";
+            
         case "ninh-thuan":
-            Name = "Ninh Thuận";
-            break;
+            return "Ninh Thuận";
+            
         case "phu-tho":
-            Name = "Phú Thọ";
-            break;
+            return "Phú Thọ";
+            
         case "phu-yen":
-            Name = "Phú Yên";
-            break;
+            return "Phú Yên";
+            
         case "quang-binh":
-            Name = "Quảng Bình";
-            break;
+            return "Quảng Bình";
+            
         case "quang-nam":
-            Name = "Quảng Nam";
-            break;
+            return "Quảng Nam";
+            
         case "quang-ngai":
-            Name = "Quảng Ngãi";
-            break;
+            return "Quảng Ngãi";
+            
         case "quang-ninh":
-            Name = "Quảng Ninh";
-            break;
+            return "Quảng Ninh";
+            
         case "quang-tri":
-            Name = "Quảng Trị";
-            break;
+            return "Quảng Trị";
+            
         case "soc-trang":
-            Name = "Sóc Trăng";
-            break;
+            return "Sóc Trăng";
+            
         case "son-la":
-            Name = "Sơn La";
-            break;
+            return "Sơn La";
+            
         case "tay-ninh":
-            Name = "Tây Ninh";
-            break;
+            return "Tây Ninh";
+            
         case "thai-binh":
-            Name = "Thái Bình";
-            break;
+            return "Thái Bình";
+            
         case "thai-nguyen":
-            Name = "Thái Nguyên";
-            break;
+            return "Thái Nguyên";
+            
         case "thanh-hoa":
-            Name = "Thanh Hóa";
-            break;
+            return "Thanh Hóa";
+            
         case "thua-thien-hue":
-            Name = "Thừa Thiên-Huế";
-            break;
+            return "Thừa Thiên-Huế";
+            
         case "tien-giang":
-            Name = "Tiền Giang";
-            break;
+            return "Tiền Giang";
+            
         case "tra-vinh":
-            Name = "Trà Vinh";
-            break;
+            return "Trà Vinh";
+            
         case "tuyen-quang":
-            Name = "Tuyên Quang";
-            break;
+            return "Tuyên Quang";
+            
         case "vinh-long":
-            Name = "Vĩnh Long";
-            break;
+            return "Vĩnh Long";
+            
         case "vinh-phuc":
-            Name = "Vĩnh Phúc";
-            break;
+            return "Vĩnh Phúc";
+            
         case "yen-bai":
-            Name = "Yên Bái";
-            break;
+            return "Yên Bái";
+            
         case "quan-dao-truong-sa":
-            Name = "Quần đảo Trường Sa";
-            break;
+            return "Quần đảo Trường Sa";
+            
+        case "luu-vuc-song-ma-chu":
+            return "Lưu vực sông Mã - Chu";
+        case "luu-vuc-song-se-san":
+            return "Lưu vực sông Sê San";
+        case "luu-vuc-song-hong-thai-binh":
+            return "Lưu vực sông Hồng - Thái Bình";
+        case "luu-vuc-song-cuu-long":
+            return "Lưu vực sông Cửu Long";
+        case "luu-vuc-song-ca":
+            return "Lưu vực sông Cả";
+        case "luu-vuc-song-srepok":
+            return "Lưu vực sông Srêpok";
+        case "luu-vuc-song-vu-gia-thu-bon":
+            return "Lưu vực sông Vu Gia - Thu Bồn";
+        case "luu-vuc-song-ky-cung-bang-giang":
+            return "Lưu vực sông Kỳ Cùng - Bằng Giang";
+        case "luu-vuc-song-nam-bo":
+            return "Lưu vực sông Nam Bộ";
+        case "luu-vuc-song-kon":
+            return "Lưu vực sông Kôn";
+        case "luu-vuc-song-ba":
+            return "Lưu vực sông Ba";
+        case "luu-vuc-song-tra-khuc":
+            return "Lưu vực sông Trà Khúc";
+        case "luu-vuc-song-bac-trung-bo":
+            return "Lưu vực sông Bắc Trung Bộ";
+        case "luu-vuc-song-dong-nai":
+            return "Lưu vực sông Đồng Nai";
         default:
-            Name = text;
-            break;
+            return text;
     }
-
-    return Name;
 }
 

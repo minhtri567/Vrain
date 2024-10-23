@@ -858,3 +858,24 @@ button:focus, button:focus-visible {
 .open-layer .container-link-layer button.active {
     background: rgb(255 255 255 );
 }
+
+
+.non-warning tr td:last-child, .warning-1 tr td:last-child, .warning-2 tr td:last-child, .warning-3 tr td:last-child {
+    text-align: center;
+    min-width: 150px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.toggle-layer-bgmap {
+    position: absolute;
+    right: 45px;
+    top: 54%;
+    background-color: #ffffff;
+    z-index: 10;
+    transform: translateY(-50%);
+    border: navajowhite;
+    border-radius: 50%;
+    padding: 8px;
+}

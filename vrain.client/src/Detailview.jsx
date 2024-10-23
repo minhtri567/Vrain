@@ -382,16 +382,21 @@ const Detailview = () => {
 
     const exportTableToExcel = async () => {
         let nameexcel;
-        if (selectedtime == 0) {
-            nameexcel = currentDateTime + document.querySelector("#sl_stations-select").innerText;
-        } else if (selectedtime == 1) {
-            nameexcel = previousday + document.querySelector("#sl_stations-select").innerText;
-        } else if (selectedtime == 2) {
-            nameexcel = document.querySelector("#my-datepicker-2 input").value + document.querySelector("#sl_stations-select").innerText;
-        } else if (selectedtime == 3) {
-            nameexcel = "Báo cáo đo mưa trạm " + document.querySelector("#sl_stations-select").innerText + " từ " + document.querySelector(".my-datepicker-3-st input").value + " đến  " + document.querySelector(".my-datepicker-3-ed input").value;
-
+        
+        if (selectedStation == 'all') {
+            nameexcel = 'Trạm đo mưa tỉnh ' + getNameProvince(name_province);
+        } else {
+            if (selectedtime == 0) {
+                nameexcel = currentDateTime + document.querySelector("#sl_stations-select").innerText;
+            } else if (selectedtime == 1) {
+                nameexcel = previousday + document.querySelector("#sl_stations-select").innerText;
+            } else if (selectedtime == 2) {
+                nameexcel = document.querySelector("#my-datepicker-2 input").value + document.querySelector("#sl_stations-select").innerText;
+            } else if (selectedtime == 3) {
+                nameexcel = "Báo cáo đo mưa trạm " + document.querySelector("#sl_stations-select").innerText + " từ " + document.querySelector(".my-datepicker-3-st input").value + " đến  " + document.querySelector(".my-datepicker-3-ed input").value;
+            }
         }
+
 
         import('xlsx').then((xlsx) => {
             const worksheet = xlsx.utils.json_to_sheet(datatable);
