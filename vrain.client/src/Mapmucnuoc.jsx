@@ -39,6 +39,8 @@ const Mapmucnuoc = () => {
     const [loading, setLoading] = useState(true);
     const [filteredLuuvucList, setfilteredLuuvucList] = useState('');
     const [layerVisible, setLayerVisible] = useState(false);
+    const [selecteduiStation, setSelecteduiStation] = useState('');
+    const [datachangselected, setdatachangselected] = useState([]);
     var hoverTimeout;
     var allapistations = '/vnrain/Mucnuoc';
     var allapiluuvuc = '/vnrain/Mucnuoc/luuvuc';
@@ -77,6 +79,8 @@ const Mapmucnuoc = () => {
         setLoading(true);
         const response = await fetch(apiraintime + encodeURIComponent(tinhtation) + "&startDate=" + convertDateFormat($(".my-datepicker-3-st input").val()) + "&endDate=" + convertDateFormat($(".my-datepicker-3-ed input").val()) + "&modeview=1&mathongso=DOMUCNUOC");
         const data24h = await response.json();
+
+        setdatachangselected(data24h);
 
         let mbaodong1;
         let mbaodong2;
@@ -493,12 +497,11 @@ const Mapmucnuoc = () => {
                 map.current.on('click', 'station-mc-layer', (e) => {
                     var infor = e.features[0].properties;
                     setSelectedStation(infor.sid);
+                    setSelecteduiStation(infor.sid);
 
                     viewllstation(e.lngLat.lat, e.lngLat.lng);
                     setShowChart(true);
-                    prepareChartData(infor.sid, infor.tinh, e.lngLat.lat, e.lngLat.lng).then(response => {
-                        setDataChart(response.dataChart);
-                    });
+
                     settinhfdata(infor.tinh);
                     setfdata({
                         sid: infor.sid,
@@ -532,7 +535,51 @@ const Mapmucnuoc = () => {
         }
     };
     const handleChangeStation = (event) => {
-        setSelectedStation(event.target.value)
+        setSelecteduiStation(event.target.value);
+        
+        let mbaodong1;
+        let mbaodong2;
+        let mbaodong3;
+        let mlulichsu;
+        let maxTotal = -Infinity;
+
+        datachangselected.forEach(dayData => {
+            const stationData = dayData.stations.find(station => station.station_id === event.target.value);
+            if (stationData && stationData.total > maxTotal) {
+                maxTotal = stationData.total;
+                mbaodong1 = stationData.baodong1;
+                mbaodong2 = stationData.baodong2;
+                mbaodong3 = stationData.baodong3;
+                mlulichsu = stationData.lulichsu;
+            }
+        });
+        const dataChart = [];
+        datachangselected.forEach(dayData => {
+            const timepoint = dayData.timePoint;
+            const stationData = dayData.stations.find(station => station.station_id === event.target.value);
+            if (stationData) {
+                const chartEntry = {
+                    timepoint,
+                    [`${stationData.station_name}`]: stationData.total,
+                    'Báo động 1': stationData.baodong1,
+                };
+                if (maxTotal >= mbaodong1) {
+                    chartEntry['Báo động 2'] = mbaodong2;
+                }
+                if (maxTotal >= mbaodong2) {
+                    chartEntry['Báo động 3'] = mbaodong3;
+                }
+                if (maxTotal >= mbaodong3) {
+                    chartEntry['Lũ lịch sử'] = mlulichsu;
+                }
+
+                dataChart.push(chartEntry);
+            }
+        });
+
+        setDataChart(dataChart);
+
+        setLoading(false);
     };
 
     useEffect(() => {
@@ -731,7 +778,7 @@ const Mapmucnuoc = () => {
                                 id="autocomplete-stations"
                                 options={stationsRef.current.filter(station => station.tinh === tinhdata)}
                                 getOptionLabel={(option) => option.station_name || "Không tìm thấy tên trạm"}
-                                value={selectedStation ? stationsRef.current.find(s => s.station_id === selectedStation) : null}
+                                value={selecteduiStation ? stationsRef.current.find(s => s.station_id === selecteduiStation) : null}
                                 onChange={(event, newValue) => {
                                     if (newValue) {
                                         handleChangeStation({ target: { value: newValue.station_id } });

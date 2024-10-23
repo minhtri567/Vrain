@@ -14,10 +14,7 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { Autocomplete, TextField } from '@mui/material';
-import InputLabel from '@mui/material/InputLabel';
-import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
-import Select from '@mui/material/Select';
 import { Sidebar } from 'primereact/sidebar';
 import { Button } from 'primereact/button';
 import Login from './Login';
@@ -44,12 +41,14 @@ const MNOverview = () => {
     const [loading, setLoading] = useState(true);
     const today = dayjs();
     const [selectedStation, setSelectedStation] = useState('');
-    const [selectmodeview, setselectmodeview] = useState(2);
+    const [selecteduiStation, setSelecteduiStation] = useState('');
+    const [datachangselected, setdatachangselected] = useState([]);
     const sevenDaysAgo = today.subtract(7, 'day');
     var curentapiluuvuc = "/vnrain/Mucnuoc?luuvuc=" + getNameProvince(name_luuvuc) + "";
     var apimucnuocnow = "/vnrain/Mucnuoc/Mucnuocnow?luuvuc=" + getNameProvince(name_luuvuc) + "";
     var hoverTimeout;
     var now = new Date();
+    now.setMinutes(0);
     var currentDateTime = now.toLocaleString('vi-VN', {
         hour: 'numeric',
         minute: 'numeric',
@@ -94,6 +93,8 @@ const MNOverview = () => {
         setLoading(true);
         const response = await fetch(apimucnuocnow + "&startDate=" + convertDateFormat($(".my-datepicker-3-st input").val()) + "&endDate=" + convertDateFormat($(".my-datepicker-3-ed input").val() + "&mathongso=DOMUCNUOC"));
         const data24h = await response.json();
+
+        setdatachangselected(data24h);
 
         let mbaodong1;
         let mbaodong2;
@@ -487,12 +488,11 @@ const MNOverview = () => {
                 map.current.on('click', 'station-mc-layer', (e) => {
                     var infor = e.features[0].properties;
                     setSelectedStation(infor.sid);
+                    setSelecteduiStation(infor.sid);
 
                     viewllstation(e.lngLat.lat, e.lngLat.lng);
                     setShowChart(true);
-                    prepareChartData(infor.sid, infor.tinh, e.lngLat.lat, e.lngLat.lng).then(response => {
-                        setDataChart(response.dataChart);
-                    });
+
                     setfdata({
                         sid: infor.sid,
                         lat: e.lngLat.lat,
@@ -566,7 +566,52 @@ const MNOverview = () => {
         });
     };
     const handleChangeStation = (event) => {
-        setSelectedStation(event.target.value)
+        setSelecteduiStation(event.target.value);
+
+        let mbaodong1;
+        let mbaodong2;
+        let mbaodong3;
+        let mlulichsu;
+        let maxTotal = -Infinity;
+
+        datachangselected.forEach(dayData => {
+            const stationData = dayData.stations.find(station => station.station_id === event.target.value);
+            if (stationData && stationData.total > maxTotal) {
+                maxTotal = stationData.total;
+                mbaodong1 = stationData.baodong1;
+                mbaodong2 = stationData.baodong2;
+                mbaodong3 = stationData.baodong3;
+                mlulichsu = stationData.lulichsu;
+            }
+        });
+        const dataChart = [];
+        datachangselected.forEach(dayData => {
+            const timepoint = dayData.timePoint;
+            const stationData = dayData.stations.find(station => station.station_id === event.target.value);
+            if (stationData) {
+                const chartEntry = {
+                    timepoint,
+                    [`${stationData.station_name}`]: stationData.total,
+                    'Báo động 1': stationData.baodong1,
+                };
+                if (maxTotal >= mbaodong1) {
+                    chartEntry['Báo động 2'] = mbaodong2;
+                }
+                if (maxTotal >= mbaodong2) {
+                    chartEntry['Báo động 3'] = mbaodong3;
+                }
+                if (maxTotal >= mbaodong3) {
+                    chartEntry['Lũ lịch sử'] = mlulichsu;
+                }
+
+                dataChart.push(chartEntry);
+            }
+        });
+
+        setDataChart(dataChart);
+
+        setLoading(false);
+
     };
 
     const customHeader = (
@@ -574,13 +619,7 @@ const MNOverview = () => {
             <Login ishome={false} />
         </div>
     );
-    useEffect(() => {
 
-    }, [selectmodeview]);
-
-    const handleChangemode = (event) => {
-        setselectmodeview(event.target.value);
-    };
 
     const [isMobile, setIsMobile] = useState(window.innerWidth <= 575.98); // Giả sử màn hình mobile là <= 575.98px
 
@@ -643,11 +682,9 @@ const MNOverview = () => {
     };
     const handleDoubleClick = (lat, lon, station_id) => {
         setSelectedStation(station_id);
+        setSelecteduiStation(station_id);
         viewllstation(lat, lon);
         setShowChart(true);
-        prepareChartData(station_id, lat, lon).then(response => {
-            setDataChart(response.dataChart);
-        });
         setfdata({
             sid: station_id,
             lat: lat,
@@ -673,7 +710,7 @@ const MNOverview = () => {
                                     size="small"
                                     options={stationsRef.current}
                                     getOptionLabel={(station) => station.station_name}
-                                    value={selectedStation ? stationsRef.current.find(s => s.station_id === selectedStation) : null}
+                                    value={selecteduiStation ? stationsRef.current.find(s => s.station_id === selecteduiStation) : null}
                                     onChange={(event, newValue) => {
                                         if (newValue) {
                                             handleChangeStation({ target: { value: newValue.station_id } });
@@ -712,23 +749,6 @@ const MNOverview = () => {
                                     />
                                 </DemoContainer>
                             </LocalizationProvider>
-                        </div>
-                        <div className="container-select my-mode-view" >
-                            <FormControl sx={{ m: 1, minWidth: 120 }} size="small"  >
-                                <InputLabel id="sl_mode_views">Chế độ xem</InputLabel>
-                                <Select
-                                    labelId="sl_mode_views"
-                                    id="sl_stations-select"
-                                    value={selectmodeview}
-                                    label="Chế độ xem"
-                                    onChange={handleChangemode}
-                                >
-                                    <MenuItem value={1}>Giờ</MenuItem>
-                                    <MenuItem value={2}>Ngày</MenuItem>
-                                    <MenuItem value={3}>Tháng</MenuItem>
-
-                                </Select>
-                            </FormControl>
                         </div>
                         <button id="view-station" onClick={handlerefecthdata}>Xem</button>
                     </div>
