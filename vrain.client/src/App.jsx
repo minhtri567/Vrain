@@ -4,6 +4,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import MapComponent from './MapComponent';
 import MapMucnuoc from './Mapmucnuoc';
 import MNOverview from './MNOverview';
+import MNDetailview from './MNDetailview';
 import Overview from './Overview';
 import Detailview from './Detailview';
 import Reportview from './Reportview';
@@ -21,6 +22,7 @@ const App = () => {
                 <Route path="/report/:name_province" element={<Reportview />} />
                 <Route path="/mucnuoc" element={<MapMucnuoc />} />
                 <Route path="/mucnuoc/overview/:name_luuvuc" element={<MNOverview />} />
+                <Route path="/mucnuoc/detail/:name_luuvuc" element={<MNDetailview />} />
                 <Route
                     path="/quantri/index"
                     element={

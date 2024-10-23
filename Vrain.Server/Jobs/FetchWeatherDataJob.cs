@@ -77,11 +77,11 @@ public class FetchWeatherDataJob : IJob
 
                 if (firstRecord != null && firstRecord.data_thoigian.Date == DateTime.Now.Date.AddDays(-1))
                 {
-                    await _context.Database.ExecuteSqlRawAsync("DELETE FROM monitoring_data_today data_maloaithongso = 'RAIN';");
+                    await _context.Database.ExecuteSqlRawAsync("DELETE FROM monitoring_data_today WHERE data_maloaithongso = 'RAIN';");
                 }
                 else
                 {
-                    await _context.Database.ExecuteSqlRawAsync("delete from monitoring_data_today\r\nwhere data_thoigian < ((current_date - 1) + time '20:00:00')");
+                    await _context.Database.ExecuteSqlRawAsync("delete from monitoring_data_today\r\nwhere data_thoigian < ((current_date - 1) + time '20:00:00') AND data_maloaithongso = 'RAIN'");
                     await _context.Database.ExecuteSqlRawAsync(@"
                         INSERT INTO monitoring_data(tskt_id, data_thoigian, data_thoigiancapnhat, data_giatri_sothuc, createby, station_id , data_maloaithongso)
                         SELECT
@@ -94,10 +94,9 @@ public class FetchWeatherDataJob : IJob
                             data_maloaithongso
                         FROM
                             monitoring_data_today
-                            where data_thoigian <= (current_date + time '19:59:00') ;
+                            where data_thoigian <= (current_date + time '19:59:00') AND data_maloaithongso = 'RAIN';
                     ");
-                    await _context.Database.ExecuteSqlRawAsync("DELETE FROM monitoring_data_today;");
-                    await _context.Database.ExecuteSqlRawAsync("ALTER SEQUENCE monitoring_data_today_data_id_seq RESTART WITH 1;");
+                    await _context.Database.ExecuteSqlRawAsync("DELETE FROM monitoring_data_today WHERE data_maloaithongso = 'RAIN';");
                 }
 
                 var stationData = (from tskt in _context.iw_thongsoquantrac.Where(s=>s.tskt_maloaithongso == "RAIN")

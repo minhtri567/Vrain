@@ -66,6 +66,25 @@ public class AutoGetDataMucNuoc : IJob
             {
                 await _context.Database.ExecuteSqlRawAsync("DELETE FROM monitoring_data_today WHERE data_maloaithongso = 'DOMUCNUOC' ;");
             }
+            else
+            {
+                await _context.Database.ExecuteSqlRawAsync("delete from monitoring_data_today\r\nwhere data_thoigian < ( current_date  + time '00:00:01') AND data_maloaithongso = 'DOMUCNUOC' ;");
+                await _context.Database.ExecuteSqlRawAsync(@"
+                        INSERT INTO monitoring_data(tskt_id, data_thoigian, data_thoigiancapnhat, data_giatri_sothuc, createby, station_id , data_maloaithongso)
+                        SELECT
+                            tskt_id,
+                            data_thoigian,
+                            data_thoigiancapnhat,
+                            data_giatri_sothuc,
+                            createby,
+                            station_id,
+                            data_maloaithongso
+                        FROM
+                            monitoring_data_today
+                            where data_thoigian <= (current_date + time '00:00:01') AND data_maloaithongso = 'DOMUCNUOC';
+                    ");
+                await _context.Database.ExecuteSqlRawAsync("DELETE FROM monitoring_data_today data_maloaithongso = 'DOMUCNUOC';");
+            }
 
             foreach (var data in joinedData)
             {

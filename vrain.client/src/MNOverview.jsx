@@ -545,7 +545,7 @@ const MNOverview = () => {
         navigate(`/mucnuoc`);
     };
     const handleVdetail = () => {
-
+        navigate(`/mucnuoc/detail/${name_luuvuc}`);
     }
     const handleRdetail = () => {
 
