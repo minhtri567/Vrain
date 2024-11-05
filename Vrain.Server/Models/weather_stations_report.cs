@@ -15,6 +15,7 @@
         public int trangthai { get; set; }
         public string[]? id_station_list { get; set; }
         public string? loai_tram { get; set; }
+        public string? luu_vuc { get; set; }
 
     }
 }

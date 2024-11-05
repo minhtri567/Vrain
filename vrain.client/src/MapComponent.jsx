@@ -13,7 +13,13 @@ import BarChartComponent from './BarChartComponent';
 import Panellayer from './Panellayer';
 import dayjs from 'dayjs';
 import 'dayjs/locale/vi';
-
+import {
+    MapboxExportControl,
+    Size,
+    PageOrientation,
+    Format,
+    DPI
+} from "@watergis/mapbox-gl-export";
 import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -23,6 +29,7 @@ import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import { Autocomplete, TextField } from '@mui/material';
 import Select from '@mui/material/Select';
+import MapLayerPanel from './MapLayerPanel';
 // Đặt API key của bạn vào đây
 mapboxgl.accessToken = 'pk.eyJ1IjoiYWNjdXdlYXRoZXItaW5jIiwiYSI6ImNqeGtxeDc4ZDAyY2czcnA0Ym9ubzh0MTAifQ.HjSuXwG2bI05yFYmc0c9lw';
 
@@ -69,6 +76,7 @@ const MapComponent = () => {
     const [filteredStations, setFilteredStations] = useState([]);
     const [showChart, setShowChart] = useState(false);
     const [selectedStation, setSelectedStation] = useState('');
+    const [selecteduiStation, setSelecteduiStation] = useState('');
     const [dataChart, setDataChart] = useState([]);
     const [fdata, setfdata] = useState();
     const [tinhdata, settinhfdata] = useState();
@@ -80,8 +88,48 @@ const MapComponent = () => {
     const dataserver = '/vnrain/WeatherStations';
     var allapistations = '/vnrain/WeatherStations/all';
     var apiraintime = "/vnrain/WeatherStations/raintoday?provincename=";
+    const apilayer = '/vnrain/Admin/GetMapLayers';
+
+    const [layers, setLayers] = useState([]);
+
+    useEffect(() => {
+        const fetchLayers = async () => {
+            const response = await fetch(apilayer);
+            const data = await response.json();
+            setLayers(data);
+        };
+
+        fetchLayers();
+    }, []);
+
+    const addLayersToMap = (dataLayers) => {
+        map.current.on('load', () => {
+            dataLayers.forEach(source => {
+                // Thêm nguồn (source) vào bản đồ
+                map.current.addSource(source.sourceName, {
+                    type: 'vector',
+                    tiles: JSON.parse(source.tiles),
+                    bounds: JSON.parse(source.bounds)
+                });
+
+                source.layers.forEach(layer => {
+                    map.current.addLayer({
+                        'id': layer.layerId,
+                        'type': layer.layerType,
+                        'source': source.sourceName,
+                        'source-layer': layer.sourceLayer,
+                        'paint': JSON.parse(layer.paint),
+                        'layout': JSON.parse(layer.layout),
+                        'minzoom': layer.minZoom !== null ? layer.minZoom : 0,
+                        'maxzoom': layer.maxZoom !== null ? layer.maxZoom : 18
+                    });
+                });
+            });
+        });
+    };
+
     var now = new Date();
-    
+    now.setMinutes(0 , 0 , 0);
     var currentDateTime = now.toLocaleString('vi-VN', {
         hour: 'numeric',
         minute: 'numeric',
@@ -120,10 +168,14 @@ const MapComponent = () => {
         });
     };
 
+    const [datachangselected, setdatachangselected] = useState([]);
+
     const prepareChartData = async (stationid, tinhtation, lat, lon) => {
         setLoading(true);
         const response = await fetch(apiraintime + encodeURIComponent(tinhtation) + "&startDate=" + convertDateFormat($(".my-datepicker-3-st input").val()) + "&endDate=" + convertDateFormat($(".my-datepicker-3-ed input").val()) + "&modeview=" + $(".my-mode-view input").val() +"&mathongso=RAIN");
         const data24h = await response.json();
+
+        setdatachangselected(data24h);
 
         const responsefc = await fetch('https://node.windy.com/forecast/v2.7/ecmwf/'+lat+'/'+lon);
         const datafc = await responsefc.json();
@@ -133,7 +185,7 @@ const MapComponent = () => {
 
         let cumulativeTotal = 0;
 
-        data24h.forEach(dayData => {
+        data24h.forEach((dayData, index) => {
             const timepoint = dayData.timePoint;
             const stationData = dayData.stations.find(station => station.station_id === stationid); // Assuming only one station per timepoint
 
@@ -141,11 +193,17 @@ const MapComponent = () => {
                 const dailyTotal = parseFloat(stationData.total).toFixed(2); // Format to two decimal places
                 cumulativeTotal += parseFloat(dailyTotal);
 
-                dataChart.push({
+                const chartDataEntry = ({
                     timepoint,
                     [`${stationData.station_name}`]: dailyTotal,
                     [`Mưa tích lũy ${stationData.station_name}`]: cumulativeTotal.toFixed(2) // Format cumulative total to two decimal places
                 });
+
+                if (index === data24h.length - 1) {
+                    chartDataEntry['Mưa tích lũy dự báo'] = cumulativeTotal.toFixed(2);
+                }
+
+                dataChart.push(chartDataEntry);
             }
         });
         dataChart.push(...extractData(datafc.data, cumulativeTotal))
@@ -186,15 +244,23 @@ const MapComponent = () => {
 
                 const data = await response.json();
                 stationsRef.current = data;
-                initializeMap();
             } catch (error) {
                 console.error('Error fetching data:', error);
             }
         };
 
         fetchfullData();
-
     }, [currentfullDateTime]);
+
+    useEffect(() => {
+        if (stationsRef.current.length > 0) {
+            initializeMap();
+            if (layers.length > 0) {
+                addLayersToMap(layers);
+            }
+        }
+    }, [stationsRef.current]);
+
     const initializeMap = () => {
         if (!map.current && stationsRef.current.length > 0) {
             map.current = new mapboxgl.Map({
@@ -204,6 +270,8 @@ const MapComponent = () => {
                 zoom: 4.5
             });
 
+            map.current.addControl(new mapboxgl.FullscreenControl(), 'top-right');
+            map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
             map.current.addControl(
                 new mapboxgl.GeolocateControl({
                     positionOptions: {
@@ -215,8 +283,24 @@ const MapComponent = () => {
                         maxZoom: 10
                     }
                 }),
-                'bottom-right' 
+                'top-right'
             );
+            map.current.addControl(
+                new MapboxExportControl({
+                    PageSize: Size.A3,
+                    PageOrientation: PageOrientation.Portrait,
+                    Format: Format.PNG,
+                    DPI: DPI[96],
+                    Crosshair: true
+                }),
+                "top-right"
+            );
+
+            map.current.addControl(new mapboxgl.ScaleControl({
+                maxWidth: 80, // Chiều rộng tối đa
+                unit: 'metric' // Đơn vị: metric hoặc imperial
+            }), 'top-right');
+
 
             map.current.on('style.load', () => {
                 map.current.setLayoutProperty('country-label', 'visibility', 'none');
@@ -300,121 +384,7 @@ const MapComponent = () => {
                     }
                 });
 
-                map.current.addSource('province', {
-                    type: 'vector',
-                    tiles: [
-                        "https://geoserver.thuyloivietnam.vn/geoserver/gwc/service/wmts?REQUEST=GetTile&SERVICE=WMTS&VERSION=1.0.0&LAYER=cwrs_sllq:bgmap_province&STYLE=&TILEMATRIX=EPSG:900913:{z}&TILEMATRIXSET=EPSG:900913&FORMAT=application/vnd.mapbox-vector-tile&TILECOL={x}&TILEROW={y}"
-                    ],
-                    bounds: [102.11428312324676, 8.485818270342207, 109.50789401865103, 23.46320380510631]
-                });
-                map.current.addSource('district', {
-                    type: 'vector',
-                    tiles: [
-                        "https://geoserver.thuyloivietnam.vn/geoserver/gwc/service/wmts?REQUEST=GetTile&SERVICE=WMTS&VERSION=1.0.0&LAYER=cwrs_sllq:bgmap_district&STYLE=&TILEMATRIX=EPSG:900913:{z}&TILEMATRIXSET=EPSG:900913&FORMAT=application/vnd.mapbox-vector-tile&TILECOL={x}&TILEROW={y}"
-                    ],
-                });
-                map.current.addSource('commune', {
-                    type: 'vector',
-                    tiles: [
-                        "https://geoserver.thuyloivietnam.vn/geoserver/gwc/service/wmts?REQUEST=GetTile&SERVICE=WMTS&VERSION=1.0.0&LAYER=cwrs_sllq:bgmap_commune&STYLE=&TILEMATRIX=EPSG:900913:{z}&TILEMATRIXSET=EPSG:900913&FORMAT=application/vnd.mapbox-vector-tile&TILECOL={x}&TILEROW={y}"
-                    ],
-                    bounds: [102.10728524718348, 8.302989562662342, 109.50569314620493, 23.464551101920666]
-                });
-                
-                map.current.addLayer({
-                    'id': 'province-layer',
-                    'type': 'line',
-                    'source': 'province',
-                    'source-layer': 'bgmap_province',
-                    'paint': {
-                        'line-color': '#929292',
-                        'line-width': 1
-                    },
-                    'maxzoom': 7
-                });
-                map.current.addLayer({
-                    'id': 'district-layer',
-                    'type': 'line',
-                    'source': 'district',
-                    'source-layer': 'bgmap_district',
-                    'paint': {
-                        'line-color': '#929292',
-                        'line-width': 1
-                    },
-                    'minzoom': 7,
-                    'maxzoom': 10
-                });
-                map.current.addLayer({
-                    'id': 'commune-layer',
-                    'type': 'line',
-                    'source': 'commune',
-                    'source-layer': 'bgmap_commune',
-                    'paint': {
-                        'line-color': '#929292',
-                        'line-width': 1
-                    },
-                    'minzoom': 10
-                });
-
-                map.current.addLayer({
-                    'id': 'province-label-layer',
-                    'type': 'symbol',
-                    'source': 'province',
-                    'source-layer': 'bgmap_province', 
-                    'maxzoom': 7,
-                    'minzoom' : 5,
-                    'layout': {
-                        'text-field': ['get', 'ten_tinh'], 
-                        'text-size': 12, 
-                        'text-anchor': 'center', 
-                        'text-offset': [0, 0.5] ,
-                        'icon-allow-overlap': true
-                    },
-                    'paint': {
-                        'text-color': '#000000', 
-                        'text-halo-color': '#FFFFFF', 
-                        'text-halo-width': 1 
-                    }
-                });
-                map.current.addLayer({
-                    'id': 'district-label-layer',
-                    'type': 'symbol',
-                    'source': 'district',
-                    'source-layer': 'bgmap_district', 
-                    'minzoom': 7,
-                    'maxzoom': 10,
-                    'layout': {
-                        'text-field': ['get', 'ten_huyen'], 
-                        'text-size': 12, 
-                        'text-anchor': 'center', 
-                        'text-offset': [0, 0.5] ,
-                        'icon-allow-overlap': true
-                    },
-                    'paint': {
-                        'text-color': '#000000', 
-                        'text-halo-color': '#FFFFFF', 
-                        'text-halo-width': 1 
-                    }
-                });
-                map.current.addLayer({
-                    'id': 'commune-label-layer',
-                    'type': 'symbol',
-                    'source': 'commune',
-                    'source-layer': 'bgmap_commune', 
-                    'minzoom': 14,
-                    'layout': {
-                        'text-field': ['get', 'ten_xa'], 
-                        'text-size': 12, 
-                        'text-anchor': 'center', 
-                        'text-offset': [0, 0.5] ,
-                        'icon-allow-overlap': true
-                    },
-                    'paint': {
-                        'text-color': '#000000', 
-                        'text-halo-color': '#FFFFFF', 
-                        'text-halo-width': 1 
-                    }
-                });
+               
                 map.current.addLayer({
                     'id': 'bien-dong-label',
                     'type': 'symbol',
@@ -631,6 +601,7 @@ const MapComponent = () => {
 
                 map.current.on('click', 'norain-layer', (e) => {
                     var infor = e.features[0].properties;
+                    setSelecteduiStation(infor.sid);
                     setSelectedStation(infor.sid);
                     viewllstation(e.lngLat.lat, e.lngLat.lng);
                     setShowChart(true);
@@ -647,8 +618,8 @@ const MapComponent = () => {
                 });
                 map.current.on('click', 'smallrain-layer', (e) => {
                     var infor = e.features[0].properties;
+                    setSelecteduiStation(infor.sid);
                     setSelectedStation(infor.sid);
-
                     viewllstation(e.lngLat.lat, e.lngLat.lng);
                     setShowChart(true);
                     prepareChartData(infor.sid, infor.tinh,e.lngLat.lat, e.lngLat.lng).then(response => {
@@ -664,6 +635,7 @@ const MapComponent = () => {
                 });
                 map.current.on('click', 'mediumrain-layer', (e) => {
                     var infor = e.features[0].properties;
+                    setSelecteduiStation(infor.sid);
                     setSelectedStation(infor.sid);
                     viewllstation(e.lngLat.lat, e.lngLat.lng);
                     setShowChart(true);
@@ -679,6 +651,7 @@ const MapComponent = () => {
                 });
                 map.current.on('click', 'heavyrain-layer', (e) => {
                     var infor = e.features[0].properties;
+                    setSelecteduiStation(infor.sid);
                     setSelectedStation(infor.sid);
                     viewllstation(e.lngLat.lat, e.lngLat.lng);
                     setShowChart(true);
@@ -695,6 +668,7 @@ const MapComponent = () => {
                 });
                 map.current.on('click', 'heavierrain-layer', (e) => {
                     var infor = e.features[0].properties;
+                    setSelecteduiStation(infor.sid);
                     setSelectedStation(infor.sid);
                     viewllstation(e.lngLat.lat, e.lngLat.lng);
                     setShowChart(true);
@@ -708,7 +682,8 @@ const MapComponent = () => {
                         lon : e.lngLat.lng 
                     });
 
-                });   
+                }); 
+                
             });
         }
     };
@@ -736,9 +711,68 @@ const MapComponent = () => {
             setSearchVisible(false);
         }
     };
-    const handleChangeStation = (event) => {
-        setSelectedStation(event.target.value)
+    const handleChangeStation = async (event) => {
+        setSelecteduiStation(event.target.value)
     };
+
+    useEffect(() => {
+        const fetchData = async () => {
+            setLoading(true);
+
+            const temp = stationsRef.current.find(station => station.station_id == selecteduiStation);
+
+            if (temp) {
+                setfdata({
+                    sid: temp.station_id,
+                    lat: temp.lat,
+                    lon: temp.lon
+                });
+
+                try {
+                    const responsefc = await fetch(`https://node.windy.com/forecast/v2.7/ecmwf/${temp.lat}/${temp.lon}`);
+                    const datafc = await responsefc.json();
+
+                    const dataChart = [];
+                    let cumulativeTotal = 0;
+
+                    datachangselected.forEach((dayData, index) => {
+                        const timepoint = dayData.timePoint;
+                        const stationData = dayData.stations.find(station => station.station_id == selecteduiStation);
+
+                        if (stationData) {
+                            const dailyTotal = parseFloat(stationData.total).toFixed(2);
+                            cumulativeTotal += parseFloat(dailyTotal);
+
+                            const chartDataEntry = {
+                                timepoint,
+                                [`${stationData.station_name}`]: dailyTotal,
+                                [`Mưa tích lũy ${stationData.station_name}`]: cumulativeTotal.toFixed(2)
+                            };
+
+                            if (index === datachangselected.length - 1) {
+                                chartDataEntry['Mưa tích lũy dự báo'] = cumulativeTotal.toFixed(2);
+                            }
+
+                            dataChart.push(chartDataEntry);
+                        }
+                    });
+
+                    dataChart.push(...extractData(datafc.data, cumulativeTotal));
+                    setDataChart(dataChart);
+
+                } catch (error) {
+                    console.error("Error fetching forecast data:", error);
+                } finally {
+                    setLoading(false);
+                }
+            }
+        };
+
+        if (selecteduiStation) {
+            fetchData();
+        }
+    }, [selecteduiStation]);
+
 
     useEffect(() => {
         if (stationsRef.current.find(station => station.station_id === selectedStation) != undefined) {
@@ -748,7 +782,7 @@ const MapComponent = () => {
             });
             viewllstation(temp.lat, temp.lon);
         }
-    }, [ selectedStation]);
+    }, [selectedStation]);
 
     // Listen for clicks outside the search input to close it
     React.useEffect(() => {
@@ -851,7 +885,7 @@ const MapComponent = () => {
                                 id="autocomplete-stations"
                                 options={stationsRef.current.filter(station => station.tinh === tinhdata)}
                                 getOptionLabel={(option) => option.station_name || "Không tìm thấy tên trạm"}
-                                value={selectedStation ? stationsRef.current.find(s => s.station_id === selectedStation) : null}
+                                value={selecteduiStation ? stationsRef.current.find(s => s.station_id === selecteduiStation) : null}
                                 onChange={(event, newValue) => {
                                     if (newValue) {
                                         handleChangeStation({ target: { value: newValue.station_id } });
@@ -921,7 +955,7 @@ const MapComponent = () => {
                 <Login ishome={true} />
             </div>
             <div className="liststation click-view-provine">
-                <h2>Danh sách các trạm theo tỉnh</h2>
+                <h2 style={{ margin: "0px", padding : "1rem" ,borderBottom : "1px solid rgba(255, 255, 255, .12)" }}>Danh sách các trạm theo tỉnh</h2>
                 <div className="seach-provine">
                     <div className="search-header">
                         <h3 style={{ display: searchVisible ? 'none' : 'block' }}>Lưu lượng mưa từ 20:00 {previousday} đến {currentDateTime}</h3>
@@ -951,6 +985,7 @@ const MapComponent = () => {
                 </div>
             </div>
             <div ref={mapContainer} style={{ width: '100%', top: '0', bottom: '0', position: 'absolute' }} />
+            <MapLayerPanel layers={layers} mapRef={map} />
         </div>
     );
 };

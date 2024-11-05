@@ -156,9 +156,9 @@ const Overview = () => {
                     return {
                         timepoint: `${formattedDate} ${formattedTime}`,
                         'Dự báo mưa': mm[index],
-                        'Mưa tích lũy dự báo': cumulativeTotal
+                        'Mưa tích lũy dự báo': cumulativeTotal.toFixed(2)
                     };
-                }).filter(item => item !== null); // Lọc bỏ các phần tử null
+                }).filter(item => item !== null);
 
                 return result;
             } else {
@@ -168,13 +168,13 @@ const Overview = () => {
         else if(selectmodeview == 2){
             const { day, mm } = data;
             const rainByDay = {};
-    
+
             day.forEach((date, index) => {
                 const formattedDate = new Date(date).toLocaleDateString('en-GB').slice(0, 5);
                 if (!rainByDay[formattedDate]) {
                     rainByDay[formattedDate] = 0;
                 }
-                rainByDay[formattedDate] += mm[index]; 
+                rainByDay[formattedDate] += mm[index];
             });
             const filteredRainByDay = Object.keys(rainByDay).slice(2);
 
@@ -187,7 +187,7 @@ const Overview = () => {
                     'Mưa tích lũy dự báo': cumulativeTotal.toFixed(2)
                 };
             });
-    
+
             return result;
         }
         else{
@@ -209,19 +209,24 @@ const Overview = () => {
         const dataChart = [];
             
         let cumulativeTotal = 0;
-
-        data24h.forEach(dayData => {
+        data24h.forEach((dayData, index) => {
             const timepoint = dayData.timePoint;
             const stationData = dayData.stations.find(station => station.station_id === stationid); // Assuming only one station per timepoint
             if (stationData) {
                 const dailyTotal = parseFloat(stationData.total).toFixed(2); // Format to two decimal places
                 cumulativeTotal += parseFloat(dailyTotal);
 
-                dataChart.push({
+                const chartDataEntry = {
                     timepoint,
                     [`${stationData.station_name}`]: dailyTotal,
-                    [`Mưa tích lũy ${stationData.station_name}`]: cumulativeTotal.toFixed(2) // Format cumulative total to two decimal places
-                });
+                    [`Mưa tích lũy ${stationData.station_name}`]: cumulativeTotal.toFixed(2),
+                };
+
+                if (index === data24h.length - 1) {
+                    chartDataEntry['Mưa tích lũy dự báo'] = cumulativeTotal.toFixed(2);
+                }
+
+                dataChart.push(chartDataEntry);
             }
         });
         dataChart.push(...extractData(datafc.data, cumulativeTotal))
@@ -252,7 +257,7 @@ const Overview = () => {
                     });
                 }
             });
-
+        
             setDataChart(dataChart);
     }, [selectedStation]);
 
@@ -368,20 +373,23 @@ const Overview = () => {
                 map.current.addSource('province', {
                     type: 'vector',
                     tiles: [
-                        "http://localhost:8080/geoserver/gwc/service/wmts?REQUEST=GetTile&SERVICE=WMTS&VERSION=1.0.0&LAYER=bgmapvn:bgmap_province&STYLE=&TILEMATRIX=EPSG:900913:{z}&TILEMATRIXSET=EPSG:900913&FORMAT=application/vnd.mapbox-vector-tile&TILECOL={x}&TILEROW={y}"
+                        "https://geoserver.thuyloivietnam.vn/geoserver/gwc/service/wmts?REQUEST=GetTile&SERVICE=WMTS&VERSION=1.0.0&LAYER=cwrs_sllq:bgmap_province&STYLE=&TILEMATRIX=EPSG:900913:{z}&TILEMATRIXSET=EPSG:900913&FORMAT=application/vnd.mapbox-vector-tile&TILECOL={x}&TILEROW={y}"
                     ],
+                    bounds: [102.11428312324676, 8.485818270342207, 109.50789401865103, 23.46320380510631]
                 });
                 map.current.addSource('district', {
                     type: 'vector',
                     tiles: [
-                        "http://localhost:8080/geoserver/gwc/service/wmts?REQUEST=GetTile&SERVICE=WMTS&VERSION=1.0.0&LAYER=bgmapvn:bgmap_district&STYLE=&TILEMATRIX=EPSG:900913:{z}&TILEMATRIXSET=EPSG:900913&FORMAT=application/vnd.mapbox-vector-tile&TILECOL={x}&TILEROW={y}"
+                        "https://geoserver.thuyloivietnam.vn/geoserver/gwc/service/wmts?REQUEST=GetTile&SERVICE=WMTS&VERSION=1.0.0&LAYER=cwrs_sllq:bgmap_district&STYLE=&TILEMATRIX=EPSG:900913:{z}&TILEMATRIXSET=EPSG:900913&FORMAT=application/vnd.mapbox-vector-tile&TILECOL={x}&TILEROW={y}"
                     ],
+                    bounds: [102.07066991620277, 4.8898854254303625, 117.04637621992522, 23.480095522560013]
                 });
                 map.current.addSource('commune', {
                     type: 'vector',
                     tiles: [
-                        "http://localhost:8080/geoserver/gwc/service/wmts?REQUEST=GetTile&SERVICE=WMTS&VERSION=1.0.0&LAYER=bgmapvn:bgmap_commune&STYLE=&TILEMATRIX=EPSG:900913:{z}&TILEMATRIXSET=EPSG:900913&FORMAT=application/vnd.mapbox-vector-tile&TILECOL={x}&TILEROW={y}"
+                        "https://geoserver.thuyloivietnam.vn/geoserver/gwc/service/wmts?REQUEST=GetTile&SERVICE=WMTS&VERSION=1.0.0&LAYER=cwrs_sllq:bgmap_commune&STYLE=&TILEMATRIX=EPSG:900913:{z}&TILEMATRIXSET=EPSG:900913&FORMAT=application/vnd.mapbox-vector-tile&TILECOL={x}&TILEROW={y}"
                     ],
+                    bounds: [102.10728524718348, 8.302989562662342, 109.50569314620493, 23.464551101920666]
                 });
                 
                 map.current.addLayer({

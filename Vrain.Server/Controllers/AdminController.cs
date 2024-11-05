@@ -182,7 +182,25 @@ namespace Vrain.Server.Controllers
             }
             else
             {
-                var stations = await _context.monitoring_stations.ToListAsync();
+                var stations = await (
+                    from station in _context.monitoring_stations
+                    join thongso in _context.iw_thongsoquantrac
+                        on station.key equals thongso.works_id
+                    select new
+                    {
+                        station.key,
+                        station.station_id,
+                        station.station_name,
+                        station.tinh,
+                        station.quanhuyen,
+                        station.phuongxa,
+                        station.order_province,
+                        station.infor_data,
+                        station.lat,
+                        station.lon,
+                        thongso.tskt_maloaithongso,
+                    }
+                ).ToListAsync();
 
                 return Ok(stations);
             }
@@ -565,7 +583,8 @@ namespace Vrain.Server.Controllers
                         cq_tinhid = model.cq_tinhid,
                         cq_huyenid = model.cq_huyenid,
                         cq_xaid = model.cq_xaid,
-                        cq_role_tinhid = model.cq_role_tinhid
+                        cq_role_tinhid = model.cq_role_tinhid,
+                        cq_pid = model.cq_pid
 
                     };
                     _context.sys_coquan.Add(newCoQuan);
@@ -592,6 +611,7 @@ namespace Vrain.Server.Controllers
                     existingCoQuan.cq_huyenid = model.cq_huyenid;
                     existingCoQuan.cq_xaid = model.cq_xaid;
                     existingCoQuan.cq_role_tinhid = model.cq_role_tinhid;
+                    existingCoQuan.cq_pid = model.cq_pid;
 
                     _context.sys_coquan.Update(existingCoQuan);
                 }
@@ -922,6 +942,82 @@ namespace Vrain.Server.Controllers
                 }
             }
         }
+
+
+        [HttpGet("GetMapLayers")]
+        public async Task<IActionResult> GetMapLayers()
+        {
+            var datalayer = await _context.map_sources_layer
+            .Select(source => new
+            {
+                SourceId = source.id,
+                SourceName = source.source_name,
+                Tiles = source.tiles,
+                Bounds = source.bounds,
+                Name = source.name,
+                Layers = _context.map_layers.Where( l => l.source_id == source.id ).Select(layer => new 
+                {
+                    Id = layer.id,
+                    LayerId = layer.name,
+                    LayerType = layer.type,
+                    SourceLayer = layer.source,
+                    Paint = layer.paint,
+                    Layout = layer.layout,
+                    MinZoom = layer.min_zoom,
+                    MaxZoom = layer.max_zoom
+                }).ToList()
+            })
+            .ToListAsync();
+
+            return Ok(datalayer);
+        }
+
+        // POST: api/MapLayers
+        [HttpPost("CreateMapLayer")]
+        public async Task<IActionResult> CreateMapLayer([FromBody] map_layers mapLayer)
+        {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+            mapLayer.id = Guid.NewGuid();
+            mapLayer.created_at = DateTime.UtcNow;
+            mapLayer.updated_at = DateTime.UtcNow;
+
+            _context.map_layers.Add(mapLayer);
+            await _context.SaveChangesAsync();
+            return CreatedAtAction(nameof(GetMapLayers), mapLayer);
+        }
+
+        // PUT: api/MapLayers/{id}
+        [HttpPut("UpdateMapLayer/{id}")]
+        public async Task<IActionResult> UpdateMapLayer(Guid id, [FromBody] map_layers mapLayer)
+        {
+            if (id != mapLayer.id) return BadRequest("ID không khớp.");
+            var existingLayer = await _context.map_layers.FindAsync(id);
+            if (existingLayer == null) return NotFound();
+
+            existingLayer.name = mapLayer.name;
+            existingLayer.type = mapLayer.type;
+            existingLayer.visibility = mapLayer.visibility;
+            existingLayer.source = mapLayer.source;
+            existingLayer.source_layer = mapLayer.source_layer;
+            existingLayer.min_zoom = mapLayer.min_zoom;
+            existingLayer.max_zoom = mapLayer.max_zoom;
+            existingLayer.updated_at = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+            return NoContent();
+        }
+
+        [HttpDelete("DeleteMapLayer/{id}")]
+        public async Task<IActionResult> DeleteMapLayer(Guid id)
+        {
+            var mapLayer = await _context.map_layers.FindAsync(id);
+            if (mapLayer == null) return NotFound();
+
+            _context.map_layers.Remove(mapLayer);
+            await _context.SaveChangesAsync();
+            return NoContent();
+        }
+
         public class MenuItem
         {
             public int key { get; set; }

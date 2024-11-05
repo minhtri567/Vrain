@@ -7,6 +7,9 @@ using System.Text.RegularExpressions;
 using System.Text;
 using Vrain.Server.Models;
 using Vrain.Server.Data;
+using System.Configuration;
+using DocumentFormat.OpenXml.Bibliography;
+using Elfie.Serialization;
 
 namespace Vrain.Server.Controllers
 {
@@ -15,10 +18,13 @@ namespace Vrain.Server.Controllers
     public class MucnuocController : ControllerBase
     {
         private readonly WeatherDbContext _context;
-
-        public MucnuocController (WeatherDbContext context )
+        private readonly IWebHostEnvironment _hostingEnvironment;
+        private readonly IConfiguration _configuration;
+        public MucnuocController (WeatherDbContext context , IWebHostEnvironment hostingEnvironment, IConfiguration configuration)
         {
             _context = context;
+            _hostingEnvironment = hostingEnvironment;
+            _configuration = configuration;
         }
 
         public static string Slug(string input)
@@ -61,72 +67,98 @@ namespace Vrain.Server.Controllers
         {
             if(luuvuc == null)
             {
-                var timenow = DateTime.Now;
-                timenow = new DateTime(timenow.Year, timenow.Month, timenow.Day, timenow.Hour, 0, 0);
+                var timenow = DateTime.Now.Date;
 
-                var query = await (from rainData in _context.monitoring_data_today
-                                   where rainData.data_thoigian == timenow
-                                   join tskt in _context.iw_thongsoquantrac
-                                   on rainData.tskt_id equals tskt.tskt_id
-                                   where tskt.tskt_maloaithongso == "DOMUCNUOC"
-                                   join station in _context.monitoring_stations
-                                   on rainData.station_id equals station.station_id
-                                   select new
-                                   {
-                                       station_id = station.station_id,
-                                       station_name = station.station_name,
-                                       value = rainData.data_giatri_sothuc,
-                                       data_time = rainData.data_thoigian,
-                                       tinh = station.tinh,
-                                       luu_vuc = station.luuvuc,
-                                       lat = station.lat,
-                                       lon = station.lon,
-                                       quanhuyen = station.quanhuyen,
-                                       phuongxa = station.phuongxa,
-                                       baodong1 = station.baodong1,
-                                       baodong2 = station.baodong2,
-                                       baodong3 = station.baodong3,
-                                       lulichsu = station.lulichsu
-                                   }).ToListAsync();
+                var query = await (
+                    from tt in _context.monitoring_data_today
+                    where tt.data_thoigian >= timenow
+                    join b in _context.iw_thongsoquantrac on tt.tskt_id equals b.tskt_id
+                    join c in _context.monitoring_stations on b.works_id equals c.key
+                    where b.tskt_maloaithongso == "DOMUCNUOC"
+                    join groupedtt in (
+                        from innerData in _context.monitoring_data_today
+                        where innerData.data_thoigian >= timenow
+                        group innerData by innerData.station_id into stationGroup
+                        select new
+                        {
+
+                            station_id = stationGroup.Key,
+                            MaxDateTime = stationGroup.Max(x => x.data_thoigian)
+                        }
+                    ) on new { tt.station_id, tt.data_thoigian } equals new { groupedtt.station_id, data_thoigian = groupedtt.MaxDateTime }
+                    select new
+                    {
+                        tt.station_id,
+                        data_thoigian = tt.data_thoigian.ToString("dd-MM-yyyy HH:mm:ss"),
+                        s_data_thoigian = tt.data_thoigian.ToString("dd-MM HH:mm"),
+                        tt.data_giatri_sothuc,
+                        b.tskt_maloaithongso,
+                        c.station_name,
+                        c.tinh,
+                        c.luuvuc,
+                        c.lat,
+                        c.lon,
+                        c.quanhuyen,
+                        c.phuongxa,
+                        c.baodong1,
+                        c.baodong2,
+                        c.baodong3,
+                        c.lulichsu
+                    }
+                ).ToListAsync();
 
                 return Ok(query);
+
             }
-            else
+            else 
             {
-                var timenow = DateTime.Now;
-                timenow = new DateTime(timenow.Year, timenow.Month, timenow.Day, timenow.Hour, 0, 0);
+                var timenow = DateTime.Now.Date;
 
-                var query = await (from rainData in _context.monitoring_data_today
-                                   where rainData.data_thoigian == timenow
-                                   join tskt in _context.iw_thongsoquantrac
-                                   on rainData.tskt_id equals tskt.tskt_id
-                                   where tskt.tskt_maloaithongso == "DOMUCNUOC"
-                                   join station in _context.monitoring_stations 
-                                   on rainData.station_id equals station.station_id
-                                   where station.luuvuc == luuvuc
-                                   select new
-                                   {
-                                       station_id = station.station_id,
-                                       station_name = station.station_name,
-                                       value = rainData.data_giatri_sothuc,
-                                       data_time = rainData.data_thoigian,
-                                       tinh = station.tinh,
-                                       tinh_id = station.order_province,
-                                       luu_vuc = station.luuvuc,
-                                       lat = station.lat,
-                                       lon = station.lon,
-                                       quanhuyen = station.quanhuyen,
-                                       phuongxa = station.phuongxa,
-                                       baodong1 = station.baodong1,
-                                       baodong2 = station.baodong2,
-                                       baodong3 = station.baodong3,
-                                       lulichsu = station.lulichsu,
-                                   })
-                                   .ToListAsync();
+                var query = await (
+                    from tt in _context.monitoring_data_today
+                    join b in _context.iw_thongsoquantrac on tt.tskt_id equals b.tskt_id
+                    join c in _context.monitoring_stations on b.works_id equals c.key
+                    where b.tskt_maloaithongso == "DOMUCNUOC" && (c.luuvuc == luuvuc || c.tinh == luuvuc)
+                    where tt.data_thoigian >= timenow
+                    join groupedtt in (
+                        from innerData in _context.monitoring_data_today
+                        where innerData.data_thoigian >= timenow
+                        group innerData by innerData.station_id into stationGroup
+                        select new
+                        {
+                            station_id = stationGroup.Key,
+                            MaxDateTime = stationGroup.Max(x => x.data_thoigian)
+                        }
+                    ) on new { tt.station_id, tt.data_thoigian } equals new { groupedtt.station_id, data_thoigian = groupedtt.MaxDateTime }
+                    join previousData in _context.monitoring_data_today on new { tt.station_id, tt.data_thoigian } equals new { station_id = previousData.station_id, data_thoigian = previousData.data_thoigian.AddHours(-1) }
+                        into previousDataGroup
+                    from previousData in previousDataGroup.DefaultIfEmpty() 
+                    select new
+                    {
+                        tt.station_id,
+                        data_thoigian = tt.data_thoigian.ToString("dd-MM-yyyy HH:mm:ss"),
+                        value = tt.data_giatri_sothuc,
+                        s_data_thoigian = tt.data_thoigian.ToString("dd-MM HH:mm"),
+                        value_pre = previousData != null ? previousData.data_giatri_sothuc : (float?)null, 
+                        b.tskt_maloaithongso,
+                        c.station_name,
+                        c.tinh,
+                        c.luuvuc,
+                        c.lat,
+                        c.lon,
+                        c.quanhuyen,
+                        c.phuongxa,
+                        c.baodong1,
+                        c.baodong2,
+                        c.baodong3,
+                        c.lulichsu
+                    }
+                ).ToListAsync();
 
                 return Ok(query);
+
             }
-            
+
         }
 
         [HttpGet("luuvuc")]
@@ -144,6 +176,33 @@ namespace Vrain.Server.Controllers
 
             return Ok(distinctLuuvuc);
         }
+
+        [HttpGet("tinh")]
+        public async Task<ActionResult<IEnumerable<object>>> tinh()
+        {
+            var result = await _context.bgmap_province.Select(province => new
+            {
+                province.gid,
+                province.ten_tinh,
+                huyens = _context.bgmap_district
+                    .Where(district => district.tinh_id == province.gid)
+                    .Select(district => new
+                    {
+                        district.gid,
+                        district.ten_huyen,
+                        xas = _context.bgmap_commune
+                            .Where(commune => commune.huyen_id == district.gid)
+                            .Select(commune => new
+                            {
+                                commune.gid,
+                                commune.ten_xa
+                            }).ToList()
+                    }).ToList()
+            }).ToListAsync();
+
+            return Ok(result);
+        }
+
 
         [HttpGet("Mucnuocnow")]
         public async Task<ActionResult<IEnumerable<weather_stations>>> Getmucnuocnow(String? luuvuc, DateTime? startDate, DateTime? endDate , string mathongso)
@@ -205,5 +264,52 @@ namespace Vrain.Server.Controllers
             
         }
 
+        [HttpGet("report_data")]
+        public async Task<ActionResult<IEnumerable<weather_stations_report>>> Getreport(String? luuvuc, string mathongso)
+        {
+            var station_report = await _context.weather_stations_report
+            .Where(a => a.luu_vuc == luuvuc && a.loai_tram == mathongso)
+            .Select(a => new
+            {
+                a.name_file,
+                a.file_ref,
+                request_time = a.request_time.ToString("dd/MM/yyyy HH:mm"),
+                ngaybatdau = a.ngaybatdau.ToString("dd/MM/yyyy"),
+                ngayketthuc = a.ngayketthuc.ToString("dd/MM/yyyy"),
+                a.tansuat,
+                a.email,
+                a.trangthai,
+                a.tinh
+            })
+            .ToListAsync();
+
+            return Ok(station_report);
+
+        }
+
+        [HttpPost("processWaterLevelReport")]
+        public IActionResult ProcessWaterLevelReport([FromBody] weather_stations_report data)
+        {
+            try
+            {
+                // Kiểm tra dữ liệu đầu vào
+                if (data == null || data.id_station_list == null)
+                {
+                    return BadRequest("Invalid data.");
+                }
+                _context.weather_stations_report.Add(data);
+                _context.SaveChanges();
+
+                var dataHelper = new DataHelper(_context, _hostingEnvironment, _configuration);
+
+                dataHelper.ProcessWaterDataReport(data);
+
+                return Ok(new { Message = "Water level report processed successfully", FileRef = data.file_ref });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
     }
 }

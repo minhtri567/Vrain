@@ -40,6 +40,7 @@ const AdminViewStations = () => {
     const [filtersProvince, setProvinceFilterValue] = useState('');
     const [filtersDistrict, setDistrictFilterValue] = useState(null);
     const [filtersCommune, setCommuneFilterValue] = useState(null);
+    const [filterslqt, setfilterslqt] = useState(null);
 
     const [provinces, setProvinces] = useState([]);
     const [districtOptions, setDistrictOptions] = useState([]);
@@ -140,11 +141,20 @@ const AdminViewStations = () => {
         }
         setvwStations(filteredData);
     }, [filtersProvince, filtersDistrict, filtersCommune]);
+    
+    useEffect(() => {
+        let filteredData = stations;
+        if (filterslqt) {
+            filteredData = filteredData.filter(station => station.tskt_maloaithongso == filterslqt.dm_ma);
+        }
+        setvwStations(filteredData);
+    }, [filterslqt]);
 
     const Handlecleanfilter = () => {
         setDistrictFilterValue("");
         setCommuneFilterValue("");
         setProvinceFilterValue("");
+        setfilterslqt("");
     }
     let emptyStation = {
         key: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
@@ -234,6 +244,18 @@ const AdminViewStations = () => {
                         filter
                         disabled={!filtersDistrict}
                     />
+                    <label htmlFor="sl_lqt">Xã: </label>
+                    <Dropdown
+                        className="p-inputtext-sm"
+                        id="sl_lqt"
+                        value={filterslqt}
+                        onChange={(e) => setfilterslqt(e.value)}
+                        options={datadmqt}
+                        optionLabel="dm_ten"
+                        placeholder="Chọn dữ liệu quan trắc"
+                        filter
+                    />
+
                     <i className="pi pi-filter-slash" title="Clear filter" onClick={Handlecleanfilter}></i>
 
                     <div className="add-delete-btn">

@@ -52,6 +52,7 @@ public class AutoGetDataMucNuoc : IJob
                               on jsonData.StationNo equals station.station_id
                               join tskt in _context.iw_thongsoquantrac
                               on station.key equals tskt.works_id
+                              where tskt.tskt_maloaithongso == "DOMUCNUOC"
                               select new
                               {
                                   tskt_id = tskt.tskt_id,
@@ -64,11 +65,11 @@ public class AutoGetDataMucNuoc : IJob
 
             if (firstRecord != null && firstRecord.data_thoigian.Date == DateTime.Now.Date)
             {
-                await _context.Database.ExecuteSqlRawAsync("DELETE FROM monitoring_data_today WHERE data_maloaithongso = 'DOMUCNUOC' ;");
+                await _context.Database.ExecuteSqlRawAsync("DELETE FROM monitoring_data_today WHERE data_maloaithongso = 'DOMUCNUOC' AND data_thoigian >= ( current_date  + time '00:00:00');");
             }
             else
             {
-                await _context.Database.ExecuteSqlRawAsync("delete from monitoring_data_today\r\nwhere data_thoigian < ( current_date  + time '00:00:01') AND data_maloaithongso = 'DOMUCNUOC' ;");
+                await _context.Database.ExecuteSqlRawAsync("delete from monitoring_data_today\r\nwhere data_thoigian < ( current_date  + time '00:00:00') AND data_maloaithongso = 'DOMUCNUOC' ;");
                 await _context.Database.ExecuteSqlRawAsync(@"
                         INSERT INTO monitoring_data(tskt_id, data_thoigian, data_thoigiancapnhat, data_giatri_sothuc, createby, station_id , data_maloaithongso)
                         SELECT

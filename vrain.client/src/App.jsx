@@ -5,6 +5,7 @@ import MapComponent from './MapComponent';
 import MapMucnuoc from './Mapmucnuoc';
 import MNOverview from './MNOverview';
 import MNDetailview from './MNDetailview';
+import MNReportview from './MNReportview';
 import Overview from './Overview';
 import Detailview from './Detailview';
 import Reportview from './Reportview';
@@ -23,6 +24,7 @@ const App = () => {
                 <Route path="/mucnuoc" element={<MapMucnuoc />} />
                 <Route path="/mucnuoc/overview/:name_luuvuc" element={<MNOverview />} />
                 <Route path="/mucnuoc/detail/:name_luuvuc" element={<MNDetailview />} />
+                <Route path="/mucnuoc/report/:name_luuvuc" element={<MNReportview />} />
                 <Route
                     path="/quantri/index"
                     element={

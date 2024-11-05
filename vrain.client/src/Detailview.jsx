@@ -213,18 +213,25 @@ const Detailview = () => {
                 let cumulativeTotal = 0;
 
                 // Process datafecthchart
-                datafecthchart.forEach(dayData => {
+                datafecthchart.forEach((dayData, index) => {
                     const timepoint = dayData.timePoint;
                     const stationData = dayData.stations.find(station => station.station_id === selectedStation);
                     if (stationData) {
                         const dailyTotal = parseFloat(stationData.total).toFixed(2);
                         cumulativeTotal += parseFloat(dailyTotal);
     
-                        dataChartthis.push({
+                        const chartDataEntry = {
                             timepoint,
                             [`${stationData.station_name}`]: dailyTotal,
                             [`Mưa tích lũy ${stationData.station_name}`]: cumulativeTotal.toFixed(2)
-                        });
+                        };
+
+                        if (index === datafecthchart.length - 1) {
+                            chartDataEntry['Mưa tích lũy dự báo'] = cumulativeTotal.toFixed(2);
+                        }
+
+                        dataChartthis.push(chartDataEntry);
+                        
                     }
                 });
 

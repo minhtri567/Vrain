@@ -18,6 +18,7 @@ namespace Vrain.Server.Models
         public string? cq_loai { get; set; }
         public string? cq_tinhid { get; set; }
         public string? cq_huyenid { get; set; }
+        public int? cq_pid { get; set; }
         public string? cq_xaid { get; set; }
         public int[]? cq_role_tinhid { get; set; }
     }

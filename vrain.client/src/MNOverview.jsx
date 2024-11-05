@@ -19,7 +19,7 @@ import { Sidebar } from 'primereact/sidebar';
 import { Button } from 'primereact/button';
 import Login from './Login';
 import $ from 'jquery';
-
+import MapLayerPanel from './MapLayerPanel';
 
 
 mapboxgl.accessToken = 'pk.eyJ1IjoiYWNjdXdlYXRoZXItaW5jIiwiYSI6ImNqeGtxeDc4ZDAyY2czcnA0Ym9ubzh0MTAifQ.HjSuXwG2bI05yFYmc0c9lw';
@@ -49,6 +49,20 @@ const MNOverview = () => {
     var hoverTimeout;
     var now = new Date();
     now.setMinutes(0);
+    const apilayer = '/vnrain/Admin/GetMapLayers';
+
+    const [layers, setLayers] = useState([]);
+
+    useEffect(() => {
+        const fetchLayers = async () => {
+            const response = await fetch(apilayer);
+            const data = await response.json();
+            setLayers(data);
+        };
+
+        fetchLayers();
+    }, []);
+
     var currentDateTime = now.toLocaleString('vi-VN', {
         hour: 'numeric',
         minute: 'numeric',
@@ -260,122 +274,7 @@ const MNOverview = () => {
                     }
                 });
 
-                map.current.addSource('province', {
-                    type: 'vector',
-                    tiles: [
-                        "https://geoserver.thuyloivietnam.vn/geoserver/gwc/service/wmts?REQUEST=GetTile&SERVICE=WMTS&VERSION=1.0.0&LAYER=cwrs_sllq:bgmap_province&STYLE=&TILEMATRIX=EPSG:900913:{z}&TILEMATRIXSET=EPSG:900913&FORMAT=application/vnd.mapbox-vector-tile&TILECOL={x}&TILEROW={y}"
-                    ],
-                    bounds: [102.11428312324676, 8.485818270342207, 109.50789401865103, 23.46320380510631]
-                });
-                map.current.addSource('district', {
-                    type: 'vector',
-                    tiles: [
-                        "https://geoserver.thuyloivietnam.vn/geoserver/gwc/service/wmts?REQUEST=GetTile&SERVICE=WMTS&VERSION=1.0.0&LAYER=cwrs_sllq:bgmap_district&STYLE=&TILEMATRIX=EPSG:900913:{z}&TILEMATRIXSET=EPSG:900913&FORMAT=application/vnd.mapbox-vector-tile&TILECOL={x}&TILEROW={y}"
-                    ],
-                    bounds: [102.07066991620277, 4.8898854254303625, 117.04637621992522, 23.480095522560013]
-                });
-                map.current.addSource('commune', {
-                    type: 'vector',
-                    tiles: [
-                        "https://geoserver.thuyloivietnam.vn/geoserver/gwc/service/wmts?REQUEST=GetTile&SERVICE=WMTS&VERSION=1.0.0&LAYER=cwrs_sllq:bgmap_commune&STYLE=&TILEMATRIX=EPSG:900913:{z}&TILEMATRIXSET=EPSG:900913&FORMAT=application/vnd.mapbox-vector-tile&TILECOL={x}&TILEROW={y}"
-                    ],
-                    bounds: [102.10728524718348, 8.302989562662342, 109.50569314620493, 23.464551101920666]
-                });
-
-                map.current.addLayer({
-                    'id': 'province-layer',
-                    'type': 'line',
-                    'source': 'province',
-                    'source-layer': 'bgmap_province',
-                    'paint': {
-                        'line-color': '#ff6b6a',
-                        'line-width': 1
-                    },
-                    'filter': ['==', ['get', 'ten_tinh'], getNameProvince(name_luuvuc)],
-                    'maxzoom': 7
-                });
-
-                map.current.addLayer({
-                    'id': 'district-layer',
-                    'type': 'line',
-                    'source': 'district',
-                    'source-layer': 'bgmap_district',
-                    'paint': {
-                        'line-color': '#929292',
-                        'line-width': 1
-                    },
-                    'minzoom': 7,
-                    'maxzoom': 10
-                });
-                map.current.addLayer({
-                    'id': 'commune-layer',
-                    'type': 'line',
-                    'source': 'commune',
-                    'source-layer': 'bgmap_commune',
-                    'paint': {
-                        'line-color': '#929292',
-                        'line-width': 1
-                    },
-                    'minzoom': 10
-                });
-
-                map.current.addLayer({
-                    'id': 'province-label-layer',
-                    'type': 'symbol',
-                    'source': 'province',
-                    'source-layer': 'bgmap_province',
-                    'maxzoom': 7,
-                    'minzoom': 5,
-                    'layout': {
-                        'text-field': ['get', 'ten_tinh'],
-                        'text-size': 12,
-                        'text-anchor': 'center',
-                        'text-offset': [0, 0.5],
-                        'text-allow-overlap': true
-                    },
-                    'paint': {
-                        'text-color': '#000000',
-                        'text-halo-color': '#FFFFFF',
-                        'text-halo-width': 1
-                    }
-                });
-                map.current.addLayer({
-                    'id': 'district-label-layer',
-                    'type': 'symbol',
-                    'source': 'district',
-                    'source-layer': 'bgmap_district',
-                    'minzoom': 7,
-                    'maxzoom': 10,
-                    'layout': {
-                        'text-field': ['get', 'ten_huyen'],
-                        'text-size': 12,
-                        'text-anchor': 'center',
-                        'text-offset': [0, 0.5],
-                    },
-                    'paint': {
-                        'text-color': '#000000',
-                        'text-halo-color': '#FFFFFF',
-                        'text-halo-width': 1
-                    }
-                });
-                map.current.addLayer({
-                    'id': 'commune-label-layer',
-                    'type': 'symbol',
-                    'source': 'commune',
-                    'source-layer': 'bgmap_commune',
-                    'minzoom': 12,
-                    'layout': {
-                        'text-field': ['get', 'ten_xa'],
-                        'text-size': 12,
-                        'text-anchor': 'center',
-                        'text-offset': [0, 0.5],
-                    },
-                    'paint': {
-                        'text-color': '#000000',
-                        'text-halo-color': '#FFFFFF',
-                        'text-halo-width': 1
-                    }
-                });
+                
                 map.current.addLayer({
                     'id': 'bien-dong-label',
                     'type': 'symbol',
@@ -448,7 +347,7 @@ const MNOverview = () => {
                             ['==', ['get', 'baodong1'], null], 0.4,  
                             ['==', ['get', 'baodong2'], null], 0.4,  
                             ['==', ['get', 'baodong3'], null], 0.4,  
-                            ['>', ['get', 'mucnuoc'], ['get', 'baodong3']], 1.0,  
+                            ['>', ['get', 'mucnuoc'], ['get', 'baodong3']], 0.8,  
                             ['>', ['get', 'mucnuoc'], ['get', 'baodong2']], 0.8, 
                             ['>', ['get', 'mucnuoc'], ['get', 'baodong1']], 0.6,  
                             0.4  
@@ -510,9 +409,37 @@ const MNOverview = () => {
                 });
             });
         }
-
+        if (layers.length > 0) {
+            addLayersToMap(layers);
+        }
     }, [stationsRef.current]);
 
+
+    const addLayersToMap = (dataLayers) => {
+        map.current.on('load', () => {
+            dataLayers.forEach(source => {
+                // Thêm nguồn (source) vào bản đồ
+                map.current.addSource(source.sourceName, {
+                    type: 'vector',
+                    tiles: JSON.parse(source.tiles),
+                    bounds: JSON.parse(source.bounds)
+                });
+
+                source.layers.forEach(layer => {
+                    map.current.addLayer({
+                        'id': layer.layerId,
+                        'type': layer.layerType,
+                        'source': source.sourceName,
+                        'source-layer': layer.sourceLayer,
+                        'paint': JSON.parse(layer.paint),
+                        'layout': JSON.parse(layer.layout),
+                        'minzoom': layer.minZoom !== null ? layer.minZoom : 0,
+                        'maxzoom': layer.maxZoom !== null ? layer.maxZoom : 18
+                    });
+                });
+            });
+        });
+    };
 
 
     const [searchVisible, setSearchVisible] = useState(false);
@@ -548,7 +475,7 @@ const MNOverview = () => {
         navigate(`/mucnuoc/detail/${name_luuvuc}`);
     }
     const handleRdetail = () => {
-
+        navigate(`/mucnuoc/report/${name_luuvuc}`);
     }
     const viewllstation = (lat, lon) => {
         if (map.current) {
@@ -814,14 +741,44 @@ const MNOverview = () => {
                         </div>
                     </div>
                     <div className="listraininfo">
-                        <ul>
+                        <table className="tbl_mnoverview">
+                            <thead>
+                                <tr className="tbl_mnoverview-header">
+                                    <th>Trạm đo</th>
+                                    <th>Hiện tại</th>
+                                    <th>Thay đổi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
                             {filteredStations.map((station, index) => (
-                                <li key={index} onClick={() => handleStationClick(station.lat, station.lon)} onDoubleClick={() => handleDoubleClick(station.lat, station.lon, station.station_id)} >
-                                    <div className="list-line-1"><p className="station-tinh">{station.station_name}</p></div>
-                                    <div className="list-line-2"><p className="station-name">Tại : {station.phuongxa} - {station.quanhuyen}</p></div>
-                                </li>
+                                <tr key={index} onClick={() => handleStationClick(station.lat, station.lon)} onDoubleClick={() => handleDoubleClick(station.lat, station.lon, station.station_id)}>
+                                    <td>
+                                        <div className="list-line-1"><p className="station-tinh">{station.station_name}</p></div>
+                                        <div className="list-line-2"><p className="station-name">Tại : {station.phuongxa} - {station.quanhuyen}</p></div>
+                                    </td>
+                                    <td >
+                                        <div>{station.value} cm</div>
+                                        <small>{station.data_thoigian}</small>
+                                    </td>
+                                    <td>
+                                        {station.value_pre === null ? (
+                                            <span>-</span> 
+                                        ) : station.value - station.value_pre > 0 ? (
+                                            <div className='up-mn'>
+                                                <i className="fa-solid fa-arrow-up"></i> {(Math.round((station.value - station.value_pre) * 100) / 100).toLocaleString('vi-VN')}
+                                            </div>
+                                        ) : station.value - station.value_pre < 0 ? (
+                                            <div className='down-mn'>
+                                                <i className="fa-solid fa-arrow-down"></i> {(Math.round((station.value - station.value_pre) * 100) / 100).toLocaleString('vi-VN')}
+                                            </div>
+                                        ) : (
+                                            <span>{(station.value - station.value_pre).toLocaleString('vi-VN')}</span>
+                                        )}
+                                    </td>
+                                </tr>
                             ))}
-                        </ul>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
                 <div className="containt-view-mapbox" >
@@ -832,6 +789,7 @@ const MNOverview = () => {
                         <div className="view-mapbox-contents">
                             <div className="mb-view-mode" >
                                 <div ref={mapContainer} className="map-container" />
+                                <MapLayerPanel layers={layers} mapRef={map} />
                             </div>
                         </div>
                     </div>

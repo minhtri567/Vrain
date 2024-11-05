@@ -197,6 +197,98 @@ namespace Vrain.Server.Data
             }
 
         }
+
+        public void ProcessWaterDataReport(weather_stations_report data)
+        {
+            var startDate = new DateTime(data.ngaybatdau.Year, data.ngaybatdau.Month, data.ngaybatdau.Day, 0, 0, 0);
+            var endDate = new DateTime(data.ngayketthuc.Year, data.ngayketthuc.Month, data.ngayketthuc.Day, 23, 59, 59);
+            var provincename = data.tinh;
+            var lstations = string.Join(",", data.id_station_list.Select(id => $"'{id}'"));
+            int ts = int.Parse(data.tansuat);
+            var connectionString = _configuration.GetConnectionString("DefaultConnection");
+            string sql;
+            sql = @"
+            SELECT 
+                ms.station_id,
+                ms.station_name,
+                ms.tinh,
+                ms.quanhuyen,
+                ms.phuongxa,
+                md.data_giatri_sothuc,
+                md.data_thoigian
+            FROM 
+                (
+                    SELECT 
+                        station_id, 
+                        data_giatri_sothuc, 
+                        data_thoigian 
+                    FROM 
+                        monitoring_data_today 
+                    WHERE 
+                        data_thoigian BETWEEN @startDate AND @endDate
+                        AND station_id IN (" + lstations + @")
+                        AND data_maloaithongso = 'DOMUCNUOC'
+                    UNION ALL
+                    SELECT 
+                        station_id, 
+                        data_giatri_sothuc, 
+                        data_thoigian 
+                    FROM 
+                        monitoring_data 
+                    WHERE 
+                        data_thoigian BETWEEN @startDate AND @endDate
+                        AND station_id IN (" + lstations + @")
+                        AND data_maloaithongso = 'DOMUCNUOC'
+                ) md
+            JOIN 
+                monitoring_stations ms 
+            ON 
+                ms.station_id = md.station_id
+            WHERE 
+                EXTRACT(HOUR FROM md.data_thoigian) % @ts = 0
+            ORDER BY 
+                md.data_thoigian;";
+
+
+            try
+            {
+                if (lstations != null)
+                {
+                    using (var connection = new NpgsqlConnection(connectionString))
+                    {
+                        var weatherData = connection.Query(sql, new { startDate, endDate, ts });
+
+                        var dataTable = ConvertToDataTable(weatherData);
+
+                        const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+                        var random = new Random();
+                        string randomString = new string(Enumerable.Repeat(chars, 6)
+                            .Select(s => s[random.Next(s.Length)]).ToArray());
+
+                        string namefile = "Báo cáo mực nước lưu vực " + data.luu_vuc + " từ ngày " + data.ngaybatdau.ToString("dd-MM-yyyy") + " đến ngày " + data.ngayketthuc.ToString("dd-MM-yyyy") + " " + randomString + ".xlsx";
+                        var filePath = Path.Combine(_hostingEnvironment.WebRootPath, "File", namefile);
+
+                        GenerateExcelFile(dataTable, filePath);
+
+                        data.file_ref = "/File/" + namefile;
+                        data.name_file = namefile;
+                        data.trangthai = 1;
+                        data.loai_tram = "DOMUCNUOC";
+                        _context.Update(data);
+                        _context.SaveChanges();
+                    }
+                }
+                else
+                {
+                    return;
+                }
+
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+        }
     }
 
 }

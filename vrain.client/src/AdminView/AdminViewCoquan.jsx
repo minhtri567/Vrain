@@ -9,6 +9,7 @@ import { Toast } from 'primereact/toast';
 import { InputText } from "primereact/inputtext";
 import { Dropdown } from 'primereact/dropdown';
 import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
+import { TreeTable } from 'primereact/treetable';
 import jsonData from '../Data/select-vn.json';
 import axios from 'axios';
 import { InputTextarea } from "primereact/inputtextarea";
@@ -49,7 +50,8 @@ const AdminViewCoquan = () => {
     const [cqEmail, setCqEmail] = useState('');
     const [cqId, setCqId] = useState(0);
     const [cqGhiChu, setCqGhiChu] = useState('');
-
+    const [filterscoquan, setfilterscoquan] = useState('');
+    
     const fetchdatacq = async () => {
         const response = await axios.get(apigetcoquan);
         setdatacoquan(response.data);
@@ -121,8 +123,7 @@ const AdminViewCoquan = () => {
 
     useEffect(() => {
         if (selectedProduct != null) {
-            const cq_role = datarole.filter(s => s.role_cq_id === selectedProduct.cq_id);
-
+            const cq_role = datarole.filter(s => s.role_cq_id == selectedProduct);
             const dmData = cq_role.map(s => ({
                 dm_ma: s.role_ma,
                 dm_ten: s.role_ten
@@ -148,12 +149,13 @@ const AdminViewCoquan = () => {
         setCqId(0);
         setCqGhiChu("");
         setisaddcowuan(true);
+        setfilterscoquan(null)
     }
 
     const accept = () => {
         const user_name = localStorage.getItem('user_name');
         const newRoles = selecteddanhmuc.map(dm => ({
-            role_cq_id: selectedProduct.cq_id,
+            role_cq_id: selectedProduct,
             role_ma: dm.dm_ma,
             role_ten: dm.dm_ten,
             role_nguoitao: user_name,
@@ -161,27 +163,6 @@ const AdminViewCoquan = () => {
         }));
 
         axios.post(apisaverole, newRoles, {
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('jwtToken')}`
-                }
-            })
-            .then(response => {
-                toast.current.show({ severity: 'success', summary: 'Success', detail: response.data, life: 3000 });
-                fetchdatadm();
-                fetchdatarl();
-                fetchdatacq();
-            })
-            .catch(error => {
-                if (error.response.status == 403) {
-                    toast.current.show({ severity: 'error', summary: 'Thiếu quyền', detail: "Bạn không có quyền thực hiện !", life: 3000 });
-                } else {
-                    console.error('There was an error saving the roles!', error);
-                }
-            });
-    }
-
-    const acceptxoa = () => {
-        axios.delete(apixoacoquan + cqId, {
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('jwtToken')}`
                 }
@@ -253,6 +234,7 @@ const AdminViewCoquan = () => {
         setCqEmail(rowData.cq_email);
         setCqGhiChu(rowData.cq_ghichu);
         setSelectedCities(rowData.cq_role_tinhid);
+        setfilterscoquan(datacoquan.filter(s => s.cq_id == rowData.cq_pid)[0]);
         setischangecoquan(true);
     };
     const Xoadulieucq = (rowData) => {
@@ -262,10 +244,31 @@ const AdminViewCoquan = () => {
             header: 'Confirmation',
             icon: 'pi pi-exclamation-triangle',
             defaultFocus: 'accept',
-            accept: acceptxoa,
+            accept: acceptxoa(rowData.cq_id),
             reject
         });
     };
+
+    const acceptxoa = (cqId) => {
+        axios.delete(apixoacoquan + cqId, {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('jwtToken')}`
+            }
+        })
+        .then(response => {
+            toast.current.show({ severity: 'success', summary: 'Success', detail: response.data, life: 3000 });
+            fetchdatadm();
+            fetchdatarl();
+            fetchdatacq();
+        })
+        .catch(error => {
+            if (error.response.status == 403) {
+                toast.current.show({ severity: 'error', summary: 'Thiếu quyền', detail: "Bạn không có quyền thực hiện !", life: 3000 });
+            } else {
+                console.error('There was an error saving the roles!', error);
+            }
+        });
+    }
     const Savedulieucq = () => {
 
         if (!cqTen) {
@@ -301,7 +304,8 @@ const AdminViewCoquan = () => {
             "cq_tinhid": filtersProvince ? filtersProvince : "",
             "cq_huyenid": filtersDistrict ? filtersDistrict : "",
             "cq_xaid": filtersCommune ? filtersCommune : "",
-            "cq_role_tinhid" : selectedCities ? selectedCities : ""
+            "cq_role_tinhid": selectedCities ? selectedCities : null,
+            "cq_pid": filterscoquan ? filterscoquan.cq_id : ""
 
         }
         axios.post(apisavecoquan, data, {
@@ -331,8 +335,8 @@ const AdminViewCoquan = () => {
     const ChangedataBodyldm = (rowData) => {
         return (
             <div>
-                <Button icon="pi pi-pencil" onClick={() => Suadulieucq(rowData)} />
-                <Button icon="pi pi-trash" severity="danger" onClick={() => Xoadulieucq(rowData)} />
+                <Button icon="pi pi-pencil" onClick={() => Suadulieucq(rowData.data)} />
+                <Button icon="pi pi-trash" severity="danger" onClick={() => Xoadulieucq(rowData.data)} />
             </div>
         );
     };
@@ -350,7 +354,34 @@ const AdminViewCoquan = () => {
             <Button label="Lưu" icon="pi pi-check" onClick={Savedulieucq} autoFocus />
         </div>
     );
+    const [nodes, setNodes] = useState([]);
+    const generateTreeData = (data) => {
+        const map = {};
+        const treeData = [];
 
+        // Tạo map với từng phần tử có thêm key
+        data.forEach((item) => {
+            map[item.cq_id] = { key: item.cq_id.toString(), data: { ...item } , children: [] };
+        });
+
+        // Sắp xếp các node thành cây
+        data.forEach((item) => {
+            if (item.cq_pid === null) {
+                treeData.push(map[item.cq_id]);
+            } else if (map[item.cq_pid]) {
+                map[item.cq_pid].children.push(map[item.cq_id]);
+            }
+        });
+
+        return treeData;
+    };
+
+    useEffect(() => {
+        if (datacoquan) {
+            setNodes(generateTreeData(datacoquan));
+        }
+        
+    }, [datacoquan]);
     return (
         <div className="view-ad-coquan">
             <Toast ref={toast} />
@@ -359,13 +390,12 @@ const AdminViewCoquan = () => {
             <div className="content-view">
                 <div className="container-table">
                     <div className="table-1">
-                        <DataTable value={datacoquan} stripedRows selectionMode="single" selection={selectedProduct} onSelectionChange={(e) => setSelectedProduct(e.value)} header={headerlcq} emptyMessage="Không có dữ liệu" >
-                            <Column field="cq_ten" header="Tên cơ quan"></Column>
+                        <TreeTable value={nodes} stripedRows selectionMode="single" selectionKeys={selectedProduct} onSelectionChange={(e) => setSelectedProduct(e.value)} header={headerlcq} >
+                            <Column field="cq_ten" header="Tên cơ quan" expander></Column>
                             <Column field="cq_diachi" header="Địa chỉ"></Column>
                             <Column field="cq_dienthoai" header="Số điện thoại"></Column>
-                            <Column field="cq_email" header="Email"></Column>
                             <Column header="Thao tác" body={ChangedataBodyldm}></Column>
-                        </DataTable>
+                        </TreeTable>
                     </div>
                 </div>
                 <div className="content-phanquyen" >
@@ -463,6 +493,20 @@ const AdminViewCoquan = () => {
                      />
                 </div>
                 <div>
+                    <label htmlFor="sl_cqcha">Chọn cơ quan cha: </label>
+                    <Dropdown
+                        className="p-inputtext-sm"
+                        id="sl_cqcha"
+                        value={filterscoquan}
+                        onChange={(e) => setfilterscoquan(e.value)}
+                        options={datacoquan}
+                        optionLabel="cq_ten"
+                        placeholder="Chọn cơ quan cha"
+                        filter
+                        style={{ width: '100%' }}
+                    />
+                </div>
+                <div>
                     <label htmlFor="emailcq">Thư điện tử</label>
                     <InputText id="emailcq" value={cqEmail} onChange={(e) => setCqEmail(e.target.value)} />
                 </div>
@@ -522,6 +566,20 @@ const AdminViewCoquan = () => {
                         placeholder="Chọn xã"
                         filter
                         disabled={!filtersDistrict}
+                        style={{ width: '100%' }}
+                    />
+                </div>
+                <div>
+                    <label htmlFor="sl_cqcha">Chọn cơ quan cha: </label>
+                    <Dropdown
+                        className="p-inputtext-sm"
+                        id="sl_cqcha"
+                        value={filterscoquan}
+                        onChange={(e) => setfilterscoquan(e.value)}
+                        options={datacoquan}
+                        optionLabel="cq_ten"
+                        placeholder="Chọn cơ quan cha"
+                        filter
                         style={{ width: '100%' }}
                     />
                 </div>

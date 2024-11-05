@@ -13,12 +13,20 @@ import Panellayer from './Panellayer';
 import dayjs from 'dayjs';
 import 'dayjs/locale/vi';
 import slug from 'slug';
-
+import { Tree } from 'primereact/tree';
 import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { Autocomplete, TextField } from '@mui/material';
+import {
+    MapboxExportControl,
+    Size,
+    PageOrientation,
+    Format,
+    DPI
+} from "@watergis/mapbox-gl-export";
+import MapLayerPanel from './MapLayerPanel';
 
 // Đặt API key của bạn vào đây
 mapboxgl.accessToken = 'pk.eyJ1IjoiYWNjdXdlYXRoZXItaW5jIiwiYSI6ImNqeGtxeDc4ZDAyY2czcnA0Ym9ubzh0MTAifQ.HjSuXwG2bI05yFYmc0c9lw';
@@ -27,8 +35,10 @@ const Mapmucnuoc = () => {
     const mapContainer = useRef(null);
     const map = useRef(null);
     const navigate = useNavigate();
-    const stationsRef = useRef([]);
     const [luuvucList, setLuuvucList] = useState([]);
+    const [tinhList, setTinhList] = useState([]);
+    const [selectedValue, setSelectedValue] = useState('1');
+    const [stationsRef, setstationsRef] = useState([]);
     const [showChart, setShowChart] = useState(false);
     const [selectedStation, setSelectedStation] = useState('');
     const [dataChart, setDataChart] = useState([]);
@@ -38,22 +48,26 @@ const Mapmucnuoc = () => {
     const sevenDaysAgo = today.subtract(7, 'day');
     const [loading, setLoading] = useState(true);
     const [filteredLuuvucList, setfilteredLuuvucList] = useState('');
-    const [layerVisible, setLayerVisible] = useState(false);
     const [selecteduiStation, setSelecteduiStation] = useState('');
     const [datachangselected, setdatachangselected] = useState([]);
     var hoverTimeout;
     var allapistations = '/vnrain/Mucnuoc';
     var allapiluuvuc = '/vnrain/Mucnuoc/luuvuc';
+    var allapitinh = '/vnrain/Mucnuoc/tinh';
     var apiraintime = "/vnrain/WeatherStations/raintoday?provincename=";
-    var now = new Date();
-    now.setMinutes(0);
-    var currentDateTime = now.toLocaleString('vi-VN', {
-        hour: '2-digit',
-        minute: '2-digit',  
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric'
-    });
+    const apilayer = '/vnrain/Admin/GetMapLayers';
+
+    const [layers, setLayers] = useState([]);
+
+    useEffect(() => {
+        const fetchLayers = async () => {
+            const response = await fetch(apilayer);
+            const data = await response.json();
+            setLayers(data);
+        };
+
+        fetchLayers();
+    }, []);
     function convertDateFormat(dateString) {
         // Tách ngày, tháng, năm từ chuỗi
         var parts = dateString.split('/');
@@ -137,7 +151,7 @@ const Mapmucnuoc = () => {
 
                 const data = await response.json();
                 setLuuvucList(data);
-                setfilteredLuuvucList(data);
+                
             } catch (error) {
                 console.error('Error fetching data:', error);
             }
@@ -147,6 +161,27 @@ const Mapmucnuoc = () => {
 
     }, [allapiluuvuc]);
 
+
+    useEffect(() => {
+        const fetchfullData = async () => {
+
+            try {
+                const response = await fetch(allapitinh);
+
+                const data = await response.json();
+                setTinhList(data);
+
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            }
+        };
+
+        fetchfullData();
+
+    }, [allapitinh]);
+
+
+
     useEffect(() => {
         const fetchfullData = async () => {
 
@@ -154,8 +189,8 @@ const Mapmucnuoc = () => {
                 const response = await fetch(allapistations);
 
                 const data = await response.json();
-                stationsRef.current = data;
-                initializeMap();
+                setstationsRef(data);
+                
             } catch (error) {
                 console.error('Error fetching data:', error);
             }
@@ -165,6 +200,40 @@ const Mapmucnuoc = () => {
 
     }, [allapistations]);
 
+    useEffect(() => {
+        if (stationsRef.length > 0) {
+            initializeMap();
+            if (layers.length > 0) {
+                addLayersToMap(layers);
+            }
+        }
+    }, [stationsRef]);
+
+    const addLayersToMap = (dataLayers) => {
+        map.current.on('load', () => {
+            dataLayers.forEach(source => {
+                // Thêm nguồn (source) vào bản đồ
+                map.current.addSource(source.sourceName, {
+                    type: 'vector',
+                    tiles: JSON.parse(source.tiles),
+                    bounds: JSON.parse(source.bounds)
+                });
+
+                source.layers.forEach(layer => {
+                    map.current.addLayer({
+                        'id': layer.layerId,
+                        'type': layer.layerType,
+                        'source': source.sourceName,
+                        'source-layer': layer.sourceLayer,
+                        'paint': JSON.parse(layer.paint), 
+                        'layout': JSON.parse(layer.layout),
+                        'minzoom': layer.minZoom !== null ? layer.minZoom : 0,
+                        'maxzoom': layer.maxZoom !== null ? layer.maxZoom : 18 
+                    });
+                });
+            });
+        });
+    };
     const initializeMap = () => {
         if (!map.current) {
             map.current = new mapboxgl.Map({
@@ -173,7 +242,8 @@ const Mapmucnuoc = () => {
                 center: [106.660172, 14.962622],
                 zoom: 4.5
             });
-
+            map.current.addControl(new mapboxgl.FullscreenControl(), 'top-right');
+            map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
             map.current.addControl(
                 new mapboxgl.GeolocateControl({
                     positionOptions: {
@@ -185,8 +255,24 @@ const Mapmucnuoc = () => {
                         maxZoom: 10
                     }
                 }),
-                'bottom-right'
+                'top-right'
             );
+            map.current.addControl(
+                new MapboxExportControl({
+                    PageSize: Size.A3,
+                    PageOrientation: PageOrientation.Portrait,
+                    Format: Format.PNG,
+                    DPI: DPI[96],
+                    Crosshair: true
+                }),
+                "top-right"
+            );
+            
+            map.current.addControl(new mapboxgl.ScaleControl({
+                maxWidth: 80, // Chiều rộng tối đa
+                unit: 'metric' // Đơn vị: metric hoặc imperial
+            }), 'top-right');
+
 
             map.current.on('style.load', () => {
                 map.current.setLayoutProperty('country-label', 'visibility', 'none');
@@ -201,191 +287,8 @@ const Mapmucnuoc = () => {
                 // Ẩn biên giới tỉnh/thành phố
                 map.current.setLayoutProperty('admin-1-boundary', 'visibility', 'none');
             });
-            
-        }
-        if (stationsRef.current.length > 0) {
             map.current.on('load', () => {
-                // Thêm layer cho các điểm trạm
-                map.current.loadImage(
-                    '../public/tramthuyvan.png',
-                    (error, image) => {
-                        if (error) throw error;
-                        map.current.addImage('non-warning', image);
-                    }
-                );
-                map.current.loadImage(
-                    '../public/1co.png',
-                    (error, image) => {
-                        if (error) throw error;
-                        map.current.addImage('warning-1', image);
-                    }
-                );
-                map.current.loadImage(
-                    '../public/2co.png',
-                    (error, image) => {
-                        if (error) throw error;
-                        map.current.addImage('warning-2', image);
-                    }
-                );
-                map.current.loadImage(
-                    '../public/3co.png',
-                    (error, image) => {
-                        if (error) throw error;
-                        map.current.addImage('warning-3', image);
-                    }
-                );
-
-                map.current.addSource('stations', {
-                    type: 'geojson',
-                    data: {
-                        type: 'FeatureCollection',
-                        features: stationsRef.current.map(station => ({
-                            type: 'Feature',
-                            geometry: {
-                                type: 'Point',
-                                coordinates: [station.lon, station.lat]
-                            },
-                            properties: {
-                                sid: station.station_id,
-                                name: station.station_name,
-                                ngaydo: station.data_time,
-                                mucnuoc: station.value,
-                                tinh: station.tinh,
-                                baodong1: station.baodong1,
-                                baodong2: station.baodong2,
-                                baodong3: station.baodong3,
-                            }
-                        }))
-                    }
-                });
-
-                map.current.addSource('province', {
-                    type: 'vector',
-                    tiles: [
-                        "https://geoserver.thuyloivietnam.vn/geoserver/gwc/service/wmts?REQUEST=GetTile&SERVICE=WMTS&VERSION=1.0.0&LAYER=cwrs_sllq:bgmap_province&STYLE=&TILEMATRIX=EPSG:900913:{z}&TILEMATRIXSET=EPSG:900913&FORMAT=application/vnd.mapbox-vector-tile&TILECOL={x}&TILEROW={y}"
-                    ],
-                    bounds: [102.11428312324676, 8.485818270342207, 109.50789401865103, 23.46320380510631]
-                });
-                map.current.addSource('district', {
-                    type: 'vector',
-                    tiles: [
-                        "https://geoserver.thuyloivietnam.vn/geoserver/gwc/service/wmts?REQUEST=GetTile&SERVICE=WMTS&VERSION=1.0.0&LAYER=cwrs_sllq:bgmap_district&STYLE=&TILEMATRIX=EPSG:900913:{z}&TILEMATRIXSET=EPSG:900913&FORMAT=application/vnd.mapbox-vector-tile&TILECOL={x}&TILEROW={y}"
-                    ],
-                    bounds: [102.07066991620277, 4.8898854254303625, 117.04637621992522, 23.480095522560013]
-                });
-                map.current.addSource('commune', {
-                    type: 'vector',
-                    tiles: [
-                        "https://geoserver.thuyloivietnam.vn/geoserver/gwc/service/wmts?REQUEST=GetTile&SERVICE=WMTS&VERSION=1.0.0&LAYER=cwrs_sllq:bgmap_commune&STYLE=&TILEMATRIX=EPSG:900913:{z}&TILEMATRIXSET=EPSG:900913&FORMAT=application/vnd.mapbox-vector-tile&TILECOL={x}&TILEROW={y}"
-                    ],
-                    bounds: [102.10728524718348, 8.302989562662342, 109.50569314620493, 23.464551101920666]
-                });
-
-
-
-                map.current.addSource('luuvucsongvn', {
-                    type: 'vector',
-                    tiles: [
-                        "https://geoserver.thuyloivietnam.vn/geoserver/gwc/service/wmts?REQUEST=GetTile&SERVICE=WMTS&VERSION=1.0.0&LAYER=dv3:luuvucsongvn&STYLE=&TILEMATRIX=EPSG:900913:{z}&TILEMATRIXSET=EPSG:900913&FORMAT=application/vnd.mapbox-vector-tile&TILECOL={x}&TILEROW={y}"
-                    ],
-                    bounds: [102.10814762985623, 8.490039086739065, 109.49718610046432, 23.464102004510526]
-                });
-
-                map.current.addLayer({
-                    'id': 'province-layer',
-                    'type': 'line',
-                    'source': 'province',
-                    'source-layer': 'bgmap_province',
-                    'paint': {
-                        'line-color': '#929292',
-                        'line-width': 1
-                    },
-                    'maxzoom': 7
-                });
-                map.current.addLayer({
-                    'id': 'district-layer',
-                    'type': 'line',
-                    'source': 'district',
-                    'source-layer': 'bgmap_district',
-                    'paint': {
-                        'line-color': '#929292',
-                        'line-width': 1
-                    },
-                    'minzoom': 7,
-                    'maxzoom': 10
-                });
-                map.current.addLayer({
-                    'id': 'commune-layer',
-                    'type': 'line',
-                    'source': 'commune',
-                    'source-layer': 'bgmap_commune',
-                    'paint': {
-                        'line-color': '#929292',
-                        'line-width': 1
-                    },
-                    'minzoom': 10
-                });
-
-                map.current.addLayer({
-                    'id': 'province-label-layer',
-                    'type': 'symbol',
-                    'source': 'province',
-                    'source-layer': 'bgmap_province',
-                    'maxzoom': 7,
-                    'minzoom': 5,
-                    'layout': {
-                        'text-field': ['get', 'ten_tinh'],
-                        'text-size': 12,
-                        'text-anchor': 'center',
-                        'text-offset': [0, 0.5],
-                        'icon-allow-overlap': true
-                    },
-                    'paint': {
-                        'text-color': '#000000',
-                        'text-halo-color': '#FFFFFF',
-                        'text-halo-width': 1
-                    }
-                });
-                map.current.addLayer({
-                    'id': 'district-label-layer',
-                    'type': 'symbol',
-                    'source': 'district',
-                    'source-layer': 'bgmap_district',
-                    'minzoom': 7,
-                    'maxzoom': 10,
-                    'layout': {
-                        'text-field': ['get', 'ten_huyen'],
-                        'text-size': 12,
-                        'text-anchor': 'center',
-                        'text-offset': [0, 0.5],
-                        'icon-allow-overlap': true
-                    },
-                    'paint': {
-                        'text-color': '#000000',
-                        'text-halo-color': '#FFFFFF',
-                        'text-halo-width': 1
-                    }
-                });
-                map.current.addLayer({
-                    'id': 'commune-label-layer',
-                    'type': 'symbol',
-                    'source': 'commune',
-                    'source-layer': 'bgmap_commune',
-                    'minzoom': 14,
-                    'layout': {
-                        'text-field': ['get', 'ten_xa'],
-                        'text-size': 12,
-                        'text-anchor': 'center',
-                        'text-offset': [0, 0.5],
-                        'icon-allow-overlap': true
-                    },
-                    'paint': {
-                        'text-color': '#000000',
-                        'text-halo-color': '#FFFFFF',
-                        'text-halo-width': 1
-                    }
-                });
-
+                
                 map.current.addLayer({
                     'id': 'bien-dong-label',
                     'type': 'symbol',
@@ -420,6 +323,65 @@ const Mapmucnuoc = () => {
                     },
                     'maxzoom': 7,
                 });
+            });
+        }
+        if (stationsRef.length > 0) {
+            map.current.on('load', () => {
+                // Thêm layer cho các điểm trạm
+                map.current.loadImage(
+                    '../public/tramthuyvan.png',
+                    (error, image) => {
+                        if (error) throw error;
+                        map.current.addImage('non-warning', image);
+                    }
+                );
+                map.current.loadImage(
+                    '../public/1co.png',
+                    (error, image) => {
+                        if (error) throw error;
+                        map.current.addImage('warning-1', image);
+                    }
+                );
+                map.current.loadImage(
+                    '../public/2co.png',
+                    (error, image) => {
+                        if (error) throw error;
+                        map.current.addImage('warning-2', image);
+                    }
+                );
+                map.current.loadImage(
+                    '../public/3co.png',
+                    (error, image) => {
+                        if (error) throw error;
+                        map.current.addImage('warning-3', image);
+                    }
+                );
+                
+                map.current.addSource('stations', {
+                    type: 'geojson',
+                    data: {
+                        type: 'FeatureCollection',
+                        features: stationsRef.map(station => ({
+                            type: 'Feature',
+                            geometry: {
+                                type: 'Point',
+                                coordinates: [station.lon, station.lat]
+                            },
+                            properties: {
+                                sid: station.station_id,
+                                name: station.station_name,
+                                ngaydo: station.data_thoigian,
+                                mucnuoc: station.data_giatri_sothuc,
+                                tinh: station.tinh,
+                                baodong1: station.baodong1,
+                                baodong2: station.baodong2,
+                                baodong3: station.baodong3,
+                            }
+                        }))
+                    }
+                });
+
+                
 
                 map.current.addLayer({
                     id: 'text-warning-layer',
@@ -448,9 +410,9 @@ const Mapmucnuoc = () => {
                             ['==', ['get', 'baodong1'], null], 'non-warning',
                             ['==', ['get', 'baodong2'], null], 'non-warning',
                             ['==', ['get', 'baodong3'], null], 'non-warning',
-                            ['>', ['get', 'mucnuoc'], ['get', 'baodong3']], 'warning-3',
-                            ['>', ['get', 'mucnuoc'], ['get', 'baodong2']], 'warning-2',
-                            ['>', ['get', 'mucnuoc'], ['get', 'baodong1']], 'warning-1',
+                            ['>=', ['get', 'mucnuoc'], ['get', 'baodong3']], 'warning-3',
+                            ['>=', ['get', 'mucnuoc'], ['get', 'baodong2']], 'warning-2',
+                            ['>=', ['get', 'mucnuoc'], ['get', 'baodong1']], 'warning-1',
                             'non-warning'
                         ],
                         'icon-size': [
@@ -458,9 +420,9 @@ const Mapmucnuoc = () => {
                             ['==', ['get', 'baodong1'], null], 0.4,
                             ['==', ['get', 'baodong2'], null], 0.4,
                             ['==', ['get', 'baodong3'], null], 0.4,
-                            ['>', ['get', 'mucnuoc'], ['get', 'baodong3']], 1.0,
-                            ['>', ['get', 'mucnuoc'], ['get', 'baodong2']], 0.8,
-                            ['>', ['get', 'mucnuoc'], ['get', 'baodong1']], 0.6,
+                            ['>=', ['get', 'mucnuoc'], ['get', 'baodong3']], 0.8,
+                            ['>=', ['get', 'mucnuoc'], ['get', 'baodong2']], 0.8,
+                            ['>=', ['get', 'mucnuoc'], ['get', 'baodong1']], 0.6,
                             0.4
                         ],
                         'icon-allow-overlap': true
@@ -482,8 +444,8 @@ const Mapmucnuoc = () => {
                             .setHTML(
                                 "<table class='popup-table non-warning'>" +
                                 "<tr><th colspan='2'>Trạm đo : <strong>" + infor.name + "</strong></th></tr>" +
-                                "<tr><td>" + parseFloat(infor.mucnuoc).toFixed(2) + " cm</td></tr>" +
-                                "<tr><td>Vào lúc :  " + currentDateTime + "</td></tr>" +
+                                "<tr><td>" + (Math.round(infor.mucnuoc * 100) / 100).toLocaleString('vi-VN') + " cm</td></tr>" +
+                                "<tr><td>Vào lúc :  " + infor.ngaydo + "</td></tr>" +
                                 "</table>"
                             )
                             .addTo(map.current);
@@ -583,8 +545,8 @@ const Mapmucnuoc = () => {
     };
 
     useEffect(() => {
-        if (stationsRef.current.find(station => station.station_id === selectedStation) != undefined) {
-            const temp = stationsRef.current.find(station => station.station_id === selectedStation)
+        if (stationsRef.find(station => station.station_id === selectedStation) != undefined) {
+            const temp = stationsRef.find(station => station.station_id === selectedStation)
             prepareChartData(temp.station_id, tinhdata).then(response => {
                 setDataChart(response.dataChart);
             });
@@ -599,173 +561,105 @@ const Mapmucnuoc = () => {
             document.removeEventListener('mousedown', handleOutsideClick);
         };
     }, [searchVisible]);
+
     useEffect(() => {
         if (searchVisible) {
             searchInputRef.current.focus();
         }
     }, [searchVisible]);
 
-    const toggleLayer = () => {
-        if (map.current) {
-            if (layerVisible) {
-                map.current.removeLayer('luuvucsongvn-layer');
-                map.current.removeLayer('luuvuc-label-layer');
-                map.current.addLayer({
-                    'id': 'province-layer',
-                    'type': 'line',
-                    'source': 'province',
-                    'source-layer': 'bgmap_province',
-                    'paint': {
-                        'line-color': '#929292',
-                        'line-width': 1
-                    },
-                    'maxzoom': 7
-                });
-                map.current.addLayer({
-                    'id': 'district-layer',
-                    'type': 'line',
-                    'source': 'district',
-                    'source-layer': 'bgmap_district',
-                    'paint': {
-                        'line-color': '#929292',
-                        'line-width': 1
-                    },
-                    'minzoom': 7,
-                    'maxzoom': 10
-                });
-                map.current.addLayer({
-                    'id': 'commune-layer',
-                    'type': 'line',
-                    'source': 'commune',
-                    'source-layer': 'bgmap_commune',
-                    'paint': {
-                        'line-color': '#929292',
-                        'line-width': 1
-                    },
-                    'minzoom': 10
-                });
-
-                map.current.addLayer({
-                    'id': 'province-label-layer',
-                    'type': 'symbol',
-                    'source': 'province',
-                    'source-layer': 'bgmap_province',
-                    'maxzoom': 7,
-                    'minzoom': 5,
-                    'layout': {
-                        'text-field': ['get', 'ten_tinh'],
-                        'text-size': 12,
-                        'text-anchor': 'center',
-                        'text-offset': [0, 0.5],
-                        'icon-allow-overlap': true
-                    },
-                    'paint': {
-                        'text-color': '#000000',
-                        'text-halo-color': '#FFFFFF',
-                        'text-halo-width': 1
-                    }
-                });
-                map.current.addLayer({
-                    'id': 'district-label-layer',
-                    'type': 'symbol',
-                    'source': 'district',
-                    'source-layer': 'bgmap_district',
-                    'minzoom': 7,
-                    'maxzoom': 10,
-                    'layout': {
-                        'text-field': ['get', 'ten_huyen'],
-                        'text-size': 12,
-                        'text-anchor': 'center',
-                        'text-offset': [0, 0.5],
-                        'icon-allow-overlap': true
-                    },
-                    'paint': {
-                        'text-color': '#000000',
-                        'text-halo-color': '#FFFFFF',
-                        'text-halo-width': 1
-                    }
-                });
-                map.current.addLayer({
-                    'id': 'commune-label-layer',
-                    'type': 'symbol',
-                    'source': 'commune',
-                    'source-layer': 'bgmap_commune',
-                    'minzoom': 14,
-                    'layout': {
-                        'text-field': ['get', 'ten_xa'],
-                        'text-size': 12,
-                        'text-anchor': 'center',
-                        'text-offset': [0, 0.5],
-                        'icon-allow-overlap': true
-                    },
-                    'paint': {
-                        'text-color': '#000000',
-                        'text-halo-color': '#FFFFFF',
-                        'text-halo-width': 1
-                    }
-                });
-                
-            } else {
-                map.current.removeLayer('province-layer');
-                map.current.removeLayer('commune-layer');
-                map.current.removeLayer('district-layer');
-                map.current.removeLayer('province-label-layer');
-                map.current.removeLayer('commune-label-layer');
-                map.current.removeLayer('district-label-layer');
-                map.current.addLayer({
-                    'id': 'luuvucsongvn-layer',
-                    'type': 'line',
-                    'source': 'luuvucsongvn',
-                    'source-layer': 'luuvucsongvn', // Thay đổi tên layer nếu cần
-                    'paint': {
-                        'line-color': '#FF0000', // Màu sắc cho layer
-                        'line-width': 1
-                    }
-                });
-                map.current.addLayer({
-                    'id': 'luuvuc-label-layer',
-                    'type': 'symbol',
-                    'source': 'luuvucsongvn',
-                    'source-layer': 'luuvucsongvn',
-                    'maxzoom': 7,
-                    'minzoom': 5,
-                    'layout': {
-                        'text-field': ['get', 'ten'],
-                        'text-size': 12,
-                        'text-anchor': 'center',
-                        'text-offset': [0, 0.5],
-                        'icon-allow-overlap': true
-                    },
-                    'paint': {
-                        'text-color': '#000000',
-                        'text-halo-color': '#FFFFFF',
-                        'text-halo-width': 1
-                    }
-                });
+    const onSelect = (event) => {
+       
+        if (event.node.children == undefined) {
+            const targetStation = stationsRef.find(station => station.station_id === event.node.station_id);
+            if (targetStation) {
+                viewllstation(targetStation.lat, targetStation.lon)
             }
-            setLayerVisible(!layerVisible);
+
+        } else {
+            const encodedProvinceName = slug(event.node.label, { lower: true });
+            navigate(`/mucnuoc/overview/${encodedProvinceName}`);
         }
     };
 
-    const handleItemClick = (luuvuc) => {
-        const encodedProvinceName = slug(luuvuc, { lower: true });
-        navigate(`/mucnuoc/overview/${encodedProvinceName}`);
-    };
+    useEffect(() => {
+        if ((selectedValue === '1' && luuvucList.length > 0 && stationsRef.length > 0) ||
+            (selectedValue === '2' && tinhList.length > 0 && stationsRef.length > 0)) {
 
-    const toggleSearchInput = () => {
-        setSearchVisible(!searchVisible);
-        document.getElementById('formse').focus();
+            const mergedData = selectedValue === '1'
+                ? luuvucList.map((luuvucItem, index) => ({
+                    key: `${index}`,
+                    label: luuvucItem.luuvuc,
+                    children: stationsRef
+                        .filter(station => station.luuvuc === luuvucItem.luuvuc)
+                        .map((station, childIndex) => ({
+                            key: `${index}-${childIndex}`,
+                            label: station.station_name,
+                            ...station
+                        }))
+                }))
+                : tinhList.map((tinhItem, index) => ({
+                    key: `${index}`,
+                    label: tinhItem.ten_tinh,
+                    children: stationsRef
+                        .filter(station => station.tinh === tinhItem.ten_tinh)
+                        .map((station, childIndex) => ({
+                            key: `${index}-${childIndex}`,
+                            label: station.station_name,
+                            ...station
+                        }))
+                }));
+
+            setfilteredLuuvucList(mergedData);
+        }
+    }, [luuvucList, tinhList, stationsRef, selectedValue]);
+
+    const nodeTemplate = (node) => {
+        if (!node.children) {
+            return (
+                <div className="node-con">
+                    <div className = "first-col">
+                         <div className = "icon-canhbao">
+                                {(() => {
+                                    if (node.data_giatri_sothuc < node.baodong1) {
+                                        return;
+                                    } else if (node.baodong1 == null ) {
+                                        return;
+                                    } else if (node.data_giatri_sothuc >= node.baodong1 && node.data_giatri_sothuc < node.baodong2) {
+                                        return <img src="../public/1co.png" alt="Báo động 1" />;
+                                    } else if (node.data_giatri_sothuc >= node.baodong2 && node.data_giatri_sothuc < node.baodong3) {
+                                        return <img src="../public/2co.png" alt="Báo động 2" />;
+                                    } else {
+                                        return <img src="../public/3co.png" alt="Báo động 3" />;
+                                    }
+                                })()}
+                            </div>
+                            <div>
+                                {node.label}
+                            </div>
+                        </div>
+                        <div>
+                            <div style={{ color: 'grey', marginLeft: '10px' }}>
+                            <div>
+                                {node.data_giatri_sothuc.toLocaleString('vi-VN') + ' cm'} ( {' '} {node.s_data_thoigian} {' '})
+                            </div>
+                            </div>
+                        </div>
+                </div>
+            );
+        }
+        return <span>{node.label}</span>; // Node cha
     };
 
     
 
+    const handleChange = (event) => {
+        setSelectedValue(event.target.value);
+    };
 
     return (
         <div>
             <Panellayer />
-            <button className="toggle-layer-bgmap" onClick={toggleLayer}>
-                {layerVisible ? <i className="fa-regular fa-eye"></i> : <i className="fa-regular fa-eye-slash"></i>}
-            </button>
             <div className="popup-chart-container" style={showChart ? { display: 'grid' } : { display: 'none' }}>
                 <div className="popup-chart-overlay" onClick={() => setShowChart(false)} ></div>
                 <div className="css-times" onClick={() => setShowChart(false)} > &times; </div>
@@ -776,9 +670,9 @@ const Mapmucnuoc = () => {
                                 sx={{ m: 1, minWidth: 200 }}
                                 size="small"
                                 id="autocomplete-stations"
-                                options={stationsRef.current.filter(station => station.tinh === tinhdata)}
+                                options={stationsRef.filter(station => station.tinh === tinhdata)}
                                 getOptionLabel={(option) => option.station_name || "Không tìm thấy tên trạm"}
-                                value={selecteduiStation ? stationsRef.current.find(s => s.station_id === selecteduiStation) : null}
+                                value={selecteduiStation ? stationsRef.find(s => s.station_id === selecteduiStation) : null}
                                 onChange={(event, newValue) => {
                                     if (newValue) {
                                         handleChangeStation({ target: { value: newValue.station_id } });
@@ -830,40 +724,20 @@ const Mapmucnuoc = () => {
                 <Login ishome={true} />
             </div>
             <div className="liststation click-view-provine">
-                <h2>Danh sách các khu vực lưu vực toàn nước</h2>
-                <div className="seach-provine">
-                    <div className="search-header">
-                        <h3 style={{ display: searchVisible ? 'none' : 'block' }}>Lưu vực các con sông lớn tại Việt Nam</h3>
-                        <input className={`form-control ${searchVisible ? 'active' : ''}`} type="search" id="formse" autoFocus autoComplete="off" placeholder="Tìm kiếm tỉnh ..."
-                            onChange={(e) => {
-                                const searchValue = e.target.value.toLowerCase();
-                                const filtered = luuvucList.filter(station =>
-                                    station.luuvuc.toLowerCase().includes(searchValue)
-                                );
-                                setfilteredLuuvucList(filtered)
-                            }}
-                            style={{ display: searchVisible ? 'block' : 'none' }}
-                            ref={searchInputRef}
-                        />
-                        <div style={{ display: 'flex', alignItems: 'center' }}>
-                            <i className="fa-solid fa-magnifying-glass search-icon" aria-hidden="true" onClick={toggleSearchInput} style={{ display: searchVisible ? 'none' : 'block' }}></i>
-                        </div>
+                <div className="liststation-header">
+                    <h2>Danh sách lưu vực toàn nước</h2>
+                    <div className="liststation-mode-view">
+                        <select value={selectedValue} onChange={handleChange}>
+                            <option value='1'>lưu vực</option>
+                            <option value='2'>tỉnh</option>
+                        </select>
                     </div>
                 </div>
-                <div className="listraininfo">
-                    <ul>
-                        {filteredLuuvucList.length > 0 ? (
-                            filteredLuuvucList.map((luuvuc, index) => (
-                                <li key={index} onClick={() => handleItemClick(luuvuc.luuvuc)}>
-                                    {luuvuc.luuvuc} 
-                                </li>
-                            ))
-                        ) : (
-                            <li>No data available</li>
-                        )}
-                    </ul>
+                <div className="listraininfo mucnuoc">
+                    <Tree value={filteredLuuvucList} filter filterMode="lenient" filterPlaceholder="Tìm kiếm lưu vực ..." onNodeClick={onSelect} nodeTemplate={nodeTemplate} />
                 </div>
             </div>
+            <MapLayerPanel layers={layers} mapRef={map} />
             <div ref={mapContainer} style={{ width: '100%', top: '0', bottom: '0', position: 'absolute' }} />
         </div>
     );

@@ -74,6 +74,7 @@ const MNDetailview = () => {
 
                 const data = await response.json();
                 stationsRef.current = data;
+                setSelectedStation(data[0].station_id);
             } catch (error) {
                 console.error('Error fetching data:', error);
             }
@@ -205,7 +206,7 @@ const MNDetailview = () => {
         setSelectedStation(event.target.value)
     };
     const handleDetailviewClick = () => {
-
+        navigate(`/mucnuoc/report/${name_luuvuc}`);
     };
 
     const handleOptionChange = (event) => {
@@ -236,15 +237,14 @@ const MNDetailview = () => {
                                 province: station.tinh,
                                 quanhuyen: station.quanhuyen,
                                 xaphuong: station.phuongxa,
-                                totalRainfall: 0,
                                 ...datafecthchart.reduce((acc, d) => {
-                                    acc[d.timePoint] = '0.00 mm'; // Khởi tạo tất cả timePoints với '0.00'
+                                    acc[d.timePoint] = '0.00 cm'; // Khởi tạo tất cả timePoints với '0.00'
                                     return acc;
                                 }, {})
                             };
                         }
                         const rainfall = parseFloat(station.total.toFixed(2));
-                        stationMap[station.station_id][timePoint] = `${rainfall.toFixed(2)} mm`;
+                        stationMap[station.station_id][timePoint] = `${rainfall.toFixed(2)} cm`;
                         stationMap[station.station_id].totalRainfall += rainfall;
                     }
                 });
@@ -252,8 +252,7 @@ const MNDetailview = () => {
 
 
             const formattedData = Object.values(stationMap).map(station => ({
-                ...station,
-                totalRainfall: `${station.totalRainfall.toFixed(2)} mm` // Đảm bảo tổng lượng mưa có 2 chữ số sau dấu thập phân
+                ...station
             }));
 
             // Define columns
@@ -262,7 +261,6 @@ const MNDetailview = () => {
                 { field: 'province', header: 'Tỉnh' },
                 { field: 'quanhuyen', header: 'Quận/Huyện' },
                 { field: 'xaphuong', header: 'Xã/Phường' },
-                { field: 'totalRainfall', header: 'Tổng mưa' },
                 ...datafecthchart.map(dayData => ({
                     field: dayData.timePoint,
                     header: dayData.timePoint
@@ -282,15 +280,14 @@ const MNDetailview = () => {
                             province: station.tinh,
                             quanhuyen: station.quanhuyen,
                             xaphuong: station.phuongxa,
-                            totalRainfall: 0,
                             ...datafecthchart.reduce((acc, d) => {
-                                acc[d.timePoint] = '0.00 mm'; // Khởi tạo tất cả timePoints với '0.00'
+                                acc[d.timePoint] = '0.00 cm'; // Khởi tạo tất cả timePoints với '0.00'
                                 return acc;
                             }, {})
                         };
                     }
                     const rainfall = parseFloat(station.total.toFixed(2));
-                    stationMap[station.station_id][timePoint] = `${rainfall.toFixed(2)} mm`;
+                    stationMap[station.station_id][timePoint] = `${rainfall.toFixed(2)} cm`;
                     stationMap[station.station_id].totalRainfall += rainfall;
                 });
             });
@@ -298,7 +295,7 @@ const MNDetailview = () => {
 
             const formattedData = Object.values(stationMap).map(station => ({
                 ...station,
-                totalRainfall: `${station.totalRainfall.toFixed(2)} mm` // Đảm bảo tổng lượng mưa có 2 chữ số sau dấu thập phân
+                totalRainfall: `${station.totalRainfall.toFixed(2)} cm` // Đảm bảo tổng lượng mưa có 2 chữ số sau dấu thập phân
             }));
 
             // Define columns
@@ -307,7 +304,6 @@ const MNDetailview = () => {
                 { field: 'province', header: 'Tỉnh' },
                 { field: 'quanhuyen', header: 'Quận/Huyện' },
                 { field: 'xaphuong', header: 'Xã/Phường' },
-                { field: 'totalRainfall', header: 'Tổng mưa' },
                 ...datafecthchart.map(dayData => ({
                     field: dayData.timePoint,
                     header: dayData.timePoint

@@ -16,6 +16,7 @@ import AdminViewReport from './AdminView/AdminViewReport';
 import AdminViewDanhmuc from './AdminView/AdminViewDanhmuc';
 import AdminViewCoquan from './AdminView/AdminViewCoquan';
 import AdminViewNguoidung from './AdminView/AdminViewNguoidung';
+import Adminbandonen from './AdminView/Adminbandonen';
 
 const Admin = () => {
     const navigate = useNavigate();
@@ -93,6 +94,7 @@ const Admin = () => {
         AdminViewDanhmuc: AdminViewDanhmuc,
         AdminViewCoquan: AdminViewCoquan,
         AdminViewNguoidung: AdminViewNguoidung,
+        Adminbandonen: Adminbandonen
         // Add more mappings here as needed
     };
 
