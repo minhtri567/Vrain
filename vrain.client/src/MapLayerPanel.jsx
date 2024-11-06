@@ -33,7 +33,7 @@ const MapLayerPanel = ({ layers, mapRef }) => {
                 type: 'vector',
                 tiles: JSON.parse(sourceData.tiles),
                 bounds: JSON.parse(sourceData.bounds),
-            }, sourceData.layers);
+            }, sourceData.children);
         } else {
             // Xóa source và layer nếu không hiển thị
             removeSourceAndLayers(sourceName);
@@ -41,11 +41,12 @@ const MapLayerPanel = ({ layers, mapRef }) => {
     };
 
     const removeSourceAndLayers = (sourceName) => {
+        
         if (mapRef.current && mapRef.current.getSource(sourceName)) {
             // Lấy tất cả các layer liên kết với source
             const mapLayers = mapRef.current.getStyle().layers;
             mapLayers.forEach((layer) => {
-                if (layer.source === sourceName) {
+                if (layer.source == sourceName) {
                     mapRef.current.removeLayer(layer.id); // Xóa layer
                 }
             });
@@ -59,7 +60,7 @@ const MapLayerPanel = ({ layers, mapRef }) => {
 
             layers.forEach((layer) => {
                 mapRef.current.addLayer({
-                    'id': layer.layerId,
+                    'id': layer.key,
                     'type': layer.layerType,
                     'source': sourceName,
                     'source-layer': layer.sourceLayer,
@@ -74,7 +75,7 @@ const MapLayerPanel = ({ layers, mapRef }) => {
 
     const customHeader = (
         <div className="flex align-items-center gap-2">
-            <span>Map Layer Control</span>
+            <span style={{ fontSize : '26px' }}>Lớp bản đồ</span>
         </div>
     );
 
@@ -83,20 +84,21 @@ const MapLayerPanel = ({ layers, mapRef }) => {
             <Sidebar visible={visible} position="right" onHide={() => setVisible(false)} header={customHeader}>
                 <ul className="lbandonen">
                     {layers.map(layer => (
-                        <li key={layer.sourceName}>
+                        <li key={layer.sourceName} className="form-check">
                             <label>
                                 <input
+                                    className="form-check-input"
                                     type="checkbox"
                                     checked={sourceVisibility[layer.sourceName] || false}
                                     onChange={() => toggleLayer(layer.sourceName)}
                                 />
-                                {layer.name} {/* Hiển thị tên lớp */}
+                                <span>{layer.label}</span> 
                             </label>
                         </li>
                     ))}
                 </ul>
             </Sidebar>
-            <Button icon="pi pi-arrow-left" onClick={() => setVisible(true)} />
+            <Button icon="pi pi-map" onClick={() => setVisible(true)} />
         </div>
     );
 };

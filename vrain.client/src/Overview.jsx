@@ -855,9 +855,6 @@ const Overview = () => {
             <Login ishome={false} />
         </div>
     );
-    useEffect(() => {
-
-    }, [selectmodeview]);
 
     const handleChangemode = (event) => {
         setselectmodeview(event.target.value);

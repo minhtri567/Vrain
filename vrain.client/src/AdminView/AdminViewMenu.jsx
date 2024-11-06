@@ -34,13 +34,13 @@ const AdminViewMenu = () => {
         };
         fetchMenu();
     }, []);
-    const findParentNode = (nodes, parentId) => {
+    const findParentNode = (nodes, sourceLayer) => {
         for (let node of nodes) {
-            if (node.key === parentId) {
+            if (node.key === sourceLayer) {
                 return node;
             }
             if (node.children) {
-                const found = findParentNode(node.children, parentId);
+                const found = findParentNode(node.children, sourceLayer);
                 if (found) {
                     return found;
                 }
@@ -63,7 +63,7 @@ const AdminViewMenu = () => {
             setSysthutu(event.node.thutu);
             setSysname(event.node.label);
             const selectedNode = event.node;
-            const parentNode = findParentNode(menu, selectedNode.parentId);
+            const parentNode = findParentNode(menu, selectedNode.sourceLayer);
             setTreeSelectedNodeKey(parentNode ? parentNode.key : '');
         }
     };

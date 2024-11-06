@@ -425,9 +425,9 @@ const MNOverview = () => {
                     bounds: JSON.parse(source.bounds)
                 });
 
-                source.layers.forEach(layer => {
+                source.children.forEach(layer => {
                     map.current.addLayer({
-                        'id': layer.layerId,
+                        'id': layer.key,
                         'type': layer.layerType,
                         'source': source.sourceName,
                         'source-layer': layer.sourceLayer,

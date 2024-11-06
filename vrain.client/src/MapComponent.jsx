@@ -112,9 +112,9 @@ const MapComponent = () => {
                     bounds: JSON.parse(source.bounds)
                 });
 
-                source.layers.forEach(layer => {
+                source.children.forEach(layer => {
                     map.current.addLayer({
-                        'id': layer.layerId,
+                        'id': layer.key,
                         'type': layer.layerType,
                         'source': source.sourceName,
                         'source-layer': layer.sourceLayer,
@@ -253,13 +253,10 @@ const MapComponent = () => {
     }, [currentfullDateTime]);
 
     useEffect(() => {
-        if (stationsRef.current.length > 0) {
+        if (stationsRef.current.length > 0 && layers.length > 0) {
             initializeMap();
-            if (layers.length > 0) {
-                addLayersToMap(layers);
-            }
         }
-    }, [stationsRef.current]);
+    }, [stationsRef.current, layers]);
 
     const initializeMap = () => {
         if (!map.current && stationsRef.current.length > 0) {
@@ -269,7 +266,9 @@ const MapComponent = () => {
                 center: [106.660172, 14.962622],
                 zoom: 4.5
             });
-
+            if (layers.length > 0) {
+                addLayersToMap(layers);
+            }
             map.current.addControl(new mapboxgl.FullscreenControl(), 'top-right');
             map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
             map.current.addControl(

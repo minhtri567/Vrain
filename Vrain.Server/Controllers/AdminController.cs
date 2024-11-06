@@ -9,6 +9,7 @@ using DocumentFormat.OpenXml;
 using OfficeOpenXml;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Bibliography;
+using DocumentFormat.OpenXml.Vml.Spreadsheet;
 
 namespace Vrain.Server.Controllers
 {
@@ -950,21 +951,24 @@ namespace Vrain.Server.Controllers
             var datalayer = await _context.map_sources_layer
             .Select(source => new
             {
+                key = source.id,
+                label = source.name,
                 SourceId = source.id,
                 SourceName = source.source_name,
                 Tiles = source.tiles,
                 Bounds = source.bounds,
-                Name = source.name,
-                Layers = _context.map_layers.Where( l => l.source_id == source.id ).Select(layer => new 
+                children = _context.map_layers.Where( l => l.source_id == source.id ).Select(layer => new 
                 {
-                    Id = layer.id,
-                    LayerId = layer.name,
+                    key = layer.id,
+                    label = layer.name,
                     LayerType = layer.type,
                     SourceLayer = layer.source,
                     Paint = layer.paint,
                     Layout = layer.layout,
                     MinZoom = layer.min_zoom,
-                    MaxZoom = layer.max_zoom
+                    MaxZoom = layer.max_zoom,
+                    Visibility = layer.visibility,
+                    parentId = source.id,
                 }).ToList()
             })
             .ToListAsync();
@@ -995,6 +999,8 @@ namespace Vrain.Server.Controllers
             if (existingLayer == null) return NotFound();
 
             existingLayer.name = mapLayer.name;
+            existingLayer.layout = mapLayer.layout;
+            existingLayer.paint = mapLayer.paint;
             existingLayer.type = mapLayer.type;
             existingLayer.visibility = mapLayer.visibility;
             existingLayer.source = mapLayer.source;
@@ -1002,9 +1008,19 @@ namespace Vrain.Server.Controllers
             existingLayer.min_zoom = mapLayer.min_zoom;
             existingLayer.max_zoom = mapLayer.max_zoom;
             existingLayer.updated_at = DateTime.UtcNow;
+            existingLayer.source_id = mapLayer.source_id;
 
-            await _context.SaveChangesAsync();
-            return NoContent();
+            try
+            {
+                // Lưu thay đổi vào cơ sở dữ liệu
+                await _context.SaveChangesAsync();
+                return Ok("Cập nhật dữ liệu thành công");
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error updating map layer: {ex.Message}");
+                return StatusCode(500, "Lỗi trong quá trình lưu dữ liệu. Vui lòng thử lại sau.");
+            }
         }
 
         [HttpDelete("DeleteMapLayer/{id}")]

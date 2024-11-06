@@ -994,6 +994,15 @@ button:focus, button:focus-visible {
 }
 .lbandonen{
     list-style-type : none;
+    margin : 0px;
+    padding : 0px;
+}
+.lbandonen li.form-check{
+    margin: 10px;
+}
+.lbandonen li.form-check label {
+    display: flex;
+    align-items: flex-end;
 }
 
 .liststation-header {
@@ -1006,4 +1015,14 @@ button:focus, button:focus-visible {
 }
 .liststation-header h2 {
     margin : 0px;
+}
+.form-check-input {
+    width: 15px;
+    height: 15px;
+    margin-top: .25em;
+    margin-right: 6px;
+}
+.form-check-input:checked {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
 }

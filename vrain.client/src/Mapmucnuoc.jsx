@@ -119,17 +119,21 @@ const Mapmucnuoc = () => {
             if (stationData) {
                 const chartEntry = {
                     timepoint,
-                    [`${stationData.station_name}`]: stationData.total,
-                    'Báo động 1': stationData.baodong1,
+                    [`${stationData.station_name}`]: stationData.total.toLocaleString('vi-VN')
                 };
-                if (maxTotal >= mbaodong1 ) {
-                    chartEntry['Báo động 2'] = mbaodong2;
+
+                // Thêm các cấp báo động nếu không null và tổng đạt mức tương ứng
+                if (mbaodong1 !== null && maxTotal >= mbaodong1) {
+                    chartEntry['Báo động 1'] = mbaodong1.toLocaleString('vi-VN');
                 }
-                if (maxTotal >= mbaodong2) {
-                    chartEntry['Báo động 3'] = mbaodong3;
+                if (mbaodong2 !== null && maxTotal >= mbaodong2) {
+                    chartEntry['Báo động 2'] = mbaodong2.toLocaleString('vi-VN');
                 }
-                if (maxTotal >= mbaodong3) {
-                    chartEntry['Lũ lịch sử'] = mlulichsu;
+                if (mbaodong3 !== null && maxTotal >= mbaodong3) {
+                    chartEntry['Báo động 3'] = mbaodong3.toLocaleString('vi-VN');
+                }
+                if (mlulichsu !== null && maxTotal >= mbaodong3) {
+                    chartEntry['Lũ lịch sử'] = mlulichsu.toLocaleString('vi-VN');
                 }
 
                 dataChart.push(chartEntry);
@@ -142,6 +146,37 @@ const Mapmucnuoc = () => {
         return result;
     };
 
+
+    const highlightBlinking = (map, lng, lat) => {
+        const createCustomMarker = () => {
+            const markerElement = document.createElement('div');
+            markerElement.style.backgroundSize = 'cover';
+            markerElement.style.width = '30px';
+            markerElement.style.height = '30px';
+            markerElement.style.borderRadius = '50%';
+            markerElement.style.opacity = '0.2'; // Độ mờ khởi tạo là 20%
+            markerElement.style.transition = 'opacity 1s ease'; // Thêm transition cho hiệu ứng mờ
+            return markerElement;
+        };
+
+        const markerElement = createCustomMarker();
+
+        const marker = new mapboxgl.Marker(markerElement)
+            .setLngLat([lng, lat])
+            .addTo(map);
+
+        const interval = setInterval(() => {
+            markerElement.style.backgroundColor = '#FF0000'; // Đặt màu đỏ
+        }, 200);
+
+        setTimeout(() => {
+            clearInterval(interval);
+            markerElement.style.opacity = '0';
+            setTimeout(() => {
+                marker.remove();
+            }, 1000);
+        }, 2000);
+    };
 
     useEffect(() => {
         const fetchfullData = async () => {
@@ -201,13 +236,10 @@ const Mapmucnuoc = () => {
     }, [allapistations]);
 
     useEffect(() => {
-        if (stationsRef.length > 0) {
+        if (stationsRef.length > 0 && layers.length > 0) {
             initializeMap();
-            if (layers.length > 0) {
-                addLayersToMap(layers);
-            }
         }
-    }, [stationsRef]);
+    }, [stationsRef, layers]);
 
     const addLayersToMap = (dataLayers) => {
         map.current.on('load', () => {
@@ -219,9 +251,9 @@ const Mapmucnuoc = () => {
                     bounds: JSON.parse(source.bounds)
                 });
 
-                source.layers.forEach(layer => {
+                source.children.forEach(layer => {
                     map.current.addLayer({
-                        'id': layer.layerId,
+                        'id': layer.key,
                         'type': layer.layerType,
                         'source': source.sourceName,
                         'source-layer': layer.sourceLayer,
@@ -242,6 +274,7 @@ const Mapmucnuoc = () => {
                 center: [106.660172, 14.962622],
                 zoom: 4.5
             });
+            addLayersToMap(layers);
             map.current.addControl(new mapboxgl.FullscreenControl(), 'top-right');
             map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
             map.current.addControl(
@@ -370,7 +403,7 @@ const Mapmucnuoc = () => {
                             properties: {
                                 sid: station.station_id,
                                 name: station.station_name,
-                                ngaydo: station.data_thoigian,
+                                ngaydo: station.s_data_thoigian,
                                 mucnuoc: station.data_giatri_sothuc,
                                 tinh: station.tinh,
                                 baodong1: station.baodong1,
@@ -498,7 +531,6 @@ const Mapmucnuoc = () => {
     };
     const handleChangeStation = (event) => {
         setSelecteduiStation(event.target.value);
-        
         let mbaodong1;
         let mbaodong2;
         let mbaodong3;
@@ -522,23 +554,26 @@ const Mapmucnuoc = () => {
             if (stationData) {
                 const chartEntry = {
                     timepoint,
-                    [`${stationData.station_name}`]: stationData.total,
-                    'Báo động 1': stationData.baodong1,
+                    [`${stationData.station_name}`]: stationData.total.toLocaleString('vi-VN')
                 };
-                if (maxTotal >= mbaodong1) {
-                    chartEntry['Báo động 2'] = mbaodong2;
+
+                // Thêm các cấp báo động nếu không null và tổng đạt mức tương ứng
+                if (mbaodong1 !== null && maxTotal >= mbaodong1) {
+                    chartEntry['Báo động 1'] = mbaodong1.toLocaleString('vi-VN');
                 }
-                if (maxTotal >= mbaodong2) {
-                    chartEntry['Báo động 3'] = mbaodong3;
+                if (mbaodong2 !== null && maxTotal >= mbaodong2) {
+                    chartEntry['Báo động 2'] = mbaodong2.toLocaleString('vi-VN');
                 }
-                if (maxTotal >= mbaodong3) {
-                    chartEntry['Lũ lịch sử'] = mlulichsu;
+                if (mbaodong3 !== null && maxTotal >= mbaodong3) {
+                    chartEntry['Báo động 3'] = mbaodong3.toLocaleString('vi-VN');
+                }
+                if (mlulichsu !== null && maxTotal >= mbaodong3) {
+                    chartEntry['Lũ lịch sử'] = mlulichsu.toLocaleString('vi-VN');
                 }
 
                 dataChart.push(chartEntry);
             }
         });
-
         setDataChart(dataChart);
 
         setLoading(false);
@@ -574,6 +609,7 @@ const Mapmucnuoc = () => {
             const targetStation = stationsRef.find(station => station.station_id === event.node.station_id);
             if (targetStation) {
                 viewllstation(targetStation.lat, targetStation.lon)
+                highlightBlinking(map.current, targetStation.lon, targetStation.lat);
             }
 
         } else {
@@ -734,7 +770,7 @@ const Mapmucnuoc = () => {
                     </div>
                 </div>
                 <div className="listraininfo mucnuoc">
-                    <Tree value={filteredLuuvucList} filter filterMode="lenient" filterPlaceholder="Tìm kiếm lưu vực ..." onNodeClick={onSelect} nodeTemplate={nodeTemplate} />
+                    <Tree value={filteredLuuvucList} filter filterMode="lenient" filterPlaceholder="Tìm kiếm trạm đo ..." onNodeClick={onSelect} nodeTemplate={nodeTemplate} />
                 </div>
             </div>
             <MapLayerPanel layers={layers} mapRef={map} />
