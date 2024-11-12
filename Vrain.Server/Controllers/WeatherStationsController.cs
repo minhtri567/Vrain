@@ -42,12 +42,12 @@ public class WeatherStationsController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<IEnumerable<weather_stations_today>>> GetWeatherStations( String? provincename )
     {
-        var curentdate = DateTime.UtcNow.Date;
+        var cutoffTime = DateTime.Now.Date.AddDays(-1).AddHours(20);
         string Nameprovince =  NameProvinceHelper.GetNameProvince(provincename);
         if (!String.IsNullOrEmpty(provincename))
         {
-            var query = from rainData in _context.monitoring_data_today
-                        where rainData.data_maloaithongso == "RAIN"
+            var query = from rainData in _context.monitoring_data
+                        where rainData.data_maloaithongso == "RAIN" && rainData.data_thoigian >= cutoffTime
                         join tskt in _context.iw_thongsoquantrac
                         on rainData.tskt_id equals tskt.tskt_id
                         join station in _context.monitoring_stations
@@ -91,8 +91,8 @@ public class WeatherStationsController : ControllerBase
         }
         else
         {
-            var query = from rainData in _context.monitoring_data_today
-                        where rainData.data_maloaithongso == "RAIN"
+            var query = from rainData in _context.monitoring_data
+                        where rainData.data_maloaithongso == "RAIN" && rainData.data_thoigian >= cutoffTime
                         join tskt in _context.iw_thongsoquantrac
                         on rainData.tskt_id equals tskt.tskt_id
                         join station in _context.monitoring_stations
@@ -155,8 +155,9 @@ public class WeatherStationsController : ControllerBase
     [HttpGet("all")]
     public async Task<ActionResult<IEnumerable<weather_stations_today>>> GetfullStations()
     {
-        var query = from rainData in _context.monitoring_data_today
-                    where rainData.data_maloaithongso == "RAIN"
+        var cutoffTime = DateTime.Now.Date.AddDays(-1).AddHours(20);
+        var query = from rainData in _context.monitoring_data
+                    where rainData.data_maloaithongso == "RAIN" && rainData.data_thoigian >= cutoffTime
                     join tskt in _context.iw_thongsoquantrac
                     on rainData.tskt_id equals tskt.tskt_id
                     join station in _context.monitoring_stations
@@ -216,12 +217,8 @@ public class WeatherStationsController : ControllerBase
         string Nameprovince = NameProvinceHelper.GetNameProvince(provincename);
         if (modeview == 1)
         {
-            // SQL query to fetch data from both monitoring_data and monitoring_data_today tables
             string sqlQuery = @"
                 SELECT * FROM monitoring_data
-                WHERE data_thoigian <= '" + endDate.Value.ToString("yyyy-MM-dd 23:59:59") + @"' AND data_thoigian >= '" + startDate.Value.ToString("yyyy-MM-dd 00:00:00") + @"'
-                UNION
-                SELECT * FROM monitoring_data_today
                 WHERE data_thoigian <= '" + endDate.Value.ToString("yyyy-MM-dd 23:59:59") + @"' AND data_thoigian >= '" + startDate.Value.ToString("yyyy-MM-dd 00:00:00") + @"'";
 
             // Fetch monitoring data
@@ -280,9 +277,6 @@ public class WeatherStationsController : ControllerBase
         {
             string sqlQuery = @"
             SELECT * FROM monitoring_data
-            WHERE data_thoigian <= '" + endDate.Value.ToString("yyyy-MM-dd 23:59:59") + @"' AND data_thoigian >= '" + startDate.Value.ToString("yyyy-MM-dd 00:00:00") + @"'
-            UNION
-            SELECT * FROM monitoring_data_today
             WHERE data_thoigian <= '" + endDate.Value.ToString("yyyy-MM-dd 23:59:59") + @"' AND data_thoigian >= '" + startDate.Value.ToString("yyyy-MM-dd 00:00:00") + @"'";
 
 
@@ -332,12 +326,8 @@ public class WeatherStationsController : ControllerBase
         }
         else
         {
-            // SQL query to fetch data from both monitoring_data and monitoring_data_today tables
             string sqlQuery = @"
                 SELECT * FROM monitoring_data
-                WHERE data_thoigian <= '" + endDate.Value.ToString("yyyy-MM-dd 23:59:59") + @"' AND data_thoigian >= '" + startDate.Value.ToString("yyyy-MM-dd 00:00:00") + @"'
-                UNION
-                SELECT * FROM monitoring_data_today
                 WHERE data_thoigian <= '" + endDate.Value.ToString("yyyy-MM-dd 23:59:59") + @"' AND data_thoigian >= '" + startDate.Value.ToString("yyyy-MM-dd 00:00:00") + @"'";
 
             // Fetch monitoring data

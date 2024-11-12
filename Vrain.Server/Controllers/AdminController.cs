@@ -684,7 +684,9 @@ namespace Vrain.Server.Controllers
         [HttpGet("infostationstoday")]
         public async Task<ActionResult<IEnumerable<monitoring_stations>>> GetallStationstoday([FromQuery] List<int> lpid)
         {
-            var query = from rainData in _context.monitoring_data_today
+            var timenow = DateTime.Now.Date;
+            var query = from rainData in _context.monitoring_data
+                        where rainData.data_thoigian >= timenow
                         join station in _context.monitoring_stations
                         on rainData.station_id equals station.station_id
                         join tskt in _context.iw_thongsoquantrac
@@ -888,7 +890,7 @@ namespace Vrain.Server.Controllers
                     return NotFound("Thông số không tồn tại.");
                 }
 
-                var newData = new monitoring_data_today
+                var newData = new monitoring_data
                 {
                     tskt_id = thongso.tskt_id,
                     station_id = ssid.station_id,
@@ -899,7 +901,7 @@ namespace Vrain.Server.Controllers
                     data_maloaithongso = thongso.tskt_maloaithongso
                 };
 
-                await _context.monitoring_data_today.AddAsync(newData);
+                await _context.monitoring_data.AddAsync(newData);
                 await _context.SaveChangesAsync();
 
                 return Ok("Lưu dữ liệu thành công");
@@ -962,7 +964,8 @@ namespace Vrain.Server.Controllers
                     key = layer.id,
                     label = layer.name,
                     LayerType = layer.type,
-                    SourceLayer = layer.source,
+                    SourceLayer = layer.source_layer,
+                    source = layer.source,
                     Paint = layer.paint,
                     Layout = layer.layout,
                     MinZoom = layer.min_zoom,
@@ -1012,7 +1015,7 @@ namespace Vrain.Server.Controllers
 
             try
             {
-                // Lưu thay đổi vào cơ sở dữ liệu
+                _context.map_layers.Update(existingLayer);
                 await _context.SaveChangesAsync();
                 return Ok("Cập nhật dữ liệu thành công");
             }

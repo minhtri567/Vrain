@@ -1,4 +1,6 @@
-﻿namespace Vrain.Server.Models
+﻿using System.ComponentModel.DataAnnotations.Schema;
+
+namespace Vrain.Server.Models
 {
     public class map_layers
     {
@@ -8,7 +10,9 @@
         public bool visibility { get; set; } = true;
         public string? source { get; set; }
         public string? source_layer { get; set; }
+        [Column(TypeName = "json")]
         public string? layout { get; set; }
+        [Column(TypeName = "json")]
         public string? paint { get; set; }
         public int? min_zoom { get; set; } = 0;
         public int? max_zoom { get; set; } = 22;

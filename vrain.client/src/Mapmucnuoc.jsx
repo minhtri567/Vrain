@@ -761,7 +761,7 @@ const Mapmucnuoc = () => {
             </div>
             <div className="liststation click-view-provine">
                 <div className="liststation-header">
-                    <h2>Danh sách lưu vực toàn nước</h2>
+                    <h2>Danh sách trạm đo mực nước theo </h2>
                     <div className="liststation-mode-view">
                         <select value={selectedValue} onChange={handleChange}>
                             <option value='1'>lưu vực</option>

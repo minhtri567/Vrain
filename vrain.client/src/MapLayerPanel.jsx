@@ -98,7 +98,7 @@ const MapLayerPanel = ({ layers, mapRef }) => {
                     ))}
                 </ul>
             </Sidebar>
-            <Button icon="pi pi-map" onClick={() => setVisible(true)} />
+            <Button onClick={() => setVisible(true)} > <i className="fa-solid fa-layer-group"></i></Button>
         </div>
     );
 };

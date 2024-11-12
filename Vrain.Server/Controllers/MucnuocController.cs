@@ -63,20 +63,20 @@ namespace Vrain.Server.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<weather_stations_today>>> Mucnuochientai(String? luuvuc)
+        public async Task<ActionResult<IEnumerable<weather_stations>>> Mucnuochientai(String? luuvuc)
         {
             if(luuvuc == null)
             {
                 var timenow = DateTime.Now.Date;
 
                 var query = await (
-                    from tt in _context.monitoring_data_today
+                    from tt in _context.monitoring_data
                     where tt.data_thoigian >= timenow
                     join b in _context.iw_thongsoquantrac on tt.tskt_id equals b.tskt_id
                     join c in _context.monitoring_stations on b.works_id equals c.key
                     where b.tskt_maloaithongso == "DOMUCNUOC"
                     join groupedtt in (
-                        from innerData in _context.monitoring_data_today
+                        from innerData in _context.monitoring_data
                         where innerData.data_thoigian >= timenow
                         group innerData by innerData.station_id into stationGroup
                         select new
@@ -115,13 +115,13 @@ namespace Vrain.Server.Controllers
                 var timenow = DateTime.Now.Date;
 
                 var query = await (
-                    from tt in _context.monitoring_data_today
+                    from tt in _context.monitoring_data
+                    where tt.data_thoigian >= timenow
                     join b in _context.iw_thongsoquantrac on tt.tskt_id equals b.tskt_id
                     join c in _context.monitoring_stations on b.works_id equals c.key
                     where b.tskt_maloaithongso == "DOMUCNUOC" && (c.luuvuc == luuvuc || c.tinh == luuvuc)
-                    where tt.data_thoigian >= timenow
                     join groupedtt in (
-                        from innerData in _context.monitoring_data_today
+                        from innerData in _context.monitoring_data
                         where innerData.data_thoigian >= timenow
                         group innerData by innerData.station_id into stationGroup
                         select new
@@ -130,7 +130,7 @@ namespace Vrain.Server.Controllers
                             MaxDateTime = stationGroup.Max(x => x.data_thoigian)
                         }
                     ) on new { tt.station_id, tt.data_thoigian } equals new { groupedtt.station_id, data_thoigian = groupedtt.MaxDateTime }
-                    join previousData in _context.monitoring_data_today on new { tt.station_id, tt.data_thoigian } equals new { station_id = previousData.station_id, data_thoigian = previousData.data_thoigian.AddHours(-1) }
+                    join previousData in _context.monitoring_data on new { tt.station_id, tt.data_thoigian } equals new { station_id = previousData.station_id, data_thoigian = previousData.data_thoigian.AddHours(-1) }
                         into previousDataGroup
                     from previousData in previousDataGroup.DefaultIfEmpty() 
                     select new
@@ -209,9 +209,6 @@ namespace Vrain.Server.Controllers
         {
                 string sqlQuery = @"
                 SELECT * FROM monitoring_data
-                WHERE data_thoigian <= '" + endDate.Value.ToString("yyyy-MM-dd 23:59:59") + @"' AND data_thoigian >= '" + startDate.Value.ToString("yyyy-MM-dd 00:00:00") + @"'
-                UNION
-                SELECT * FROM monitoring_data_today
                 WHERE data_thoigian <= '" + endDate.Value.ToString("yyyy-MM-dd 23:59:59") + @"' AND data_thoigian >= '" + startDate.Value.ToString("yyyy-MM-dd 00:00:00") + @"'";
 
                 // Fetch monitoring data
@@ -220,7 +217,7 @@ namespace Vrain.Server.Controllers
                     .ToListAsync();
 
                 var datastations = await _context.monitoring_stations
-                    .Where(s => s.luuvuc == luuvuc)
+                    .Where(s => s.luuvuc == luuvuc || s.tinh == luuvuc)
                     .ToListAsync();
 
                 var stationKeys = datastations.Select(s => s.key).ToList();

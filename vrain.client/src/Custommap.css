@@ -1026,3 +1026,22 @@ button:focus, button:focus-visible {
     background-color: #0d6efd;
     border-color: #0d6efd;
 }
+
+.liststation-mode-view select {
+    font-size: 24px;
+    background-color: transparent;
+    color: white;
+    font-weight: 700;
+    border: none;
+    font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+    margin-left: 1px;
+    margin-bottom: 0.1px;
+}
+.liststation-mode-view select:focus-visible{
+    border: none;
+    outline: none;
+}
+.liststation-mode-view select option{
+    background-color: transparent;
+    color: black;
+}

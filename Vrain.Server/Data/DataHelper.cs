@@ -129,17 +129,6 @@ namespace Vrain.Server.Data
                             data_giatri_sothuc, 
                             data_thoigian 
                         FROM 
-                            monitoring_data_today 
-                        WHERE 
-                            data_thoigian BETWEEN @startDate AND @endDate
-                            AND station_id IN (" + lstations + @")
-                            AND data_maloaithongso = 'RAIN'
-                        UNION ALL
-                        SELECT 
-                            station_id, 
-                            data_giatri_sothuc, 
-                            data_thoigian 
-                        FROM 
                             monitoring_data 
                         WHERE 
                             data_thoigian BETWEEN @startDate AND @endDate
@@ -218,17 +207,6 @@ namespace Vrain.Server.Data
                 md.data_thoigian
             FROM 
                 (
-                    SELECT 
-                        station_id, 
-                        data_giatri_sothuc, 
-                        data_thoigian 
-                    FROM 
-                        monitoring_data_today 
-                    WHERE 
-                        data_thoigian BETWEEN @startDate AND @endDate
-                        AND station_id IN (" + lstations + @")
-                        AND data_maloaithongso = 'DOMUCNUOC'
-                    UNION ALL
                     SELECT 
                         station_id, 
                         data_giatri_sothuc, 

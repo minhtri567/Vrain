@@ -61,36 +61,22 @@ public class AutoGetDataMucNuoc : IJob
                                   data_giatri_sothuc = jsonData.Value
                               }).ToList();
 
-            var firstRecord = joinedData.OrderBy(s => s.data_thoigian).FirstOrDefault();
+            var cutoffTime = DateTime.Today;
 
-            if (firstRecord != null && firstRecord.data_thoigian.Date == DateTime.Now.Date)
+            var firstRecord = _context.monitoring_data
+            .Where(s => s.data_maloaithongso == "DOMUCNUOC" && s.data_thoigian >= cutoffTime)
+            .OrderBy(s => s.data_thoigian)
+            .FirstOrDefault();
+
+            if (firstRecord != null )
             {
-                await _context.Database.ExecuteSqlRawAsync("DELETE FROM monitoring_data_today WHERE data_maloaithongso = 'DOMUCNUOC' AND data_thoigian >= ( current_date  + time '00:00:00');");
-            }
-            else
-            {
-                await _context.Database.ExecuteSqlRawAsync("delete from monitoring_data_today\r\nwhere data_thoigian < ( current_date  + time '00:00:00') AND data_maloaithongso = 'DOMUCNUOC' ;");
-                await _context.Database.ExecuteSqlRawAsync(@"
-                        INSERT INTO monitoring_data(tskt_id, data_thoigian, data_thoigiancapnhat, data_giatri_sothuc, createby, station_id , data_maloaithongso)
-                        SELECT
-                            tskt_id,
-                            data_thoigian,
-                            data_thoigiancapnhat,
-                            data_giatri_sothuc,
-                            createby,
-                            station_id,
-                            data_maloaithongso
-                        FROM
-                            monitoring_data_today
-                            where data_thoigian <= (current_date + time '00:00:01') AND data_maloaithongso = 'DOMUCNUOC';
-                    ");
-                await _context.Database.ExecuteSqlRawAsync("DELETE FROM monitoring_data_today data_maloaithongso = 'DOMUCNUOC';");
+                await _context.Database.ExecuteSqlRawAsync("DELETE FROM monitoring_data WHERE data_maloaithongso = 'DOMUCNUOC' AND data_thoigian >= ( current_date  + time '00:00:00');");
             }
 
             foreach (var data in joinedData)
             {
 
-                var monitoringData = new monitoring_data_today
+                var monitoringData = new monitoring_data
                 {
                     tskt_id = data.tskt_id,
                     data_thoigian = data.data_thoigian,
@@ -100,7 +86,7 @@ public class AutoGetDataMucNuoc : IJob
                     data_maloaithongso = "DOMUCNUOC",
                 };
 
-                _context.monitoring_data_today.Add(monitoringData);
+                _context.monitoring_data.Add(monitoringData);
 
             }
 

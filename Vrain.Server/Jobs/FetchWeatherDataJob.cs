@@ -73,30 +73,15 @@ public class FetchWeatherDataJob : IJob
                 .Where(data => data.daterain.Date == DateTime.Now.Date && data.lat != 0 && data.lon != 0)
                 .ToList();
 
-                var firstRecord = _context.monitoring_data_today.Where(s=>s.data_maloaithongso == "RAIN").OrderBy( s=> s.data_thoigian).FirstOrDefault();
+                var cutoffTime = DateTime.Now.Date.AddDays(-1).AddHours(20);
+                var firstRecord = _context.monitoring_data
+                 .Where(s => s.data_maloaithongso == "RAIN" && s.data_thoigian >= cutoffTime)
+                 .OrderBy(s => s.data_thoigian)
+                 .FirstOrDefault();
 
-                if (firstRecord != null && firstRecord.data_thoigian.Date == DateTime.Now.Date.AddDays(-1))
+                if (firstRecord != null )
                 {
-                    await _context.Database.ExecuteSqlRawAsync("DELETE FROM monitoring_data_today WHERE data_maloaithongso = 'RAIN' AND data_thoigian >= ((current_date - 1) + time '20:00:00') ;");
-                }
-                else
-                {
-                    await _context.Database.ExecuteSqlRawAsync("delete from monitoring_data_today\r\nwhere data_thoigian < ((current_date - 1) + time '20:00:00') AND data_maloaithongso = 'RAIN'");
-                    await _context.Database.ExecuteSqlRawAsync(@"
-                        INSERT INTO monitoring_data(tskt_id, data_thoigian, data_thoigiancapnhat, data_giatri_sothuc, createby, station_id , data_maloaithongso)
-                        SELECT
-                            tskt_id,
-                            data_thoigian,
-                            data_thoigiancapnhat,
-                            data_giatri_sothuc,
-                            createby,
-                            station_id,
-                            data_maloaithongso
-                        FROM
-                            monitoring_data_today
-                            where data_thoigian <= (current_date + time '19:59:00') AND data_maloaithongso = 'RAIN';
-                    ");
-                    await _context.Database.ExecuteSqlRawAsync("DELETE FROM monitoring_data_today WHERE data_maloaithongso = 'RAIN';");
+                    await _context.Database.ExecuteSqlRawAsync("DELETE FROM monitoring_data WHERE data_maloaithongso = 'RAIN' AND data_thoigian >= ((current_date - 1) + time '20:00:00') ;");
                 }
 
                 var stationData = (from tskt in _context.iw_thongsoquantrac.Where(s=>s.tskt_maloaithongso == "RAIN")
@@ -187,7 +172,7 @@ public class FetchWeatherDataJob : IJob
                             _ => 0.0 // Giá trị mặc định nếu không khớp
                         };
 
-                        var monitoringData = new monitoring_data_today
+                        var monitoringData = new monitoring_data
                         {
                             tskt_id = station.TsktId,
                             data_thoigian = timestamp,
@@ -197,7 +182,7 @@ public class FetchWeatherDataJob : IJob
                             data_maloaithongso = "RAIN",
                         };
 
-                        _context.monitoring_data_today.Add(monitoringData);
+                        _context.monitoring_data.Add(monitoringData);
                     }
                 }
 

@@ -86,6 +86,7 @@ const Adminbandonen = () => {
             setidlayer(event.node.key);
             setnamelayer(event.node.label);
             settypelayer(event.node.layerType);
+            setsourcelayer(event.node.source)
             setsourcelayername(event.node.sourceLayer);
             setlayoutlayer(event.node.layout);
             setpaintlayer(event.node.paint);
@@ -101,11 +102,11 @@ const Adminbandonen = () => {
     const handleSaveLayer = async (itemId) => {
         const layerData = {
             id: idlayer,
-            source_layer: namelayer,
+            source_layer: sourcelayername,
+            name: namelayer,
             type: typelayer,
             source: sourcelayer,
             source_id: TreeselectedNodeKey,
-            sourceName: sourcelayername,
             paint: paintlayer,
             layout: layoutlayer,
             visibility: isVisible,
