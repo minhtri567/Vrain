@@ -29,6 +29,7 @@ public class WeatherDbContext : DbContext
     public DbSet<bgmap_commune> bgmap_commune { get; set; }
     public DbSet<map_layers> map_layers { get; set; }
     public DbSet<map_sources_layer> map_sources_layer { get; set; }
+    public DbSet<map_panel_layer> map_panel_layer { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<weather_stations_today>().HasKey(w => new { w.id });
@@ -61,6 +62,7 @@ public class WeatherDbContext : DbContext
 
         modelBuilder.Entity<map_layers>().HasKey(m => m.id);
         modelBuilder.Entity<map_sources_layer>().HasKey(m => m.id);
+        modelBuilder.Entity<map_panel_layer>().HasKey(m => m.id);
         modelBuilder.Entity<bgmap_province>().HasKey(m => m.gid);
         modelBuilder.Entity<bgmap_district>().HasKey(m => m.gid);
         modelBuilder.Entity<bgmap_commune>().HasKey(m => m.gid);

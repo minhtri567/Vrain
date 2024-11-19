@@ -57,13 +57,14 @@ const AdminViewMenu = () => {
         if (event == null) {
             //
         } else {
+            
             setSysbtnadd(false);
             setSysid(event.node.key);
             setSysview(event.node.url);
             setSysthutu(event.node.thutu);
             setSysname(event.node.label);
             const selectedNode = event.node;
-            const parentNode = findParentNode(menu, selectedNode.sourceLayer);
+            const parentNode = findParentNode(menu, selectedNode.parentId);
             setTreeSelectedNodeKey(parentNode ? parentNode.key : '');
         }
     };
@@ -188,7 +189,10 @@ const AdminViewMenu = () => {
                     <Box className="form-menu">
                         <div className="add_new_menu">
                             <p>Chi tiết menu : </p>
-                            <button onClick={handleaddmenu}>Thêm 1 menu mới</button>
+                            {!sysbtnadd && (
+                                <button onClick={handleaddmenu}>Thêm 1 menu mới</button>
+                            )}
+                            
                         </div>
                         <div className="sys_input">
                             <label htmlFor="sys_namemenu">Tên menu</label>
