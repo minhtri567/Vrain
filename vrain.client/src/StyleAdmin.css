@@ -60,7 +60,7 @@
     position : relative;
 }
  
-.admin-page .menu-hierarchy li > ul {
+.admin-page .menu-hierarchy> ul > li > ul {
     position : absolute;
     padding : 0;
 }
@@ -76,8 +76,11 @@
 .collapsed {
     display: none;
 }
-
-.expanded {
+ul.expanded {
+    margin-left : 10px;
+    margin-top : 10px;
+}
+.menu-hierarchy > ul > li > ul.expanded {
     display: block;
     background-color: white;
     margin-top: 7px;
@@ -399,14 +402,14 @@
 }
 
 /* Highlight parent menu item if it contains an active child */
-.menu-hierarchy li:has(ul li.active) {
+.menu-hierarchy li:has(ul li.active) > div{
     background-color: #007bff;
 }
 
 .menu-hierarchy li:has(ul li.active) > .menu-item > a {
     color: white;
 }
-.menu-hierarchy li:has(ul li.active) li.active {
+.menu-hierarchy li>div:has(ul li.active) li.active {
     background-color: #5caaff;
 }
 

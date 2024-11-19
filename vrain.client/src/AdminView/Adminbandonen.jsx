@@ -55,6 +55,7 @@ const Adminbandonen = () => {
     const [sourcelayer, setsourcelayer] = React.useState('');                  
     const [layoutlayer, setlayoutlayer] = React.useState('');                  
     const [paintlayer, setpaintlayer] = React.useState('');                  
+    const [filterlayer, setfilterlayer] = React.useState('');                  
     const [sourcelayername, setsourcelayername] = React.useState('');               
     const [isVisible, setIsVisible] = React.useState(true);     
     const [minZoom, setMinZoom] = React.useState(0);         
@@ -90,6 +91,7 @@ const Adminbandonen = () => {
             setsourcelayername(event.node.sourceLayer);
             setlayoutlayer(event.node.layout);
             setpaintlayer(event.node.paint);
+            setfilterlayer(event.node.filter);
             setMinZoom(event.node.minZoom);
             setMaxZoom(event.node.maxZoom);
             setIsVisible(event.node.visibility)
@@ -109,6 +111,7 @@ const Adminbandonen = () => {
             source_id: TreeselectedNodeKey,
             paint: paintlayer,
             layout: layoutlayer,
+            filter: filterlayer,
             visibility: isVisible,
             min_zoom: minZoom,
             max_zoom: maxZoom,
@@ -180,7 +183,6 @@ const Adminbandonen = () => {
                     }
                 />
             </Snackbar>
-            <h4 style={{ textAlign: 'center' }}>Quản lý bản đồ nền</h4>
             <div className='ad-viewcontentmenu'>
                 <div style={{ width: '48%' }}>
                     <p>Danh sách layer</p>
@@ -237,6 +239,11 @@ const Adminbandonen = () => {
                         <div className="sys_input">
                             <label htmlFor="paint_layer_name">paint layer</label>
                             <InputTextarea id="paint_layer_name" value={paintlayer ? paintlayer : ""} onChange={(e) => setpaintlayer(e.target.value)} />
+                        </div>
+
+                        <div className="sys_input">
+                            <label htmlFor="filter_layer_name">filter layer</label>
+                            <InputTextarea id="filter_layer_name" value={filterlayer ? filterlayer : ""} onChange={(e) => setfilterlayer(e.target.value)} />
                         </div>
 
                         <div className="sys_input">

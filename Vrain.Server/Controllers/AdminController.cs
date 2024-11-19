@@ -968,6 +968,7 @@ namespace Vrain.Server.Controllers
                     source = layer.source,
                     Paint = layer.paint,
                     Layout = layer.layout,
+                    Filter = layer.filter,
                     MinZoom = layer.min_zoom,
                     MaxZoom = layer.max_zoom,
                     Visibility = layer.visibility,
@@ -1004,6 +1005,7 @@ namespace Vrain.Server.Controllers
             existingLayer.name = mapLayer.name;
             existingLayer.layout = mapLayer.layout;
             existingLayer.paint = mapLayer.paint;
+            existingLayer.filter = mapLayer.filter;
             existingLayer.type = mapLayer.type;
             existingLayer.visibility = mapLayer.visibility;
             existingLayer.source = mapLayer.source;

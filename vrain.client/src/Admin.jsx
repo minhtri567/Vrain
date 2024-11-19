@@ -104,6 +104,7 @@ const Admin = () => {
     };
 
     const handleMenuItemClick = (url) => {
+        console.log(url)
         setExpandedItems({});
         setCurrentView(url);
         if(isMobile == true ){
@@ -129,7 +130,6 @@ const Admin = () => {
                 </li>
             ))}
         </ul>
-
     );
 
     return (
