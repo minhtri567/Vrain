@@ -794,6 +794,10 @@ button:focus, button:focus-visible {
     .my-mode-view{
         width : auto;
     }
+    .popup-chart-content #view-station {
+        width : 90%;
+        margin : 16px 0px 0px 0px;
+    }
 }
 
 @media (max-width: 767.98px) {

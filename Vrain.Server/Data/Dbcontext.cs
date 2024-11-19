@@ -23,6 +23,7 @@ public class WeatherDbContext : DbContext
     public DbSet<sys_role> sys_role { get; set; }
     public DbSet<monitoring_data_today> monitoring_data_today { get; set; }
     public DbSet<monitoring_data> monitoring_data { get; set; }
+    public DbSet<MonitoringDataDto> MonitoringDataDto { get; set; }
     public DbSet<bgmap_province> bgmap_province { get; set; }
     public DbSet<bgmap_district> bgmap_district { get; set; }
     public DbSet<bgmap_commune> bgmap_commune { get; set; }
@@ -55,6 +56,7 @@ public class WeatherDbContext : DbContext
         modelBuilder.Entity<sys_role>().HasKey(w => new { w.role_id });
         modelBuilder.Entity<monitoring_data_today>().HasKey(w => new { w.data_id });
         modelBuilder.Entity<monitoring_data>().HasKey(w => new { w.data_id });
+        modelBuilder.Entity<MonitoringDataDto>().HasNoKey();
         modelBuilder.Entity<iw_thongsoquantrac>().HasKey(w => new { w.tskt_id });
 
         modelBuilder.Entity<map_layers>().HasKey(m => m.id);

@@ -63,7 +63,7 @@ namespace Vrain.Server.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<weather_stations>>> Mucnuochientai(String? luuvuc)
+        public async Task<ActionResult<IEnumerable<weather_stations>>> Mucnuochientai(String? luuvuc , int datatype)
         {
             if(luuvuc == null)
             {
@@ -112,51 +112,118 @@ namespace Vrain.Server.Controllers
             }
             else 
             {
-                var timenow = DateTime.Now.Date;
+                if(datatype == 1)
+                {
+                    string query = @"WITH RankedData AS (
+                                        SELECT 
+                                            c.station_id,
+                                            tt.data_thoigian,
+                                            tt.data_giatri_sothuc,
+		                                    b.tskt_maloaithongso,
+		                                    c.station_name,
+		                                    c.tinh,
+		                                    c.luuvuc,
+		                                    c.lat,
+		                                    c.lon,
+		                                    c.quanhuyen,
+		                                    c.phuongxa,
+		                                    c.baodong1,
+		                                    c.baodong2,
+		                                    c.baodong3,
+		                                    c.lulichsu,
+                                            ROW_NUMBER() OVER (PARTITION BY c.station_id ORDER BY tt.data_thoigian DESC) AS RowNum
+                                        FROM monitoring_data AS tt
+                                        INNER JOIN iw_thongsoquantrac AS b ON tt.tskt_id = b.tskt_id
+                                        INNER JOIN monitoring_stations AS c ON b.works_id = c.key
+                                        WHERE tt.data_thoigian >= CURRENT_DATE 
+                                          AND b.tskt_maloaithongso = 'DOMUCNUOC'
+                                          AND c.luuvuc = '" + luuvuc  + @"'
+                                    )
+                                    SELECT 
+                                        nowData.station_id,
+                                        TO_CHAR(nowData.data_thoigian, 'HH24:MI') AS data_thoigian,
+                                        TO_CHAR(preData.data_thoigian, 'HH24:MI') AS data_thoigian_pre,
+                                        nowData.data_giatri_sothuc as value,
+                                        preData.data_giatri_sothuc AS value_pre,
+	                                    nowData.station_name,
+	                                    nowData.tinh,
+	                                    nowData.luuvuc,
+	                                    nowData.lat,
+	                                    nowData.lon,
+	                                    nowData.quanhuyen,
+	                                    nowData.phuongxa,
+	                                    nowData.baodong1,
+	                                    nowData.baodong2,
+	                                    nowData.baodong3,
+	                                    nowData.lulichsu
+                                    FROM RankedData AS nowData
+                                    LEFT JOIN RankedData AS preData
+                                        ON nowData.station_id = preData.station_id
+                                       AND nowData.RowNum = 1
+                                       AND preData.RowNum = 2
+                                    WHERE nowData.RowNum = 1;
+                                    ";
 
-                var query = await (
-                    from tt in _context.monitoring_data
-                    where tt.data_thoigian >= timenow
-                    join b in _context.iw_thongsoquantrac on tt.tskt_id equals b.tskt_id
-                    join c in _context.monitoring_stations on b.works_id equals c.key
-                    where b.tskt_maloaithongso == "DOMUCNUOC" && (c.luuvuc == luuvuc || c.tinh == luuvuc)
-                    join groupedtt in (
-                        from innerData in _context.monitoring_data
-                        where innerData.data_thoigian >= timenow
-                        group innerData by innerData.station_id into stationGroup
-                        select new
-                        {
-                            station_id = stationGroup.Key,
-                            MaxDateTime = stationGroup.Max(x => x.data_thoigian)
-                        }
-                    ) on new { tt.station_id, tt.data_thoigian } equals new { groupedtt.station_id, data_thoigian = groupedtt.MaxDateTime }
-                    join previousData in _context.monitoring_data on new { tt.station_id, tt.data_thoigian } equals new { station_id = previousData.station_id, data_thoigian = previousData.data_thoigian.AddHours(-1) }
-                        into previousDataGroup
-                    from previousData in previousDataGroup.DefaultIfEmpty() 
-                    select new
-                    {
-                        tt.station_id,
-                        data_thoigian = tt.data_thoigian.ToString("dd-MM-yyyy HH:mm:ss"),
-                        value = tt.data_giatri_sothuc,
-                        s_data_thoigian = tt.data_thoigian.ToString("dd-MM HH:mm"),
-                        value_pre = previousData != null ? previousData.data_giatri_sothuc : (float?)null, 
-                        b.tskt_maloaithongso,
-                        c.station_name,
-                        c.tinh,
-                        c.luuvuc,
-                        c.lat,
-                        c.lon,
-                        c.quanhuyen,
-                        c.phuongxa,
-                        c.baodong1,
-                        c.baodong2,
-                        c.baodong3,
-                        c.lulichsu
-                    }
-                ).ToListAsync();
+                    var monitoringData = await _context.MonitoringDataDto.FromSqlRaw(query).ToListAsync();
 
-                return Ok(query);
+                    return Ok(monitoringData);
+                }
+                else
+                {
+                    string query = @"WITH RankedData AS (
+                                        SELECT 
+                                            c.station_id,
+                                            tt.data_thoigian,
+                                            tt.data_giatri_sothuc,
+		                                    b.tskt_maloaithongso,
+		                                    c.station_name,
+		                                    c.tinh,
+		                                    c.luuvuc,
+		                                    c.lat,
+		                                    c.lon,
+		                                    c.quanhuyen,
+		                                    c.phuongxa,
+		                                    c.baodong1,
+		                                    c.baodong2,
+		                                    c.baodong3,
+		                                    c.lulichsu,
+                                            ROW_NUMBER() OVER (PARTITION BY c.station_id ORDER BY tt.data_thoigian DESC) AS RowNum
+                                        FROM monitoring_data AS tt
+                                        INNER JOIN iw_thongsoquantrac AS b ON tt.tskt_id = b.tskt_id
+                                        INNER JOIN monitoring_stations AS c ON b.works_id = c.key
+                                        WHERE tt.data_thoigian >= CURRENT_DATE 
+                                          AND b.tskt_maloaithongso = 'DOMUCNUOC'
+                                          AND c.tinh = '" + luuvuc + @"'
+                                    )
+                                    SELECT 
+                                        nowData.station_id,
+                                        TO_CHAR(nowData.data_thoigian, 'HH24:MI') AS data_thoigian,
+                                        TO_CHAR(preData.data_thoigian, 'HH24:MI') AS data_thoigian_pre,
+                                        nowData.data_giatri_sothuc as value,
+                                        preData.data_giatri_sothuc AS value_pre,
+	                                    nowData.station_name,
+	                                    nowData.tinh,
+	                                    nowData.luuvuc,
+	                                    nowData.lat,
+	                                    nowData.lon,
+	                                    nowData.quanhuyen,
+	                                    nowData.phuongxa,
+	                                    nowData.baodong1,
+	                                    nowData.baodong2,
+	                                    nowData.baodong3,
+	                                    nowData.lulichsu
+                                    FROM RankedData AS nowData
+                                    LEFT JOIN RankedData AS preData
+                                        ON nowData.station_id = preData.station_id
+                                       AND nowData.RowNum = 1
+                                       AND preData.RowNum = 2
+                                    WHERE nowData.RowNum = 1;
+                                    ";
 
+                    var monitoringData = await _context.MonitoringDataDto.FromSqlRaw(query).ToListAsync();
+
+                    return Ok(monitoringData);
+                }
             }
 
         }

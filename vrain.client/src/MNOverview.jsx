@@ -52,7 +52,6 @@ const MNOverview = () => {
     const apilayer = '/vnrain/Admin/GetMapLayers';
 
     const [layers, setLayers] = useState([]);
-
     useEffect(() => {
         const fetchLayers = async () => {
             const response = await fetch(apilayer);
@@ -72,8 +71,12 @@ const MNOverview = () => {
 
     useEffect(() => {
         const fetchDataProvine = async () => {
+            let datatype = 0;
+            if (name_luuvuc.startsWith('luu-vuc')) {
+                datatype = 1;
+            }
             try {
-                const response = await fetch(curentapiluuvuc);
+                const response = await fetch(`${curentapiluuvuc}&datatype=${datatype}`);
 
                 const data = await response.json();
                 setStations(data);
@@ -371,7 +374,7 @@ const MNOverview = () => {
                             .setHTML(
                                 "<table class='popup-table non-warning'>" +
                                 "<tr><th colspan='2'>Trạm đo : <strong>" + infor.name + "</strong></th></tr>" +
-                                "<tr><td>" + parseFloat(infor.mucnuoc).toFixed(2) + " cm</td></tr>" +
+                                "<tr><td>" + (parseFloat(infor.mucnuoc).toFixed(2)).toLocaleString('vi-VN') + " cm</td></tr>" +
                                 "<tr><td>Vào lúc :  " + currentDateTime + "</td></tr>" +
                                 "</table>"
                             )
@@ -723,7 +726,7 @@ const MNOverview = () => {
                 <div className="liststation">
                     <div className="seach-provine">
                         <div className="search-header">
-                            <h3 style={{ display: searchVisible ? 'none' : 'block' }}>Mực nước tại các trạm đo</h3>
+                            <h3 style={{ display: searchVisible ? 'none' : 'block' }}>Mực nước tại các trạm đo hôm nay</h3>
                             <input className={`form-control ${searchVisible ? 'active' : ''}`} type="search" id="formse" autoFocus autoComplete="off" placeholder="Tìm kiếm tỉnh ..."
                                 onChange={(e) => {
                                     const searchValue = e.target.value.toLowerCase();
@@ -764,15 +767,26 @@ const MNOverview = () => {
                                         {station.value_pre === null ? (
                                             <span>-</span> 
                                         ) : station.value - station.value_pre > 0 ? (
-                                            <div className='up-mn'>
-                                                <i className="fa-solid fa-arrow-up"></i> {(Math.round((station.value - station.value_pre) * 100) / 100).toLocaleString('vi-VN')}
+                                            <div>
+                                                    <div className='up-mn'>
+                                                        <i className="fa-solid fa-arrow-up"></i> {(station.value - station.value_pre).toLocaleString('vi-VN')}
+                                                    </div>
+                                                    <small>{station.data_thoigian_pre}</small>
                                             </div>
+                                            
                                         ) : station.value - station.value_pre < 0 ? (
-                                            <div className='down-mn'>
-                                                <i className="fa-solid fa-arrow-down"></i> {(Math.round((station.value - station.value_pre) * 100) / 100).toLocaleString('vi-VN')}
+                                            <div>
+                                                  <div className='down-mn'>
+                                                        <i className="fa-solid fa-arrow-down"></i> {(station.value - station.value_pre).toLocaleString('vi-VN')}
+                                                  </div>
+                                                  <small>{station.data_thoigian_pre}</small>
                                             </div>
                                         ) : (
-                                            <span>{(station.value - station.value_pre).toLocaleString('vi-VN')}</span>
+                                            <div>
+                                                <div>{(station.value - station.value_pre).toLocaleString('vi-VN')}</div>
+                                                <small>{station.data_thoigian_pre}</small>
+                                            </div>
+                                            
                                         )}
                                     </td>
                                 </tr>

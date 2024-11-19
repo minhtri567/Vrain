@@ -14,6 +14,8 @@ namespace Vrain.Server.Models
         public string? layout { get; set; }
         [Column(TypeName = "json")]
         public string? paint { get; set; }
+        [Column(TypeName = "json")]
+        public string? filter { get; set; }
         public int? min_zoom { get; set; } = 0;
         public int? max_zoom { get; set; } = 22;
         public int? source_id { get; set; }
