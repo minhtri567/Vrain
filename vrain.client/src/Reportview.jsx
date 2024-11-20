@@ -22,6 +22,7 @@ import ListItemText from '@mui/material/ListItemText';
 import OutlinedInput from '@mui/material/OutlinedInput';
 import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import axios from 'axios';
@@ -40,7 +41,7 @@ const ReportComponent = () => {
     const today = dayjs();
     const yesterday = dayjs().subtract(1, 'day');
     const navigate = useNavigate();
-    var curentapitinh = "/vnrain/WeatherStations/station_provine?provincename=" + encodeURIComponent(name_province) + "";
+    var curentapitinh = "/vnrain/WeatherStations/station_provine?provincename=" + encodeURIComponent(name_province) + "&mathongso=RAIN";
     var apireport = "/vnrain/WeatherStations/report";
     var getapireport = "/vnrain/WeatherStations/report_data?provincename=" + encodeURIComponent(name_province) + "";
     var apidownloadfile = "/vnrain/WeatherStations/download/";
@@ -116,8 +117,18 @@ const ReportComponent = () => {
     };
     useEffect(() => {
         if (selectedOption == 0) {
-            setTimestart(new Date().toLocaleDateString("fr-CA"));
-            setTimeend(new Date().toLocaleDateString("fr-CA"));
+            const now = new Date();
+
+            // Lấy ngày ISO (YYYY-MM-DD)
+            const dateISO = now.toLocaleDateString("fr-CA");
+
+            // Lấy thời gian (HH:mm) và ghép lại với ngày
+            const timeISO = now.toTimeString().slice(0, 5); // HH:mm
+            const datetimeISO = `${dateISO}T${timeISO}`;
+
+            // Cập nhật giá trị
+            setTimestart(new Date().toLocaleDateString("fr-CA")); // Chỉ ngày
+            setTimeend(datetimeISO);
         }
         if (selectedOption == 1) {
             setTimestart(selectedDatem);
@@ -454,20 +465,30 @@ const ReportComponent = () => {
                                     </div>
                                     <div className="my-datepicker bonus-set-report" id="my-datepicker-3" style={{ display: selectedOption === "3" ? 'flex' : 'none', maxWidth: '450px', justifyContent: 'space-between' }}>
                                         <LocalizationProvider dateAdapter={AdapterDayjs} >
-                                                <DatePicker
+                                            <DateTimePicker
                                                     className="my-datepicker-3-strp"
                                                     label="Ngày bắt đầu"
                                                     slotProps={{ textField: { size: 'small' } }}
                                                     maxDate={today}
-                                                    format="DD/MM/YYYY"
+                                                    format="DD/MM/YYYY HH:mm"
+                                                    viewRenderers={{
+                                                        hours: null,
+                                                        minutes: null,
+                                                        seconds: null,
+                                                    }}
                                                     onChange={handleDatesChange}
                                                 />
-                                                <DatePicker
+                                            <DateTimePicker
                                                     className="my-datepicker-3-edrp"
                                                     label="Ngày kết thúc"
                                                     slotProps={{ textField: { size: 'small' } }}
+                                                    viewRenderers={{
+                                                        hours: null,
+                                                        minutes: null,
+                                                        seconds: null,
+                                                    }}
                                                     maxDate={today}
-                                                    format="DD/MM/YYYY"
+                                                    format="DD/MM/YYYY HH:mm"
                                                     onChange={handleDateeChange}
                                                 />
                                         </LocalizationProvider>

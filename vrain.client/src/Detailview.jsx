@@ -13,7 +13,7 @@ import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-
+import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
@@ -31,7 +31,8 @@ const Detailview = () => {
     const name_province = pathname.substring(pathname.lastIndexOf('/') + 1);
     dayjs.locale('vi');
     const today = dayjs();
-    const sevenDaysAgo = today.subtract(7, 'day');
+    const roundedTime = today.set('minute', 0).set('second', 0).set('millisecond', 0);
+    const sevenDaysAgo = today.subtract(7, 'day').startOf('day');
     const yesterday = dayjs().subtract(1, 'day');
     const navigate = useNavigate();
     const [showChart, setShowChart] = useState(true);
@@ -555,21 +556,31 @@ const Detailview = () => {
                 <div className="my-datepicker" id="my-datepicker-3" style={{ display: selectedOption === "3" ? 'block' : 'none' }}>
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                         <DemoContainer components={['DatePicker']}>
-                            <DatePicker
+                            <DateTimePicker
                                 className="my-datepicker-3-st"
                                 label="Ngày bắt đầu"
                                 slotProps={{ textField: { size: 'small' } }}
+                                viewRenderers={{
+                                    hours: null,
+                                    minutes: null,
+                                    seconds: null,
+                                }}
                                 maxDate={today}
                                 defaultValue={sevenDaysAgo}
-                                format="DD/MM/YYYY"
+                                format="DD/MM/YYYY HH:mm"
                             />
-                            <DatePicker
+                            <DateTimePicker
                                 className="my-datepicker-3-ed"
                                 label="Ngày kết thúc"
                                 slotProps={{ textField: { size: 'small' } }}
-                                maxDate={today}
-                                defaultValue={today}
-                                format="DD/MM/YYYY"
+                                viewRenderers={{
+                                    hours: null,
+                                    minutes: null,
+                                    seconds: null,
+                                }}
+                                maxDate={roundedTime}
+                                defaultValue={roundedTime}
+                                format="DD/MM/YYYY HH:mm"
                             />
                         </DemoContainer>
                     </LocalizationProvider>

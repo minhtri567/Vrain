@@ -8,7 +8,7 @@ import { getNameProvince } from './NameProvine';
 import Chartmucnuoc from './Chartmucnuoc';
 import dayjs from 'dayjs';
 import 'dayjs/locale/vi';
-
+import { useReactToPrint } from 'react-to-print';
 import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -50,7 +50,30 @@ const MNOverview = () => {
     var now = new Date();
     now.setMinutes(0);
     const apilayer = '/vnrain/Admin/GetMapLayers';
+    const handlePrint = useReactToPrint({
+        contentRef: mapContainer,
+    });
+    class CustomControl {
+        onAdd(map) {
+            this.map = map;
+            this.container = document.createElement("div");
+            this.container.className = "mapboxgl-ctrl mapboxgl-ctrl-group";
 
+            const button = document.createElement("button");
+            button.className = "mapboxgl-ctrl-icon";
+            button.textContent = "🖨️";
+            button.title = "Print Map";
+            button.onclick = handlePrint;
+
+            this.container.appendChild(button);
+            return this.container;
+        }
+
+        onRemove() {
+            this.container.parentNode.removeChild(this.container);
+            this.map = undefined;
+        }
+    }
     const [layers, setLayers] = useState([]);
     useEffect(() => {
         const fetchLayers = async () => {
@@ -207,6 +230,7 @@ const MNOverview = () => {
         }
         map.current.addControl(new mapboxgl.FullscreenControl(), 'top-right');
         map.current.addControl(new FitBoundsControl(), 'top-right');
+        map.current.addControl(new CustomControl(), "top-right");
         map.current.on('style.load', () => {
             map.current.setLayoutProperty('country-label', 'visibility', 'none');
             // Ẩn tên tỉnh/thành phố

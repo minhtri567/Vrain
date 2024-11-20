@@ -42,7 +42,7 @@ public class WeatherStationsController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<IEnumerable<weather_stations_today>>> GetWeatherStations( String? provincename )
     {
-        var cutoffTime = DateTime.Now.Date.AddDays(-1).AddHours(20);
+        var cutoffTime = DateTime.Now.Date;
         string Nameprovince =  NameProvinceHelper.GetNameProvince(provincename);
         if (!String.IsNullOrEmpty(provincename))
         {
@@ -155,7 +155,7 @@ public class WeatherStationsController : ControllerBase
     [HttpGet("all")]
     public async Task<ActionResult<IEnumerable<weather_stations_today>>> GetfullStations()
     {
-        var cutoffTime = DateTime.Now.Date.AddDays(-1).AddHours(20);
+        var cutoffTime = DateTime.Now.Date;
         var query = from rainData in _context.monitoring_data
                     where rainData.data_maloaithongso == "RAIN" && rainData.data_thoigian >= cutoffTime
                     join tskt in _context.iw_thongsoquantrac
@@ -219,7 +219,7 @@ public class WeatherStationsController : ControllerBase
         {
             string sqlQuery = @"
                 SELECT * FROM monitoring_data
-                WHERE data_thoigian <= '" + endDate.Value.ToString("yyyy-MM-dd 23:59:59") + @"' AND data_thoigian >= '" + startDate.Value.ToString("yyyy-MM-dd 00:00:00") + @"'";
+                WHERE data_thoigian <= '" + endDate.Value.ToString("yyyy-MM-dd HH:mm:59") + @"' AND data_thoigian >= '" + startDate.Value.ToString("yyyy-MM-dd HH:mm:00") + @"'";
 
             // Fetch monitoring data
             var datamonitoring = await _context.monitoring_data
@@ -277,7 +277,7 @@ public class WeatherStationsController : ControllerBase
         {
             string sqlQuery = @"
             SELECT * FROM monitoring_data
-            WHERE data_thoigian <= '" + endDate.Value.ToString("yyyy-MM-dd 23:59:59") + @"' AND data_thoigian >= '" + startDate.Value.ToString("yyyy-MM-dd 00:00:00") + @"'";
+            WHERE data_thoigian <= '" + endDate.Value.ToString("yyyy-MM-dd HH:mm:59") + @"' AND data_thoigian >= '" + startDate.Value.ToString("yyyy-MM-dd HH:mm:00") + @"'";
 
 
             var datamonitoring = await _context.monitoring_data
@@ -328,7 +328,7 @@ public class WeatherStationsController : ControllerBase
         {
             string sqlQuery = @"
                 SELECT * FROM monitoring_data
-                WHERE data_thoigian <= '" + endDate.Value.ToString("yyyy-MM-dd 23:59:59") + @"' AND data_thoigian >= '" + startDate.Value.ToString("yyyy-MM-dd 00:00:00") + @"'";
+                WHERE data_thoigian <= '" + endDate.Value.ToString("yyyy-MM-dd HH:mm:59") + @"' AND data_thoigian >= '" + startDate.Value.ToString("yyyy-MM-dd HH:mm:00") + @"'";
 
             // Fetch monitoring data
             var datamonitoring = await _context.monitoring_data

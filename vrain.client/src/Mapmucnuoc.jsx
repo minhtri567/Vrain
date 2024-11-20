@@ -13,19 +13,14 @@ import Panellayer from './Panellayer';
 import dayjs from 'dayjs';
 import 'dayjs/locale/vi';
 import slug from 'slug';
+import { useReactToPrint } from 'react-to-print';
 import { Tree } from 'primereact/tree';
 import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { Autocomplete, TextField } from '@mui/material';
-import {
-    MapboxExportControl,
-    Size,
-    PageOrientation,
-    Format,
-    DPI
-} from "@watergis/mapbox-gl-export";
+
 import MapLayerPanel from './MapLayerPanel';
 
 // Đặt API key của bạn vào đây
@@ -68,6 +63,30 @@ const Mapmucnuoc = () => {
 
         fetchLayers();
     }, []);
+    const handlePrint = useReactToPrint({
+        contentRef: mapContainer,
+    });
+    class CustomControl {
+        onAdd(map) {
+            this.map = map;
+            this.container = document.createElement("div");
+            this.container.className = "mapboxgl-ctrl mapboxgl-ctrl-group";
+
+            const button = document.createElement("button");
+            button.className = "mapboxgl-ctrl-icon";
+            button.textContent = "🖨️";
+            button.title = "Print Map";
+            button.onclick = handlePrint;
+
+            this.container.appendChild(button);
+            return this.container;
+        }
+
+        onRemove() {
+            this.container.parentNode.removeChild(this.container);
+            this.map = undefined;
+        }
+    }
     function convertDateFormat(dateString) {
         // Tách ngày, tháng, năm từ chuỗi
         var parts = dateString.split('/');
@@ -290,16 +309,7 @@ const Mapmucnuoc = () => {
                 }),
                 'top-right'
             );
-            map.current.addControl(
-                new MapboxExportControl({
-                    PageSize: Size.A3,
-                    PageOrientation: PageOrientation.Portrait,
-                    Format: Format.PNG,
-                    DPI: DPI[96],
-                    Crosshair: true
-                }),
-                "top-right"
-            );
+            map.current.addControl(new CustomControl(), "top-right");
             
             map.current.addControl(new mapboxgl.ScaleControl({
                 maxWidth: 80, // Chiều rộng tối đa

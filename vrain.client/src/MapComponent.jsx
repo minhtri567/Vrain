@@ -13,13 +13,7 @@ import BarChartComponent from './BarChartComponent';
 import Panellayer from './Panellayer';
 import dayjs from 'dayjs';
 import 'dayjs/locale/vi';
-import {
-    MapboxExportControl,
-    Size,
-    PageOrientation,
-    Format,
-    DPI
-} from "@watergis/mapbox-gl-export";
+import { useReactToPrint } from 'react-to-print';
 import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -89,7 +83,6 @@ const MapComponent = () => {
     var allapistations = '/vnrain/WeatherStations/all';
     var apiraintime = "/vnrain/WeatherStations/raintoday?provincename=";
     const apilayer = '/vnrain/Admin/GetMapLayers';
-
     const [layers, setLayers] = useState([]);
 
     useEffect(() => {
@@ -101,7 +94,30 @@ const MapComponent = () => {
 
         fetchLayers();
     }, []);
+    const handlePrint = useReactToPrint({
+        contentRef: mapContainer,
+    });
+    class CustomControl {
+        onAdd(map) {
+            this.map = map;
+            this.container = document.createElement("div");
+            this.container.className = "mapboxgl-ctrl mapboxgl-ctrl-group";
 
+            const button = document.createElement("button");
+            button.className = "mapboxgl-ctrl-icon";
+            button.textContent = "🖨️";
+            button.title = "Print Map";
+            button.onclick = handlePrint;
+
+            this.container.appendChild(button);
+            return this.container;
+        }
+
+        onRemove() {
+            this.container.parentNode.removeChild(this.container);
+            this.map = undefined;
+        }
+    }
     const addLayersToMap = (dataLayers) => {
         map.current.on('load', () => {
             dataLayers.forEach(source => {
@@ -120,6 +136,7 @@ const MapComponent = () => {
                         'source-layer': layer.sourceLayer,
                         'paint': JSON.parse(layer.paint),
                         'layout': JSON.parse(layer.layout),
+                        'filter': JSON.parse(layer.filter),
                         'minzoom': layer.minZoom !== null ? layer.minZoom : 0,
                         'maxzoom': layer.maxZoom !== null ? layer.maxZoom : 18
                     });
@@ -129,10 +146,10 @@ const MapComponent = () => {
     };
 
     var now = new Date();
-    now.setMinutes(0 , 0 , 0);
+    now.setMinutes(0, 0, 0);
     var currentDateTime = now.toLocaleString('vi-VN', {
-        hour: 'numeric',
-        minute: 'numeric',
+        minute: '2-digit',
+        hour: '2-digit',
         day: '2-digit',
         month: '2-digit'
     });
@@ -142,7 +159,6 @@ const MapComponent = () => {
         year : 'numeric'
     });
     var previousDay = new Date(now);
-    previousDay.setDate(now.getDate() - 1);
     var previousday = previousDay.toLocaleString('vi-VN', {
         day: '2-digit',
         month: '2-digit',
@@ -264,7 +280,8 @@ const MapComponent = () => {
                 container: mapContainer.current,
                 style: 'mapbox://styles/mapbox/streets-v11',
                 center: [106.660172, 14.962622],
-                zoom: 4.5
+                zoom: 4.5,
+                preserveDrawingBuffer: true 
             });
             if (layers.length > 0) {
                 addLayersToMap(layers);
@@ -284,17 +301,7 @@ const MapComponent = () => {
                 }),
                 'top-right'
             );
-            map.current.addControl(
-                new MapboxExportControl({
-                    PageSize: Size.A3,
-                    PageOrientation: PageOrientation.Portrait,
-                    Format: Format.PNG,
-                    DPI: DPI[96],
-                    Crosshair: true
-                }),
-                "top-right"
-            );
-
+            map.current.addControl(new CustomControl(), "top-right");
             map.current.addControl(new mapboxgl.ScaleControl({
                 maxWidth: 80, // Chiều rộng tối đa
                 unit: 'metric' // Đơn vị: metric hoặc imperial
@@ -351,7 +358,7 @@ const MapComponent = () => {
                         map.current.addImage('empty-marker', image);
                     }
                 );
-
+                
                 const storedPids = JSON.parse(localStorage.getItem('lpid')) || [];
 
                 // Lọc các trạm để chỉ lấy những trạm có pid trong mảng storedPids
@@ -501,7 +508,7 @@ const MapComponent = () => {
                                 "<table class='popup-table norain'>" +
                                 "<tr><th colspan='2'>Trạm đo : <strong>" + infor.name + "</strong></th></tr>" +
                                 "<tr><td><i class='fa-solid fa-circle'></i>" + infor.tongluongmua + " mm </td></tr>" +
-                                "<tr><td>Từ: 20:00 " + previousday + " - đến " + currentDateTime + "</td></tr>" +
+                                "<tr><td>Từ: 00:00 " + previousday + " - đến " + currentDateTime + "</td></tr>" +
                                 "</table>"
                             )
                             .addTo(map.current);
@@ -522,7 +529,7 @@ const MapComponent = () => {
                                 "<table class='popup-table smallrain'>" +
                                 "<tr><th colspan='2'>Trạm đo : <strong>" + infor.name + "</strong></th></tr>" +
                                 "<tr><td><i class='fa-solid fa-circle'></i>" + parseFloat(infor.tongluongmua).toFixed(2) + " mm</td></tr>" +
-                                "<tr><td>Từ: 20:00 " + previousday + " - đến " + currentDateTime + "</td></tr>" +
+                                "<tr><td>Từ: 00:00 " + previousday + " - đến " + currentDateTime + "</td></tr>" +
                                 "</table>"
                             )
                             .addTo(map.current);
@@ -544,7 +551,7 @@ const MapComponent = () => {
                                 "<table class='popup-table mediumrain'>" +
                                 "<tr><th colspan='2'>Trạm đo : <strong>" + infor.name + "</strong></th></tr>" +
                                 "<tr><td><i class='fa-solid fa-circle'></i>" + parseFloat(infor.tongluongmua).toFixed(2) + " mm</td></tr>" +
-                                "<tr><td>Từ: 20:00 " + previousday + " - đến " + currentDateTime + "</td></tr>" +
+                                "<tr><td>Từ: 00:00 " + previousday + " - đến " + currentDateTime + "</td></tr>" +
                                 "</table>"
                             )
                             .addTo(map.current);
@@ -565,7 +572,7 @@ const MapComponent = () => {
                                 "<table class='popup-table heavyrain'>" +
                                 "<tr><th colspan='2'>Trạm đo : <strong>" + infor.name + "</strong></th></tr>" +
                                 "<tr><td><i class='fa-solid fa-circle'></i>" + parseFloat(infor.tongluongmua).toFixed(2) + " mm</td></tr>" +
-                                "<tr><td>Từ: 20:00 " + previousday + " - đến " + currentDateTime + "</td></tr>" +
+                                "<tr><td>Từ: 00:00 " + previousday + " - đến " + currentDateTime + "</td></tr>" +
                                 "</table>"
                             )
                             .addTo(map.current);
@@ -587,7 +594,7 @@ const MapComponent = () => {
                                 "<table class='popup-table heavierrain'>" +
                                 "<tr><th colspan='2'>Trạm đo : <strong>" + infor.name + "</strong></th></tr>" +
                                 "<tr><td><i class='fa-solid fa-circle'></i>" + parseFloat(infor.tongluongmua).toFixed(2) + " mm</td></tr>" +
-                                "<tr><td>Từ: 20:00 " + previousday + " đến " + currentDateTime + "</td></tr>" +
+                                "<tr><td>Từ: 00:00 " + previousday + " đến " + currentDateTime + "</td></tr>" +
                                 "</table>"
                             )
                             .addTo(map.current);
@@ -957,7 +964,7 @@ const MapComponent = () => {
                 <h2 style={{ margin: "0px", padding : "1rem" ,borderBottom : "1px solid rgba(255, 255, 255, .12)" }}>Danh sách các trạm theo tỉnh</h2>
                 <div className="seach-provine">
                     <div className="search-header">
-                        <h3 style={{ display: searchVisible ? 'none' : 'block' }}>Lưu lượng mưa từ 20:00 {previousday} đến {currentDateTime}</h3>
+                        <h3 style={{ display: searchVisible ? 'none' : 'block' }}>Lưu lượng mưa từ 00:00 {previousday} đến {currentDateTime}</h3>
                         <input className={`form-control ${searchVisible ? 'active' : ''}`} type="search" id="formse" autoFocus autoComplete="off" placeholder="Tìm kiếm tỉnh ..."
                         onChange={(e) => {
                         const searchValue = e.target.value.toLowerCase();
@@ -984,6 +991,7 @@ const MapComponent = () => {
                 </div>
             </div>
             <div ref={mapContainer} style={{ width: '100%', top: '0', bottom: '0', position: 'absolute' }} />
+            
             <MapLayerPanel layers={layers} mapRef={map} />
         </div>
     );

@@ -106,8 +106,8 @@ namespace Vrain.Server.Data
         [AutomaticRetry(Attempts = 0)]
         public void ProcessWeatherDataReport(weather_stations_report data)
         {
-            var startDate = new DateTime(data.ngaybatdau.Year, data.ngaybatdau.Month, data.ngaybatdau.Day, 0, 0, 0);
-            var endDate = new DateTime(data.ngayketthuc.Year, data.ngayketthuc.Month, data.ngayketthuc.Day, 23, 59, 59);
+            var startDate = new DateTime(data.ngaybatdau.Year, data.ngaybatdau.Month, data.ngaybatdau.Day, data.ngaybatdau.Hour, data.ngaybatdau.Minute, 0);
+            var endDate = new DateTime(data.ngayketthuc.Year, data.ngayketthuc.Month, data.ngayketthuc.Day, data.ngayketthuc.Hour, data.ngayketthuc.Minute, 59);
             var provincename = data.tinh;
             var lstations = string.Join(",", data.id_station_list.Select(id => $"'{id}'"));
             int ts = int.Parse(data.tansuat);
@@ -160,7 +160,7 @@ namespace Vrain.Server.Data
                         string randomString = new string(Enumerable.Repeat(chars, 6)
                             .Select(s => s[random.Next(s.Length)]).ToArray());
 
-                        string namefile = "Báo cáo mưa tỉnh " + data.tinh + " từ ngày " + data.ngaybatdau.ToString("dd-MM-yyyy") + " đến ngày " + data.ngayketthuc.ToString("dd-MM-yyyy") + " " + randomString +".xlsx";
+                        string namefile = "Báo cáo mưa tỉnh " + data.tinh + " từ ngày " + data.ngaybatdau.ToString("dd-MM-yyyy HH_mm") + " đến ngày " + data.ngayketthuc.ToString("dd-MM-yyyy HH_mm") + " " + randomString +".xlsx";
                         var filePath = Path.Combine(_hostingEnvironment.WebRootPath, "File", namefile);
 
                         GenerateExcelFile(dataTable, filePath);

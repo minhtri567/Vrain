@@ -5,6 +5,7 @@
         public int id { get; set; }
         public string? name { get; set; }
         public int? parent_id { get; set; }
+        public int? thutu { get; set; }
         public DateTime create_at { get; set; }
         public string? create_by { get; set; }
 

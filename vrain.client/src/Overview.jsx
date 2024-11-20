@@ -8,7 +8,7 @@ import { getNameProvince } from './NameProvine';
 import BarChartComponent from './BarChartComponent';
 import dayjs from 'dayjs';
 import 'dayjs/locale/vi';
-
+import { useReactToPrint } from 'react-to-print';
 import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -84,6 +84,7 @@ const Overview = () => {
     var apiraintime = "/vnrain/WeatherStations/raintoday?provincename=" + encodeURIComponent(name_province) + "";
     var hoverTimeout;
     var now = new Date();
+    now.setMinutes(0, 0, 0);
     var currentDateTime = now.toLocaleString('vi-VN', {
         hour: 'numeric',
         minute: 'numeric',
@@ -91,12 +92,34 @@ const Overview = () => {
         month: '2-digit'
     });
     var previousDay = new Date(now);
-    previousDay.setDate(now.getDate() - 1);
     var previousday = previousDay.toLocaleString('vi-VN', {
         day: '2-digit',
         month: '2-digit',
     });
+    const handlePrint = useReactToPrint({
+        contentRef: mapContainer,
+    });
+    class CustomControl {
+        onAdd(map) {
+            this.map = map;
+            this.container = document.createElement("div");
+            this.container.className = "mapboxgl-ctrl mapboxgl-ctrl-group";
 
+            const button = document.createElement("button");
+            button.className = "mapboxgl-ctrl-icon";
+            button.textContent = "🖨️";
+            button.title = "Print Map";
+            button.onclick = handlePrint;
+
+            this.container.appendChild(button);
+            return this.container;
+        }
+
+        onRemove() {
+            this.container.parentNode.removeChild(this.container);
+            this.map = undefined;
+        }
+    }
     useEffect(() => {
         const fetchDataProvine = async () => {
             try {
@@ -300,6 +323,7 @@ const Overview = () => {
             }
             map.current.addControl(new mapboxgl.FullscreenControl(), 'top-right');
             map.current.addControl(new FitBoundsControl(), 'top-right');
+            map.current.addControl(new CustomControl(), "top-right");
             map.current.on('style.load', () => {
                 map.current.setLayoutProperty('country-label', 'visibility', 'none');
                 // Ẩn tên tỉnh/thành phố
@@ -605,7 +629,7 @@ const Overview = () => {
                                 "<table class='popup-table norain'>" +
                                 "<tr><th colspan='2'>Trạm đo : <strong>" + infor.name + "</strong></th></tr>" +
                                 "<tr><td><i class='fa-solid fa-circle'></i>" + infor.tongluongmua + " mm </td></tr>" +
-                                "<tr><td>Từ: 20:00 " + previousday + " - đến " + currentDateTime + "</td></tr>" +
+                                "<tr><td>Từ: 00:00 " + previousday + " - đến " + currentDateTime + "</td></tr>" +
                                 "</table>"
                             )
                             .addTo(map.current);
@@ -626,7 +650,7 @@ const Overview = () => {
                                 "<table class='popup-table smallrain'>" +
                                 "<tr><th colspan='2'>Trạm đo : <strong>" + infor.name + "</strong></th></tr>" +
                                 "<tr><td><i class='fa-solid fa-circle'></i>" + parseFloat(infor.tongluongmua).toFixed(2) + " mm</td></tr>" +
-                                "<tr><td>Từ: 20:00 " + previousday + " - đến " + currentDateTime + "</td></tr>" +
+                                "<tr><td>Từ: 00:00 " + previousday + " - đến " + currentDateTime + "</td></tr>" +
                                 "</table>"
                             )
                             .addTo(map.current);
@@ -649,7 +673,7 @@ const Overview = () => {
                                 "<table class='popup-table mediumrain'>" +
                                 "<tr><th colspan='2'>Trạm đo : <strong>" + infor.name + "</strong></th></tr>" +
                                 "<tr><td><i class='fa-solid fa-circle'></i>" + parseFloat(infor.tongluongmua).toFixed(2) + " mm</td></tr>" +
-                                "<tr><td>Từ: 20:00 " + previousday + " - đến " + currentDateTime + "</td></tr>" +
+                                "<tr><td>Từ: 00:00 " + previousday + " - đến " + currentDateTime + "</td></tr>" +
                                 "</table>"
                             )
                             .addTo(map.current);
@@ -670,7 +694,7 @@ const Overview = () => {
                                 "<table class='popup-table heavyrain'>" +
                                 "<tr><th colspan='2'>Trạm đo : <strong>" + infor.name + "</strong></th></tr>" +
                                 "<tr><td><i class='fa-solid fa-circle'></i>" + parseFloat(infor.tongluongmua).toFixed(2) + " mm</td></tr>" +
-                                "<tr><td>Từ: 20:00 " + previousday + " - đến " + currentDateTime + "</td></tr>" +
+                                "<tr><td>Từ: 00:00 " + previousday + " - đến " + currentDateTime + "</td></tr>" +
                                 "</table>"
                             )
                             .addTo(map.current);
@@ -692,7 +716,7 @@ const Overview = () => {
                                 "<table class='popup-table heavierrain'>" +
                                 "<tr><th colspan='2'>Trạm đo : <strong>" + infor.name + "</strong></th></tr>" +
                                 "<tr><td><i class='fa-solid fa-circle'></i>" + parseFloat(infor.tongluongmua).toFixed(2) + " mm</td></tr>" +
-                                "<tr><td>Từ: 20:00 " + previousday + " đến " + currentDateTime + "</td></tr>" +
+                                "<tr><td>Từ: 00:00 " + previousday + " đến " + currentDateTime + "</td></tr>" +
                                 "</table>"
                             )
                             .addTo(map.current);
@@ -1054,7 +1078,7 @@ const Overview = () => {
                 <div className="liststation">
                     <div className="seach-provine">
                         <div className="search-header">
-                            <h3 style={{ display: searchVisible ? 'none' : 'block' }}>Lưu lượng tại các trạm đo từ 20:00 {previousday} đến {currentDateTime}</h3>
+                            <h3 style={{ display: searchVisible ? 'none' : 'block' }}>Lưu lượng tại các trạm đo từ 00:00 {previousday} đến {currentDateTime}</h3>
                             <input className={`form-control ${searchVisible ? 'active' : ''}`} type="search" id="formse" autoFocus autoComplete="off" placeholder="Tìm kiếm tỉnh ..."
                                 onChange={(e) => {
                                     const searchValue = e.target.value.toLowerCase();

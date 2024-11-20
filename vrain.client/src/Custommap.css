@@ -1049,3 +1049,12 @@ button:focus, button:focus-visible {
     background-color: transparent;
     color: black;
 }
+
+@media print {
+    .mapboxgl-ctrl-top-left,
+    .mapboxgl-ctrl-top-right,
+    .mapboxgl-ctrl-bottom-left,
+    .mapboxgl-ctrl-bottom-right {
+        display: none !important;
+    }
+}

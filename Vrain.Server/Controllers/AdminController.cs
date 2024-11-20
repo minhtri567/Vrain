@@ -1039,6 +1039,81 @@ namespace Vrain.Server.Controllers
             return NoContent();
         }
 
+
+        [HttpGet("GetPanelLayers")]
+        public async Task<IActionResult> GetPanelLayers()
+        {
+            var functions = await _context.map_panel_layer
+               .ToListAsync();
+
+            var menuItems = functions.OrderBy(f => f.thutu).Select(f => new MenuItem
+            {
+                key = f.id,
+                ParentId = f.parent_id,
+                label = f.name,
+                Thutu = f.thutu,
+            }).ToList();
+
+            var menu = BuildMenu(menuItems, null);
+            return Ok(menu);
+        }
+        [Authorize(Policy = "ROLE_QLDULIEU")]
+        [HttpPost("savepanellayer")]
+        public async Task<IActionResult> savepanellayer(int id, string name, int? parent_id, int thutu)
+        {
+            try
+            {
+                if (id == 0)
+                {
+                    var mncha = await _context.map_panel_layer.SingleOrDefaultAsync(s => s.id == parent_id);
+
+                    var trungthutu = await _context.map_panel_layer.Where(s => s.id == parent_id && s.thutu >= thutu).ToListAsync();
+
+                    foreach (var a in trungthutu)
+                    {
+                        a.thutu += 1;
+                        _context.map_panel_layer.Update(a);
+                        await _context.SaveChangesAsync();
+                    }
+
+                    var function = new map_panel_layer
+                    {
+                        parent_id = parent_id,
+                        thutu = thutu,
+                        name = name
+                    };
+
+                    _context.map_panel_layer.Add(function);
+                    await _context.SaveChangesAsync();
+
+                    return Ok(function);
+                }
+                else
+                {
+                    var function = await _context.map_panel_layer.SingleOrDefaultAsync(s => s.id == id);
+
+
+                    if (function == null)
+                    {
+                        return NotFound("Function not found");
+                    }
+
+                    function.parent_id = parent_id;
+                    function.thutu = thutu;
+                    function.name = name;
+
+                    _context.map_panel_layer.Update(function);
+                    await _context.SaveChangesAsync();
+
+                    return Ok(function);
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+
+        }
         public class MenuItem
         {
             public int key { get; set; }
