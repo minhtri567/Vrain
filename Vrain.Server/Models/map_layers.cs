@@ -21,5 +21,6 @@ namespace Vrain.Server.Models
         public int? source_id { get; set; }
         public DateTime created_at { get; set; } = DateTime.UtcNow;
         public DateTime updated_at { get; set; } = DateTime.UtcNow;
+        public int? parent_id { get; set; }
     }
 }

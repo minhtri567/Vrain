@@ -266,7 +266,7 @@ button:focus, button:focus-visible {
     top: -15px;
     right: 15px;
     font-size: 50px;
-    color: white;
+    color: black;
     cursor : pointer;
 }
 
@@ -636,6 +636,20 @@ button:focus, button:focus-visible {
 .containt-view-exit{
     display: none;
 }
+.map-layer-panel {
+    position: absolute;
+    z-index: 10;
+    right: 10px;
+    bottom: 50px;
+}
+.map-layer-panel > button{
+    margin: 0px;
+    padding: 6px;
+    background-color: white;
+    color: black;
+    border: none;
+    aspect-ratio: 1 / 1;
+}
 @media (max-width: 575.98px) {
     .containt-view-mapbox .containt-view-exit{
         display: block;
@@ -681,6 +695,7 @@ button:focus, button:focus-visible {
     .popup-chart-container .css-times{
         z-index: 20;
         color: #000;
+        margin-top : 16px;
     }
     .containt-view-exit{
         display: block;
@@ -780,6 +795,7 @@ button:focus, button:focus-visible {
     }
     .container-select > div {
         width: 100%;
+        margin: 10px 0px;
     }
     #my-datepicker-3 {
         width: 90%;
@@ -798,13 +814,25 @@ button:focus, button:focus-visible {
         width : 90%;
         margin : 16px 0px 0px 0px;
     }
+    .map-layer-panel {
+        z-index : 2 !important;
+    }
+    .mn-tinh{
+        display : none;
+    }
+    .mb-view-mode{
+        position : relative;
+    }
 }
 
 @media (max-width: 767.98px) {
     
 }
 
-
+.mn-tinh {
+    margin-left: auto;
+    font-size: 18px;
+}
 .login-container {
     position: absolute;
     right: 40px;
@@ -813,7 +841,7 @@ button:focus, button:focus-visible {
     z-index: 1;
     margin: 10px;
     border-radius: 6px;
-    background-color : transparent;
+    background-color: transparent;
 }
 .login-container .view-dangxuat{
     display : flex;
@@ -862,7 +890,7 @@ button:focus, button:focus-visible {
 }
 .open-layer .container-link-layer button {
     margin: 2px 10px;
-    border-radius: 50%;
+    border-radius: 6px;
     width: 30px;
     height: 30px;
     cursor : pointer;
@@ -990,12 +1018,7 @@ button:focus, button:focus-visible {
     margin : 0px;
 }
 
-.map-layer-panel {
-    position: absolute;
-    z-index: 10;
-    right: 10px;
-    bottom: 50px;
-}
+
 .lbandonen{
     list-style-type : none;
     margin : 0px;
@@ -1048,6 +1071,7 @@ button:focus, button:focus-visible {
 .liststation-mode-view select option{
     background-color: transparent;
     color: black;
+    font-size : 10px;
 }
 
 @media print {

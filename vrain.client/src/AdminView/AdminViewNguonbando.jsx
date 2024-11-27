@@ -1,10 +1,9 @@
-﻿/* eslint-disable no-unused-vars */
-import React, { useState } from 'react';
-import { useRef, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import Box from '@mui/material/Box';
-import { Tree } from 'primereact/tree';
-import { TreeSelect } from 'primereact/treeselect';
+import { Button } from 'primereact/button';
+import { DataTable } from 'primereact/datatable';
+import { Column } from 'primereact/column';
+import { Dialog } from 'primereact/dialog';
 import { InputText } from 'primereact/inputtext';
 import Snackbar from '@mui/material/Snackbar';
 import SnackbarContent from '@mui/material/SnackbarContent';
@@ -13,218 +12,184 @@ import { Close, CheckCircle } from '@mui/icons-material';
 import 'primereact/resources/themes/saga-blue/theme.css';
 import 'primereact/resources/primereact.min.css';
 import 'primeicons/primeicons.css';
+
 const AdminViewNguonbando = () => {
-    const [menu, setMenu] = useState([]);
-    const [selectedNodeKey, setSelectedNodeKey] = useState('');
-    const [TreeselectedNodeKey, setTreeSelectedNodeKey] = useState('');
+    const [layers, setLayers] = useState([]);
+    const [selectedLayer, setSelectedLayer] = useState(null);
+    const [isDialogVisible, setDialogVisible] = useState(false);
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState('');
     const [snackbarVariant, setSnackbarVariant] = useState('success');
-    const apimenu = '/vnrain/Admin/menu';
-    const addmenu = '/vnrain/Admin/savemenu?';
-    const deletemenu = '/vnrain/Admin/deletemenu/';
+
+    const [newLayer, setNewLayer] = useState({
+        id: '',
+        source_name: '',
+        type: '',
+        tiles: '',
+        bounds: '',
+        name: '',
+    });
+
     useEffect(() => {
-        const fetchMenu = async () => {
-            try {
-                const response = await axios.get(apimenu);
-                setMenu(response.data);
-            } catch (error) {
-                console.error('Error fetching menu', error);
-            }
-        };
-        fetchMenu();
+        // Fetch layer data on component mount
+        axios.get('/vnrain/Admin/getsourceslayer')
+            .then((response) => {
+                setLayers(response.data);
+            })
+            .catch((error) => {
+                console.error('Error fetching layer data:', error);
+            });
     }, []);
-    const findParentNode = (nodes, sourceLayer) => {
-        for (let node of nodes) {
-            if (node.key === sourceLayer) {
-                return node;
-            }
-            if (node.children) {
-                const found = findParentNode(node.children, sourceLayer);
-                if (found) {
-                    return found;
-                }
-            }
-        }
-        return null;
-    };
-    const [sysname, setSysname] = React.useState('');
-    const [systhutu, setSysthutu] = React.useState('');
-    const [sysview, setSysview] = React.useState('');
-    const [sysid, setSysid] = React.useState(null);
-    const [sysbtnadd, setSysbtnadd] = React.useState(false);
-    const handleSelectedItemsChange = (event) => {
-        if (event == null) {
-            //
-        } else {
 
-            setSysbtnadd(false);
-            setSysid(event.node.key);
-            setSysview(event.node.url);
-            setSysthutu(event.node.thutu);
-            setSysname(event.node.label);
-            const selectedNode = event.node;
-            const parentNode = findParentNode(menu, selectedNode.parentId);
-            setTreeSelectedNodeKey(parentNode ? parentNode.key : '');
-        }
+    const handleAddLayer = () => {
+        setNewLayer({
+            id: '',
+            source_name: '',
+            type: '',
+            tiles: '',
+            bounds: '',
+            name: '',
+        });
+        setSelectedLayer(null);
+        setDialogVisible(true);
     };
 
-    const handleSnackbarClose = () => {
-        setSnackbarOpen(false);
+    const handleEditLayer = (layer) => {
+        setNewLayer(layer);
+        setSelectedLayer(layer);
+        setDialogVisible(true);
     };
 
-    const handleSavemenu = async (itemId) => {
-        if (sysname == "") {
-            setSnackbarMessage('Không để trống tên menu');
-            setSnackbarVariant('error');
-            setSnackbarOpen(true);
-            return;
-        }
-        if (systhutu == "") {
-            setSnackbarMessage('Không để trống thứ tự menu');
-            setSnackbarVariant('error');
-            setSnackbarOpen(true);
-            return;
-        }
+    const handleDeleteLayer = async (id) => {
         try {
-            const token = localStorage.getItem('jwtToken');
-            const response = await axios.post(`${addmenu}sysid=${itemId}&systenmenu=${sysname}&sysmenucha=${TreeselectedNodeKey ? TreeselectedNodeKey : null}&systhutu=${systhutu}&sysview=${sysview ? sysview : null}`, null, {
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            });
+            const response = await axios.delete(`/vnrain/Admin/deletesourceslayer/${id}`);
             if (response.status === 200) {
-                setSnackbarMessage('Data added successfully');
+                setSnackbarMessage('Layer deleted successfully!');
                 setSnackbarVariant('success');
-                setSnackbarOpen(true);
+                setLayers(layers.filter(layer => layer.id !== id));
             }
         } catch (error) {
-
-            if (error.response.status == 403) {
-                setSnackbarMessage('Thiếu quyền để thực hiện !');
-                setSnackbarVariant('error');
-                setSnackbarOpen(true);
-            } else {
-                setSnackbarMessage('Failed to add data');
-                setSnackbarVariant('error');
-                setSnackbarOpen(true);
-            }
-        }
-    };
-    const handleaddmenu = () => {
-        setSysbtnadd(true);
-        setSysid(0);
-        setSysview(null);
-        setSysthutu(null);
-        setSysname(null);
-        setTreeSelectedNodeKey(1);
-    };
-    const handleDeletemenu = async (itemId) => {
-        if (sysname == "") {
-            setSnackbarMessage('Chọn 1 menu để xóa');
+            setSnackbarMessage('Error deleting layer!');
             setSnackbarVariant('error');
+            console.error('Error deleting layer:', error);
+        } finally {
             setSnackbarOpen(true);
-            return;
         }
+    };
+
+    const handleSaveLayer = async () => {
         try {
-            const response = await axios.post(`${deletemenu}${itemId}`, {
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('jwtToken')}`
-                }
-            });
-            if (response.status === 200) {
-                setSnackbarMessage('Delete menu successfully');
+            const method = selectedLayer ? 'put' : 'post';
+            const url = selectedLayer ? `/vnrain/Admin/updatesourceslayer/${newLayer.id}` : '/vnrain/Admin/createsourceslayer';
+            const response = await axios[method](url, newLayer);
+
+            if (response.status === 200 || response.status === 201) {
+                setSnackbarMessage('Layer saved successfully!');
                 setSnackbarVariant('success');
-                setSnackbarOpen(true);
+                setDialogVisible(false);
+
+                // Refresh layer list
+                if (selectedLayer) {
+                    setLayers(layers.map(layer => layer.id === newLayer.id ? newLayer : layer));
+                } else {
+                    setLayers([...layers, response.data]);
+                }
             }
         } catch (error) {
-            if (error.response.status == 403) {
-                setSnackbarMessage('Bạn không có quyền thực hiện điều này !');
-                setSnackbarVariant('error');
-                setSnackbarOpen(true);
-            } else {
-                setSnackbarMessage('Failed to delete data');
-                setSnackbarVariant('error');
-                setSnackbarOpen(true);
-            }
+            setSnackbarMessage('Error saving layer!');
+            setSnackbarVariant('error');
+            console.error('Error saving layer:', error);
+        } finally {
+            setSnackbarOpen(true);
         }
-    }
+    };
+
+    const renderHeader = () => (
+        <div className="table-header">
+            <Button label="Add Layer" icon="pi pi-plus" onClick={handleAddLayer} />
+        </div>
+    );
 
     return (
-        <div style={{ padding: '0px 20px' }}>
-            <Snackbar
-                anchorOrigin={{
-                    vertical: 'top',
-                    horizontal: 'right',
-                }}
-                open={snackbarOpen}
-                autoHideDuration={3000}
-                onClose={handleSnackbarClose}
+        <div style={{ padding: '20px' }}>
+            <h2>Quản lý nguồn layer</h2>
+
+            <DataTable value={layers} header={renderHeader()} paginator rows={10}>
+                <Column field="source_name" header="Tên nguồn" />
+                <Column field="type" header="Loại" />
+                <Column field="tiles" header="Tiles URL" />
+                <Column field="bounds" header="Bounds" />
+                <Column field="name" header="Tên hiển thị" />
+                <Column
+                    body={(rowData) => (
+                        <>
+                            <Button icon="pi pi-pencil" className="my-action-btn" onClick={() => handleEditLayer(rowData)} />
+                            <Button icon="pi pi-trash" className="my-action-btn p-button-danger" onClick={() => handleDeleteLayer(rowData.id)} />
+                        </>
+                    )}
+                    header="Thao tác"
+                />
+            </DataTable>
+
+            <Dialog
+                visible={isDialogVisible}
+                style={{ width: '500px' }}
+                header="Layer Details"
+                modal
+                onHide={() => setDialogVisible(false)}
             >
+                <div className="p-grid">
+                    <div className="p-col-12">
+                        <label>Tên nguồn</label>
+                        <InputText
+                            placeholder="Source Name"
+                            value={newLayer.source_name}
+                            onChange={(e) => setNewLayer({ ...newLayer, source_name: e.target.value })}
+                        />
+                    </div>
+                    <div className="p-col-12">
+                        <label>Loại</label>
+                        <InputText
+                            placeholder="Type"
+                            value={newLayer.type}
+                            onChange={(e) => setNewLayer({ ...newLayer, type: e.target.value })}
+                        />
+                    </div>
+                    <div className="p-col-12">
+                        <label>Tiles</label>
+                        <InputText
+                            placeholder="Tiles URL"
+                            value={newLayer.tiles}
+                            onChange={(e) => setNewLayer({ ...newLayer, tiles: e.target.value })}
+                        />
+                    </div>
+                    <div className="p-col-12">
+                        <label>Bounds</label>
+                        <InputText
+                            placeholder="Bounds"
+                            value={newLayer.bounds}
+                            onChange={(e) => setNewLayer({ ...newLayer, bounds: e.target.value })}
+                        />
+                    </div>
+                    <div className="p-col-12">
+                        <label>Tên hiển thị</label>
+                        <InputText
+                            placeholder="Name"
+                            value={newLayer.name}
+                            onChange={(e) => setNewLayer({ ...newLayer, name: e.target.value })}
+                        />
+                    </div>
+                </div>
+                <Button label="Save" icon="pi pi-check" onClick={handleSaveLayer} />
+            </Dialog>
+
+            <Snackbar open={snackbarOpen} autoHideDuration={3000} onClose={() => setSnackbarOpen(false)}>
                 <SnackbarContent
-                    style={{ backgroundColor: snackbarVariant === 'success' ? '#4caf50' : '#f44336' }}
-                    message={
-                        <span style={{ display: 'flex', alignItems: 'center' }}>
-                            {snackbarVariant === 'success' ? <CheckCircle /> : null}
-                            <span style={{ marginLeft: '10px' }}>{snackbarMessage}</span>
-                        </span>
-                    }
+                    style={{ backgroundColor: snackbarVariant === 'success' ? 'green' : 'red' }}
+                    message={snackbarMessage}
+                    action={<Close onClick={() => setSnackbarOpen(false)} />}
                 />
             </Snackbar>
-            <h4 style={{ textAlign: 'center' }}>Quản lý menu</h4>
-            <div className='ad-viewcontentmenu'>
-                <div style={{ width: '48%' }}>
-                    <p>Danh sách menu</p>
-                    <Box sx={{ minWidth: 250 }}>
-                        <Tree value={menu}
-                            className='tree-view-ad'
-                            selectionMode="single"
-                            style={{ border: 'none' }}
-                            selectionKeys={selectedNodeKey}
-                            onSelect={handleSelectedItemsChange} />
-
-                    </Box>
-                </div>
-                <div style={{ width: '48%' }}>
-                    <Box className="form-menu">
-                        <div className="add_new_menu">
-                            <p>Chi tiết menu : </p>
-                            {!sysbtnadd && (
-                                <button onClick={handleaddmenu}>Thêm 1 menu mới</button>
-                            )}
-
-                        </div>
-                        <div className="sys_input">
-                            <label htmlFor="sys_namemenu">Tên menu</label>
-                            <InputText id="sys_namemenu" value={sysname ? sysname : ""} onChange={(e) => setSysname(e.target.value)} />
-                        </div>
-                        <div className="sys_input">
-                            <label htmlFor="menu-cha">Menu cha</label>
-                            <TreeSelect value={TreeselectedNodeKey ? TreeselectedNodeKey : ''}
-                                id="menu-cha"
-                                onChange={(e) => { setTreeSelectedNodeKey(e.value) }}
-                                options={menu}
-                                className=""
-                                placeholder="">
-                            </TreeSelect>
-                        </div>
-                        <div className="sys_input">
-                            <label htmlFor="sys_thutu">Thứ tự</label>
-                            <InputText id="sys_thutu" value={systhutu ? systhutu : ""} onChange={(e) => setSysthutu(e.target.value)} />
-
-                        </div>
-                        <div className="sys_input">
-                            <label htmlFor="sys_view">View component</label>
-                            <InputText id="sys_view" value={sysview ? sysview : ""} onChange={(e) => setSysview(e.target.value)} />
-                        </div>
-                        <button onClick={() => handleSavemenu(sysid)}> {sysbtnadd ? "Thêm mới" : "Lưu"}</button>
-                        {!sysbtnadd && (
-                            <button onClick={() => handleDeletemenu(sysid)} style={{ marginRight: '10px', backgroundColor: '#ff00008a' }}> Xóa menu </button>
-                        )}
-
-                    </Box>
-                </div>
-            </div>
         </div>
     );
 };

@@ -682,15 +682,15 @@ namespace Vrain.Server.Controllers
         }
 
         [HttpGet("infostationstoday")]
-        public async Task<ActionResult<IEnumerable<monitoring_stations>>> GetallStationstoday([FromQuery] List<int> lpid)
+        public async Task<ActionResult<IEnumerable<monitoring_stations>>> GetallStationstoday([FromQuery] List<int> lpid )
         {
             var timenow = DateTime.Now.Date;
             var query = from rainData in _context.monitoring_data
-                        where rainData.data_thoigian >= timenow
+                        where rainData.data_maloaithongso == "RAIN" && rainData.data_thoigian >= timenow
+                        join tskt in _context.iw_thongsoquantrac
+                        on rainData.tskt_id equals tskt.tskt_id
                         join station in _context.monitoring_stations
                         on rainData.station_id equals station.station_id
-                        join tskt in _context.iw_thongsoquantrac
-                        on station.key equals tskt.works_id
                         select new
                         {
                             station_id = station.station_id,
@@ -959,7 +959,7 @@ namespace Vrain.Server.Controllers
                 SourceName = source.source_name,
                 Tiles = source.tiles,
                 Bounds = source.bounds,
-                children = _context.map_layers.Where( l => l.source_id == source.id ).Select(layer => new 
+                layers = _context.map_layers.Where( l => l.source_id == source.id ).Select(layer => new 
                 {
                     key = layer.id,
                     label = layer.name,
@@ -973,12 +973,62 @@ namespace Vrain.Server.Controllers
                     MaxZoom = layer.max_zoom,
                     Visibility = layer.visibility,
                     parentId = source.id,
+                    panellayerid = layer.parent_id
                 }).ToList()
             })
             .ToListAsync();
 
             return Ok(datalayer);
         }
+
+        [HttpGet("listpanellayer")]
+        public async Task<IActionResult> GetTreePanelLayers()
+        {
+            // Lấy danh sách map_panel_layer
+            var panelLayers = await _context.map_panel_layer.ToListAsync();
+
+            // Lấy danh sách map_layers
+            var mapLayers = await _context.map_layers.ToListAsync();
+
+            // Chuyển đổi dữ liệu map_panel_layer thành các PanelNode
+            var panelNodes = panelLayers.Select(p => new PanelNode
+            {
+                id = p.id,
+                name = p.name,
+                parent_id = p.parent_id,
+                thutu = p.thutu,
+                create_at = p.create_at,
+                create_by = p.create_by,
+                layers = mapLayers
+                    .Where(l => l.parent_id == p.id) // Lấy các map_layers có parent_id khớp với id của map_panel_layer
+                    .ToList()
+            }).ToList();
+
+            // Xây dựng cây từ danh sách PanelNode
+            var tree = BuildTree(panelNodes, null);
+
+            return Ok(tree);
+        }
+
+        private List<PanelNode> BuildTree(List<PanelNode> nodes, int? parentId)
+        {
+            return nodes
+                .Where(n => n.parent_id == parentId)
+                .Select(n => new PanelNode
+                {
+                    id = n.id,
+                    name = n.name,
+                    parent_id = n.parent_id,
+                    thutu = n.thutu,
+                    create_at = n.create_at,
+                    create_by = n.create_by,
+                    layers = n.layers,
+                    children = BuildTree(nodes, n.id) // Đệ quy để xây dựng danh sách con
+                })
+                .ToList();
+        }
+        
+
 
         // POST: api/MapLayers
         [HttpPost("CreateMapLayer")]
@@ -1014,7 +1064,7 @@ namespace Vrain.Server.Controllers
             existingLayer.max_zoom = mapLayer.max_zoom;
             existingLayer.updated_at = DateTime.UtcNow;
             existingLayer.source_id = mapLayer.source_id;
-
+            existingLayer.parent_id = mapLayer.parent_id;
             try
             {
                 _context.map_layers.Update(existingLayer);
@@ -1040,13 +1090,13 @@ namespace Vrain.Server.Controllers
         }
 
 
-        [HttpGet("GetPanelLayers")]
+        [HttpGet("treepanellayer")]
         public async Task<IActionResult> GetPanelLayers()
         {
             var functions = await _context.map_panel_layer
                .ToListAsync();
 
-            var menuItems = functions.OrderBy(f => f.thutu).Select(f => new MenuItem
+            var menuItems = functions.OrderBy(f => f.thutu).Select(f => new PanelItem
             {
                 key = f.id,
                 ParentId = f.parent_id,
@@ -1054,8 +1104,22 @@ namespace Vrain.Server.Controllers
                 Thutu = f.thutu,
             }).ToList();
 
-            var menu = BuildMenu(menuItems, null);
+            var menu = Buildlayer(menuItems, null);
             return Ok(menu);
+        }
+        private List<PanelItem> Buildlayer(List<PanelItem> layeritems, int? parentId)
+        {
+            return layeritems
+                .Where(i => i.ParentId == parentId)
+                .Select(i => new PanelItem
+                {
+                    key = i.key,
+                    ParentId = i.ParentId,
+                    label = i.label,
+                    Thutu = i.Thutu,
+                    Children = Buildlayer(layeritems, i.key)
+                })
+                .ToList();
         }
         [Authorize(Policy = "ROLE_QLDULIEU")]
         [HttpPost("savepanellayer")]
@@ -1063,6 +1127,10 @@ namespace Vrain.Server.Controllers
         {
             try
             {
+                if (parent_id == 0)
+                {
+                    parent_id = null;
+                }
                 if (id == 0)
                 {
                     var mncha = await _context.map_panel_layer.SingleOrDefaultAsync(s => s.id == parent_id);
@@ -1080,7 +1148,8 @@ namespace Vrain.Server.Controllers
                     {
                         parent_id = parent_id,
                         thutu = thutu,
-                        name = name
+                        name = name,
+                        create_at = DateTime.Now
                     };
 
                     _context.map_panel_layer.Add(function);
@@ -1090,8 +1159,8 @@ namespace Vrain.Server.Controllers
                 }
                 else
                 {
-                    var function = await _context.map_panel_layer.SingleOrDefaultAsync(s => s.id == id);
 
+                    var function = await _context.map_panel_layer.SingleOrDefaultAsync(s => s.id == id);
 
                     if (function == null)
                     {
@@ -1114,6 +1183,66 @@ namespace Vrain.Server.Controllers
             }
 
         }
+        [HttpDelete("deletepanellayer/{id}")]
+        public async Task<IActionResult> DeleteLayer(int id)
+        {
+            var layerToDelete = await _context.map_panel_layer.FindAsync(id);
+            if (layerToDelete == null)
+            {
+                return NotFound("Layer not found.");
+            }
+
+            // Kiểm tra xem layer có con không
+            var childLayers = _context.map_panel_layer.Where(l => l.parent_id == id).ToList();
+            if (childLayers.Any())
+            {
+                return BadRequest("Cannot delete a layer with child layers.");
+            }
+
+            _context.map_panel_layer.Remove(layerToDelete);
+            await _context.SaveChangesAsync();
+
+            return Ok("Layer deleted successfully.");
+        }
+
+        [HttpGet("getsourceslayer")]
+        public async Task<ActionResult<IEnumerable<map_sources_layer>>> GetAll()
+        {
+            return await _context.map_sources_layer.ToListAsync();
+        }
+
+        [HttpPost("createsourceslayer")]
+        public async Task<ActionResult<map_sources_layer>> Create(map_sources_layer layer)
+        {
+            _context.map_sources_layer.Add(layer);
+            await _context.SaveChangesAsync();
+            return NoContent();
+        }
+
+        [HttpPut("updatesourceslayer/{id}")]
+        public async Task<IActionResult> Update(int id, map_sources_layer layer)
+        {
+            if (id != layer.id)
+                return BadRequest();
+
+            _context.Entry(layer).State = EntityState.Modified;
+            await _context.SaveChangesAsync();
+            return NoContent();
+        }
+
+        [HttpDelete("deletesourceslayer/{id}")]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var layer = await _context.map_sources_layer.FindAsync(id);
+            if (layer == null)
+                return NotFound();
+
+            _context.map_sources_layer.Remove(layer);
+            await _context.SaveChangesAsync();
+            return NoContent();
+        }
+
+
         public class MenuItem
         {
             public int key { get; set; }
@@ -1124,7 +1253,14 @@ namespace Vrain.Server.Controllers
             public string Url { get; set; }
             public List<MenuItem> Children { get; set; } = new List<MenuItem>();
         }
-
+        public class PanelItem
+        {
+            public int key { get; set; }
+            public int? ParentId { get; set; }
+            public string label { get; set; }
+            public int? Thutu { get; set; }
+            public List<PanelItem> Children { get; set; } = new List<PanelItem>();
+        }
         public class dataweathersinsert
         {
             public Guid key { get; set; }
@@ -1133,6 +1269,16 @@ namespace Vrain.Server.Controllers
             public float? data_giatri_sothuc { get; set; }
             public string? data_giatri_chuoi { get; set; }
         }
-
+        public class PanelNode
+        {
+            public int id { get; set; }
+            public string? name { get; set; }
+            public int? parent_id { get; set; }
+            public int? thutu { get; set; }
+            public DateTime create_at { get; set; }
+            public string? create_by { get; set; }
+            public List<map_layers> layers { get; set; } = new List<map_layers>();
+            public List<PanelNode> children { get; set; } = new List<PanelNode>();
+        }
     }
 }

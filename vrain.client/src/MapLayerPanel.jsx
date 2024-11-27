@@ -7,9 +7,10 @@ import { Button } from 'primereact/button';
 const MapLayerPanel = ({ layers, mapRef }) => {
     const [visible, setVisible] = useState(false);
     const [sourceVisibility, setSourceVisibility] = useState({});
-
+    const [visibility, setVisibility] = useState({});
     useEffect(() => {
         if (layers && layers.length > 0) {
+            initializeVisibility(layers);
             // Khởi tạo trạng thái hiển thị cho các sources nếu chưa có
             const initialVisibility = {};
             layers.forEach(layer => {
@@ -18,7 +19,17 @@ const MapLayerPanel = ({ layers, mapRef }) => {
             setSourceVisibility(initialVisibility);
         }
     }, [layers]);
-
+    const initializeVisibility = (data) => {
+        const initialState = {};
+        const traverse = (nodes) => {
+            nodes.forEach((node) => {
+                initialState[node.id] = true; // Mặc định bật (true)
+                if (node.children) traverse(node.children);
+            });
+        };
+        traverse(data);
+        setVisibility(initialState);
+    };
     const toggleLayer = (sourceName) => {
         const isVisible = !sourceVisibility[sourceName];
         setSourceVisibility(prevState => ({
@@ -33,7 +44,7 @@ const MapLayerPanel = ({ layers, mapRef }) => {
                 type: 'vector',
                 tiles: JSON.parse(sourceData.tiles),
                 bounds: JSON.parse(sourceData.bounds),
-            }, sourceData.children);
+            }, sourceData.layers);
         } else {
             // Xóa source và layer nếu không hiển thị
             removeSourceAndLayers(sourceName);

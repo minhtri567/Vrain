@@ -197,7 +197,8 @@ const MNOverview = () => {
             container: mapContainer.current,
             style: 'mapbox://styles/mapbox/streets-v11',
             center: [106.660172, 14.962622],
-            zoom: 4.5
+            zoom: 4.5,
+            preserveDrawingBuffer: true
         });
 
         class FitBoundsControl {
@@ -452,7 +453,7 @@ const MNOverview = () => {
                     bounds: JSON.parse(source.bounds)
                 });
 
-                source.children.forEach(layer => {
+                source.layers.forEach(layer => {
                     map.current.addLayer({
                         'id': layer.key,
                         'type': layer.layerType,
@@ -654,8 +655,9 @@ const MNOverview = () => {
 
             <div className="popup-chart-container" style={showChart ? { display: 'grid' } : { display: 'none' }}>
                 <div className="popup-chart-overlay" onClick={() => setShowChart(false)} ></div>
-                <div className="css-times" onClick={() => setShowChart(false)} > &times; </div>
+                
                 <div className="popup-chart-content">
+                    <div className="css-times" onClick={() => setShowChart(false)} > &times; </div>
                     <div className="popup-container-native" >
                         <div className="container-select">
                             <FormControl sx={{ m: 1, minWidth: 200 }} size="small"  >

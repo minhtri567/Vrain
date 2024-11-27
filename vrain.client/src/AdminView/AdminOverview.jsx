@@ -195,6 +195,7 @@ const AdminOverview = () => {
                         <Column field="tinh" header="Tỉnh" style={{ minWidth: '200px' }} ></Column>
                         <Column field="quanhuyen" header="Quận huyện" style={{ minWidth: '200px' }} ></Column>
                         <Column field="phuongxa" header="Phường/Xã" style={{ minWidth: '200px' }} ></Column>
+                        <Column field="total_rain" header="Tổng mưa hôm nay" style={{ minWidth: '200px' }} ></Column>
                     </DataTable>
                 </Dialog>
             </div>

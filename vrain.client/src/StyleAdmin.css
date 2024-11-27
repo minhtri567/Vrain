@@ -485,9 +485,48 @@ ul.expanded {
     display: flex;
     justify-content: space-between;
 }
+.p-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px; /* Khoảng cách giữa các cột */
+}
 
+.p-col {
+    flex: 1; /* Tự động chia đều không gian */
+}
 
+.p-col-12 {
+    flex: 0 0 100%; /* Chiếm toàn bộ chiều rộng */
+    max-width: 100%;
+}
 
+.p-col-6 {
+    flex: 0 0 50%; /* Chiếm 50% chiều rộng */
+    max-width: 50%;
+}
+
+.p-col-4 {
+    flex: 0 0 33.33%; /* Chiếm 33.33% chiều rộng */
+    max-width: 33.33%;
+}
+.p-inputtext{
+    width : 100%;
+}
+button.p-component{
+    margin : 10px 0px;
+}
+.my-action-btn {
+    width: 25px;
+    height: 25px;
+    margin-right: 10px;
+}
+.admin-panel-layer-container {
+    display: flex;
+    gap: 10px;
+}
+.admin-panel-layer-container > div{
+    width : 50%;
+}
 @media (max-width: 575.98px) {
     .adminoverview-container .av-container-1 {
         display: block;

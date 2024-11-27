@@ -290,7 +290,8 @@ const Overview = () => {
                 container: mapContainer.current,
                 style: 'mapbox://styles/mapbox/streets-v11',
                 center: [106.660172, 14.962622],
-                zoom: 4.5
+                zoom: 4.5,
+                preserveDrawingBuffer: true
             });
 
             class FitBoundsControl {

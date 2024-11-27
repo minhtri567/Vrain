@@ -19,15 +19,19 @@ import 'primeicons/primeicons.css';
 const Adminbandonen = () => {
     const [layer, setLayer] = useState([]);
     const [parentlayer, setparentLayer] = useState([]);
+    const [treepanellayer, settreepanellayer] = useState([]);
+    
     const [selectedNodeKey, setSelectedNodeKey] = useState('');
     const [TreeselectedNodeKey, setTreeSelectedNodeKey] = useState('');
+    const [Treeselectedpanel, setTreeselectedpanel] = useState('');
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState('');
     const [snackbarVariant, setSnackbarVariant] = useState('success');
     const apilayer = '/vnrain/Admin/GetMapLayers';
     const addlayer = '/vnrain/Admin/CreateMapLayer';
-    const deletelayer = '/vnrain/Admin/DeleteMapLayer';
+    const deletelayer = '/vnrain/Admin/DeleteMapLayer/';
     const updatelayer = '/vnrain/Admin/UpdateMapLayer/';
+    const gettreepanellayer = '/vnrain/Admin/treepanellayer';
     const fetchLayer = async () => {
         try {
             const response = await axios.get(apilayer);
@@ -46,8 +50,18 @@ const Adminbandonen = () => {
             console.error('Error fetching menu', error);
         }
     };
+    const fetchtreepanelLayer = async () => {
+        try {
+            const response = await axios.get(gettreepanellayer);
+            const allLayers = response.data;
+            settreepanellayer(allLayers);
+        } catch (error) {
+            console.error('Error fetching menu', error);
+        }
+    };
     useEffect(() => {
         fetchLayer();
+        fetchtreepanelLayer();
     }, []);
     const [idlayer, setidlayer] = React.useState('');          
     const [namelayer, setnamelayer] = React.useState('');          
@@ -60,6 +74,8 @@ const Adminbandonen = () => {
     const [isVisible, setIsVisible] = React.useState(true);     
     const [minZoom, setMinZoom] = React.useState(0);         
     const [maxZoom, setMaxZoom] = React.useState(18);         
+    const [panellayer, setpanellayer] = React.useState('');                  
+
 
     const handleSnackbarClose = () => {
         setSnackbarOpen(false);
@@ -92,13 +108,17 @@ const Adminbandonen = () => {
             setlayoutlayer(event.node.layout);
             setpaintlayer(event.node.paint);
             setfilterlayer(event.node.filter);
+            setpanellayer(event.node.panellayerid);
             setMinZoom(event.node.minZoom);
             setMaxZoom(event.node.maxZoom);
             setIsVisible(event.node.visibility)
             setSysbtnadd(false);
             const selectedNode = event.node;
+            const selectedpanel = event.node.panellayerid;
             const parentNode = findParentNode(layer, selectedNode.parentId);
+            const parentpanel = findParentNode(treepanellayer, selectedpanel);
             setTreeSelectedNodeKey(parentNode ? parentNode.key : '');
+            setTreeselectedpanel(parentpanel ? parentpanel.key : '');
         }
     };
     const handleSaveLayer = async (itemId) => {
@@ -113,6 +133,7 @@ const Adminbandonen = () => {
             layout: layoutlayer,
             filter: filterlayer,
             visibility: isVisible,
+            parent_id: Treeselectedpanel,
             min_zoom: minZoom,
             max_zoom: maxZoom,
         };
@@ -146,9 +167,27 @@ const Adminbandonen = () => {
     const handleaddLayer = () => {
 
         setSysbtnadd(!sysbtnadd);
+        resetLayerForm();
     };
     const handleDeleteLayer = async (itemId) => {
-        
+        try {
+            const response = await fetch(deletelayer + itemId, {
+                method: 'DELETE', // Chắc chắn chỉ định phương thức DELETE
+            });
+
+            if (!response.ok) { // Kiểm tra xem phản hồi có thành công hay không
+                throw new Error(`Xóa lớp layer thất bại: ${response.statusText}`);
+            }
+
+            setSnackbarMessage("Xóa thành công lớp layer!");
+            setSnackbarVariant('success');
+        } catch (error) {
+            console.error("Error deleting layer:", error);
+            setSnackbarMessage(`Lỗi: ${error.message}`);
+            setSnackbarVariant('error');
+        } finally {
+            setSnackbarOpen(true);
+        }
     }
     const resetLayerForm = () => {
         setnamelayer("");
@@ -156,6 +195,10 @@ const Adminbandonen = () => {
         setsourcelayer("");
         setsourcelayername("");
         setIsVisible(true);
+        setfilterlayer("");
+        setlayoutlayer("");
+        setpaintlayer("");
+        setpanellayer("");
         setMinZoom(0);
         setMaxZoom(18);
     };
@@ -259,6 +302,17 @@ const Adminbandonen = () => {
                         <div className="sys_input">
                             <label htmlFor="max_zoom">Zoom tối đa</label>
                             <InputNumber id="max_zoom" value={maxZoom} onValueChange={(e) => setMaxZoom(e.value)} />
+                        </div>
+
+                        <div className="sys_input">
+                            <label htmlFor="max_zoom">Panel layer</label>
+                            <TreeSelect value={Treeselectedpanel ? Treeselectedpanel : ''}
+                                id="layer-cha"
+                                onChange={(e) => { setTreeselectedpanel(e.value) }}
+                                options={treepanellayer}
+                                className=""
+                                placeholder="">
+                            </TreeSelect>
                         </div>
                         <button onClick={() => handleSaveLayer(idlayer)}> {sysbtnadd ? "Thêm mới" : "Lưu"}</button>
                         {!sysbtnadd && (

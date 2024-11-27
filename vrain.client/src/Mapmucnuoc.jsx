@@ -53,16 +53,6 @@ const Mapmucnuoc = () => {
     const apilayer = '/vnrain/Admin/GetMapLayers';
 
     const [layers, setLayers] = useState([]);
-
-    useEffect(() => {
-        const fetchLayers = async () => {
-            const response = await fetch(apilayer);
-            const data = await response.json();
-            setLayers(data);
-        };
-
-        fetchLayers();
-    }, []);
     const handlePrint = useReactToPrint({
         contentRef: mapContainer,
     });
@@ -87,6 +77,15 @@ const Mapmucnuoc = () => {
             this.map = undefined;
         }
     }
+    useEffect(() => {
+        const fetchLayers = async () => {
+            const response = await fetch(apilayer);
+            const data = await response.json();
+            setLayers(data);
+        };
+
+        fetchLayers();
+    }, []);
     function convertDateFormat(dateString) {
         // Tách ngày, tháng, năm từ chuỗi
         var parts = dateString.split('/');
@@ -270,7 +269,7 @@ const Mapmucnuoc = () => {
                     bounds: JSON.parse(source.bounds)
                 });
 
-                source.children.forEach(layer => {
+                source.layers.forEach(layer => {
                     map.current.addLayer({
                         'id': layer.key,
                         'type': layer.layerType,
@@ -291,7 +290,8 @@ const Mapmucnuoc = () => {
                 container: mapContainer.current,
                 style: 'mapbox://styles/mapbox/streets-v11',
                 center: [106.660172, 14.962622],
-                zoom: 4.5
+                zoom: 4.5,
+                preserveDrawingBuffer: true
             });
             addLayersToMap(layers);
             map.current.addControl(new mapboxgl.FullscreenControl(), 'top-right');
@@ -620,6 +620,20 @@ const Mapmucnuoc = () => {
             if (targetStation) {
                 viewllstation(targetStation.lat, targetStation.lon)
                 highlightBlinking(map.current, targetStation.lon, targetStation.lat);
+                if (window.innerWidth <= 575.98) {
+                    setSelectedStation(targetStation.station_id);
+                    setSelecteduiStation(targetStation.station_id);
+
+                    setShowChart(true);
+
+                    settinhfdata(targetStation.tinh);
+
+                    setfdata({
+                        sid: targetStation.station_id,
+                        lat: targetStation.lat,
+                        lon: targetStation.lng
+                    });
+                }
             }
 
         } else {
@@ -757,7 +771,7 @@ const Mapmucnuoc = () => {
                             </LocalizationProvider>
                         </div>
                         <button id="view-station" onClick={handlerefecthdata}>Xem</button>
-                        <div style={{ marginLeft: 'auto', fontSize: '18px' }}>Tỉnh : {tinhdata}</div>
+                        <div className="mn-tinh" style={{ marginLeft: 'auto', fontSize: '18px' }}>Tỉnh : {tinhdata}</div>
                     </div>
 
                     {!loading && (

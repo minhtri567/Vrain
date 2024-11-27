@@ -17,6 +17,8 @@ import AdminViewDanhmuc from './AdminView/AdminViewDanhmuc';
 import AdminViewCoquan from './AdminView/AdminViewCoquan';
 import AdminViewNguoidung from './AdminView/AdminViewNguoidung';
 import Adminbandonen from './AdminView/Adminbandonen';
+import AdminViewNguonbando from './AdminView/AdminViewNguonbando';
+import AdminViewpanellayer from './AdminView/AdminViewpanellayer';
 
 const Admin = () => {
     const navigate = useNavigate();
@@ -94,7 +96,9 @@ const Admin = () => {
         AdminViewDanhmuc: AdminViewDanhmuc,
         AdminViewCoquan: AdminViewCoquan,
         AdminViewNguoidung: AdminViewNguoidung,
-        Adminbandonen: Adminbandonen
+        Adminbandonen: Adminbandonen,
+        AdminViewNguonbando: AdminViewNguonbando,
+        AdminViewpanellayer: AdminViewpanellayer
         // Add more mappings here as needed
     };
 
@@ -104,7 +108,6 @@ const Admin = () => {
     };
 
     const handleMenuItemClick = (url) => {
-        console.log(url)
         setExpandedItems({});
         setCurrentView(url);
         if(isMobile == true ){

@@ -128,7 +128,7 @@ const MapComponent = () => {
                     bounds: JSON.parse(source.bounds)
                 });
 
-                source.children.forEach(layer => {
+                source.layers.forEach(layer => {
                     map.current.addLayer({
                         'id': layer.key,
                         'type': layer.layerType,
